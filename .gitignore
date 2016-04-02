@@ -1,6 +1,13 @@
-bin/
-.classpath
-.project
-.settings/
-lib/
+# IDE folders
+java/.idea/
+java/.classpath
+java/.project
+java/.settings/
+java/fanfiction.iml
 
+# Output
+java/bin/
+
+# Libraries
+java/lib/
+!lib/readme.md
