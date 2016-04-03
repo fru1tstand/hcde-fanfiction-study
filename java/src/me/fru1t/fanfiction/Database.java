@@ -49,7 +49,7 @@ public class Database {
 				Boot.log("No connection");
 				return "";
 			}
-			PreparedStatement stmt = c.prepareStatement("SELECT content FROM raw_scrape ORDER BY raw_scrape_id DESC LIMIT 1");
+			PreparedStatement stmt = c.prepareStatement("SELECT content FROM raw_scrape WHERE raw_scrape_id = 5");
 			ResultSet result = stmt.executeQuery();
 			if (result.next()) {
 				return result.getString(1);

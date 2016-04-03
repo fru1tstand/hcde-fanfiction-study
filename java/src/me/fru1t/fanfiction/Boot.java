@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -14,9 +15,14 @@ import me.fru1t.fanfiction.process.ExtractBooksListDataProcess;
 
 public class Boot {
 	public static void main(String[] args) {
+		if (!LOG_TO_FILE) {
+			System.out.println("File logging disabled. To change this setting, edit Boot.java");
+		}
+		
 		(new ExtractBooksListDataProcess()).run();
 	}
 
+	private static final boolean LOG_TO_FILE = false;
 	private static final String LOG_PREFIX = "fanfiction-";
 	private static final SimpleDateFormat dateFormat =
 			new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
@@ -33,29 +39,32 @@ public class Boot {
 		System.out.println(getTimestampPrefix() + message);
 		
 		// Log to file
-		if (logWriter == null) {
+		if (LOG_TO_FILE) {
+			if (logWriter == null) {
+				try {
+					System.out.println(getTimestampPrefix() + "Creating new log file");
+					logWriter = new BufferedWriter(new FileWriter(
+							LOG_PREFIX + (new Date()).getTime() + ".log", true));
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.out.println(getTimestampPrefix()
+							+ "Couldn't create log file: "
+							+ e.getMessage());
+					return message;
+				}
+			}
+			
 			try {
-				System.out.println(getTimestampPrefix() + "Creating new log file");
-				logWriter = new BufferedWriter(new FileWriter(
-						LOG_PREFIX + (new Date()).getTime() + ".log", true));
+				logWriter.write(getTimestampPrefix() + message + "\r\n");
+				logWriter.flush();
 			} catch (IOException e) {
 				e.printStackTrace();
 				System.out.println(getTimestampPrefix()
-						+ "Couldn't create log file: "
+						+ "Couldn't write to log file: "
 						+ e.getMessage());
-				return message;
 			}
 		}
-		
-		try {
-			logWriter.write(getTimestampPrefix() + message + "\r\n");
-			logWriter.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println(getTimestampPrefix()
-					+ "Couldn't write to log file: "
-					+ e.getMessage());
-		}
+
 		return message;
 	}
 
