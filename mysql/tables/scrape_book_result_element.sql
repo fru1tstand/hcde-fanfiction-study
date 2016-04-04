@@ -1,5 +1,7 @@
-CREATE TABLE `book_result_element` (
+CREATE TABLE `scrape_book_result_element` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `scrape_session_id` int(11) NOT NULL,
+  `date_processed` int(11) NOT NULL,
   `ff_book_id` int(11) DEFAULT NULL,
   `ff_author_id` int(11) DEFAULT NULL,
   `book_title` varchar(256) DEFAULT NULL,
@@ -24,5 +26,7 @@ CREATE TABLE `book_result_element` (
   `meta_is_complete` tinyint(4) DEFAULT NULL,
   `meta_did_successfully_parse` tinyint(4) DEFAULT NULL,
   `did_successfully_parse` tinyint(4) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `fk_scrape_book_result_element_scrape_session_idx` (`scrape_session_id`),
+  CONSTRAINT `fk_scrape_book_result_element_scrape_session_id` FOREIGN KEY (`scrape_session_id`) REFERENCES `scrape_session` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
