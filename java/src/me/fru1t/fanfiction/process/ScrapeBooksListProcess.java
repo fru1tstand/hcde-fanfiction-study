@@ -1,7 +1,7 @@
 package me.fru1t.fanfiction.process;
 
 import me.fru1t.fanfiction.Boot;
-import me.fru1t.fanfiction.Database;
+import me.fru1t.fanfiction.database.schema.Scrape;
 import me.fru1t.web.Crawler;
 
 public class ScrapeBooksListProcess implements Runnable {
@@ -20,7 +20,7 @@ public class ScrapeBooksListProcess implements Runnable {
 		while (i < MAX_PAGES) {
 			i++;
 			crawlContent = Crawler.getContents(CRAWL_URL + i);
-			Database.insertRawScrape(SESSION_ID, CRAWL_URL + i, crawlContent);
+			Scrape.insertRaw(SESSION_ID, CRAWL_URL + i, crawlContent);
 			crawlContentLength = (crawlContent != null) ? crawlContent.length() : 0;
 			Boot.log("Page #" + i + " Content Length: " + crawlContentLength);
 			try {
