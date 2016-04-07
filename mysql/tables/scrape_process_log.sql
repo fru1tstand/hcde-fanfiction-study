@@ -1,9 +1,9 @@
 CREATE TABLE `scrape_process_log` (
   `id` int(11) NOT NULL,
+  `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `scrape_process_log_session_id` int(11) NOT NULL,
   `scrape_process_log_status_id` int(11) NOT NULL,
   `scrape_raw_id` int(11) NOT NULL,
-  `time` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_scrape_process_log_scrape_process_log_session_idx` (`scrape_process_log_session_id`),
   KEY `fk_scrape_process_log_scrape_process_log_status_idx` (`scrape_process_log_status_id`),
