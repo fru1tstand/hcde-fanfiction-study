@@ -18,6 +18,8 @@ import me.fru1t.fanfiction.database.schema.Scrape;
  * manner to allow multi-threaded processing.
  * 
  * This provider will always return scrapes from oldest to newest (lowest id to highest).
+ * 
+ * TODO (1): Add filtering by scrape_type in BufferedRawScrapeProducer
  */
 public class BufferedRawScrapeProducer {
 	private static final String QUERY_BASE =
@@ -27,6 +29,7 @@ public class BufferedRawScrapeProducer {
 			+ "`, `scrape_raw`.`date` AS `" + Scrape.ScrapeRaw.COLUMN_DATE
 			+ "`, `scrape_raw`.`url` AS `" + Scrape.ScrapeRaw.COLUMN_URL
 			+ "`, `scrape_raw`.`content` AS `" + Scrape.ScrapeRaw.COLUMN_CONTENT
+			+ "`, `scrape_raw`.`scrape_Type_id` AS `" + Scrape.ScrapeRaw.COLUMN_SCRAPE_TYPE_ID
 			+ "` FROM `scrape_raw` ";
 	private static final String QUERY_SESSION_NAME_JOIN =
 			"INNER JOIN scrape_session ON scrape_session.id = scrape_raw.scrape_session_id ";

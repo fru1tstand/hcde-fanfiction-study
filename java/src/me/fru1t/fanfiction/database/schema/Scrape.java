@@ -2,7 +2,6 @@ package me.fru1t.fanfiction.database.schema;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
@@ -14,6 +13,8 @@ import me.fru1t.fanfiction.database.Database;
 import me.fru1t.fanfiction.web.page.element.BookResultElement;
 
 public class Scrape {
+	public static final String BROWSE_BY_BOOK_TYPE = "browse-by-book";
+	
 	/**
 	 * Represents the scrape_raw table in the fanfiction database.
 	 */
@@ -23,6 +24,7 @@ public class Scrape {
 		public static final String COLUMN_DATE = "date";
 		public static final String COLUMN_URL = "url";
 		public static final String COLUMN_CONTENT = "content";
+		public static final String COLUMN_SCRAPE_TYPE_ID = "scrape_type_id";
 		
 		/** id INT(11) AI PK */
 		public int id;
@@ -38,10 +40,20 @@ public class Scrape {
 		
 		/** content MEDIUMTEXT*/
 		public String content;
+		
+		/** scrape_type_id INT(11) */
+		public int scrapeTypeId;
 	}
 	
-	private static final String INSERT_RAW_SCRAPE = 
-			"INSERT INTO raw_scrape (session_id, date, url, content) VALUES (?, ?, ?, ?)";
+	/**
+	 * 1 IN scrape_session_name VARCHAR(128),
+	 * 2 IN scrape_type_name VARCHAR(128)
+	 * 3 IN scrape_date INT
+	 * 4 IN scrape_url VARCHAR(255)
+	 * 5 IN scrape_content MEDIUMTEXT
+	 */
+	private static final String USP_SCRAPE_ADD_RAW =
+			"{CALL usp_scrape_add_raw(?, ?, ?, ?, ?)}";
 	
 	/**
 	 * 1  scrape_raw_id INT
@@ -92,24 +104,27 @@ public class Scrape {
 	private static final String USP_SCRAPE_ADD_PROCESSED_BOOK_RESULT_GENRE =
 			"{CALL usp_scrape_add_processed_book_result_genre(?, ?)}";
 	
-	public static void insertRaw(@Nullable String sessionId, String url, String content) {
+	public static void insertRaw(
+			String sessionName, String scrapeType, String url, @Nullable String content) {
 		int currentTime = (int) ((new Date()).getTime() / 1000);
-		Connection con = Database.getConnection();
-		if (con == null) {
+		
+		Connection c = Database.getConnection();
+		if (c == null) {
 			Boot.log("Ignored raw scrape insert as the database couldn't be reached");
 			return;
 		}
-		if (sessionId == null) {
+		if (content == null) {
 			Boot.log("Ignored raw scrape insert as the content was null");
 			return;
 		}
 		
 		try {
-			PreparedStatement stmt = con.prepareStatement(INSERT_RAW_SCRAPE);
-			stmt.setString(1, sessionId);
-			stmt.setInt(2, currentTime);
-			stmt.setString(3, url);
-			stmt.setString(4, content);
+			CallableStatement stmt = c.prepareCall(USP_SCRAPE_ADD_RAW);
+			stmt.setString(1, sessionName); // 1 IN scrape_session_name VARCHAR(128),
+			stmt.setString(2, scrapeType); // 2 IN scrape_type_name VARCHAR(128)
+			stmt.setInt(3, currentTime); // 3 IN scrape_date INT
+			stmt.setString(4, url); // 4 IN scrape_url VARCHAR(255)
+			stmt.setString(5, content); // 5 IN scrape_content MEDIUMTEXT
 			stmt.execute();
 			stmt.close();
 		} catch (SQLException e) {

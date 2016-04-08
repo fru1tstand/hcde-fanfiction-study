@@ -5,7 +5,7 @@ import me.fru1t.fanfiction.database.schema.Scrape;
 import me.fru1t.web.Crawler;
 
 public class ScrapeBooksListProcess implements Runnable {
-	private static final String SESSION_ID = "Harry Potter, English, March 29, 2016";
+	private static final String SESSION_NAME = "Harry Potter, English, March 29, 2016";
 	private static final String CRAWL_URL = "https://www.fanfiction.net/book/Harry-Potter/?&srt=2&lan=1&r=103&p=";
 	
 	private static final int MAX_PAGES = 17996;
@@ -20,7 +20,7 @@ public class ScrapeBooksListProcess implements Runnable {
 		while (i < MAX_PAGES) {
 			i++;
 			crawlContent = Crawler.getContents(CRAWL_URL + i);
-			Scrape.insertRaw(SESSION_ID, CRAWL_URL + i, crawlContent);
+			Scrape.insertRaw(SESSION_NAME, Scrape.BROWSE_BY_BOOK_TYPE, CRAWL_URL + i, crawlContent);
 			crawlContentLength = (crawlContent != null) ? crawlContent.length() : 0;
 			Boot.log("Page #" + i + " Content Length: " + crawlContentLength);
 			try {
