@@ -1,4 +1,4 @@
-CREATE TABLE `scrape_process_session` (
+CREATE TABLE `ff_genre` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),

@@ -1,24 +1,33 @@
 package me.fru1t.fanfiction.process;
 
-import java.util.List;
+import java.util.Date;
 
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.schema.Scrape;
+import me.fru1t.fanfiction.database.schema.scrape.BufferedRawScrapeProducer;
 import me.fru1t.fanfiction.web.page.BookSearchPage;
-import me.fru1t.fanfiction.web.page.element.BookResultElement;
 
 public class ExtractBooksListDataProcess implements Runnable {
+	private static final String PROCESS_SESSION_NAME =
+			"Harry Potter, English, April 7, 2016 - final";
+	private static final String[] SCRAPE_SESSION_NAME =
+			{"Harry Potter, English, March 29, 2016"};
 	
 	@Override
 	public void run() {
-		String document = Scrape.getRandomRaw();
-		BookSearchPage bsp = new BookSearchPage(document);
-		List<BookResultElement> elements = bsp.getBookResultElements();
-		for (BookResultElement element : elements) {
-			Boot.log(element.metadata);
-			Boot.log(element.processedMetadata.toString());
+		BookSearchPage bsp;
+		
+		BufferedRawScrapeProducer brsp = new BufferedRawScrapeProducer(-1, 11, SCRAPE_SESSION_NAME);
+		Scrape.ScrapeRaw scrape = brsp.take();
+		long beforeTime = (new Date()).getTime();
+		while (scrape != null) {
+			bsp = new BookSearchPage(scrape.content);
+			Scrape.uspScrapeAddProcessedBookResultElement(
+					scrape.id, PROCESS_SESSION_NAME, bsp.getBookResultElements());
+			scrape = brsp.take();
 		}
-//		Boot.log(elements.get(0).processedMetadata.toString());
+		long afterTime = (new Date()).getTime();
+		Boot.log("That session took " + (afterTime - beforeTime) + "ms");
 	}
 
 }

@@ -66,14 +66,29 @@ public class BookResultElement {
 		public Metadata(Element metadata) throws Exception {
 			this.didSuccessfullyParse = false;
 			this.element = metadata;
+			this.rating = "";
+			this.language = "";
+			this.genres = new String[0];
+			this.chapters = -1;
+			this.words = -1;
+			this.reviews = -1;
+			this.favorites = -1;
+			this.followers = -1;
+			this.datePublished = -1;
+			this.dateUpdated = -1;
 			this.characters = new ArrayList<>();
-			String[] components = metadata.text().split(COMPONENTS_DELIMETER);
+			this.isComplete = false;
 			
+			int firstNonStaticIndex = FIRST_NON_STATIC_INDEX;
+			String[] components = metadata.text().split(COMPONENTS_DELIMETER);
 			processComponent(components[RATING_INDEX]);
 			this.language = components[LANGUAGE_INDEX];
-			this.genres = components[GENRE_INDEX].split(GENRES_DELIMETER);
+			if (!components[GENRE_INDEX].contains(CHAPTERS_PREFIX)) {
+				this.genres = components[GENRE_INDEX].split(GENRES_DELIMETER);
+				firstNonStaticIndex--;
+			}
 			
-			for (int i = FIRST_NON_STATIC_INDEX; i < components.length; i++) {
+			for (int i = firstNonStaticIndex; i < components.length; i++) {
 				processComponent(components[i]);
 			}
 			
@@ -182,6 +197,7 @@ public class BookResultElement {
 	
 	// Direct element values
 	public Element element;
+	public String realBookName;
 	public String bookTitle;
 	public String bookUrl;
 	public String coverImageUrl;
@@ -192,15 +208,26 @@ public class BookResultElement {
 	public String metadata;
 	
 	// Processed values
-	public int authorId;
-	public int bookId;
+	public int ffAuthorId;
+	public int ffBookId;
 	public Metadata processedMetadata;
 	
 	public boolean didSuccessfullyParse;
 	
-	public BookResultElement(Element result) {
+	public BookResultElement(String realBookName, Element result) {
+		this.realBookName = realBookName;
 		this.didSuccessfullyParse = false;
 		this.element = result;
+		this.bookTitle = "";
+		this.bookUrl = "";
+		this.coverImageUrl = "";
+		this.coverImageOriginalUrl = "";
+		this.author = "";
+		this.authorUrl = "";
+		this.synopsis = "";
+		this.metadata = "";
+		this.ffAuthorId = -1;
+		this.ffBookId = -1;
 		
 		try {
 			// Direct Element values
@@ -223,20 +250,19 @@ public class BookResultElement {
 			Matcher bookIdMatcher = BOOK_ID_LINK_PATTERN.matcher(bookUrl);
 			authorIdMatcher.matches();
 			bookIdMatcher.matches();
-			this.authorId = Integer.parseInt(authorIdMatcher.group(1));
-			this.bookId = Integer.parseInt(bookIdMatcher.group(1));
+			this.ffAuthorId = Integer.parseInt(authorIdMatcher.group(1));
+			this.ffBookId = Integer.parseInt(bookIdMatcher.group(1));
 			
 			// Metadata
 			Element metadata = result.select(METADATA_SELECTOR).get(0);
 			this.metadata = metadata.text();
 			this.processedMetadata = new Metadata(metadata);
 			
-			
 			this.didSuccessfullyParse = true;
 		} catch (IndexOutOfBoundsException e) {
 			Boot.log(e, "A required element wasn't found on the page.");
 		} catch (Exception e) {
-			Boot.log(e, null);
+			Boot.log(e, "An unknown exception occured");
 		}
 	}
 }

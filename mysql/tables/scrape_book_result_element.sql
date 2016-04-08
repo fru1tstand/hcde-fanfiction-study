@@ -2,6 +2,7 @@ CREATE TABLE `scrape_book_result_element` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `scrape_raw_id` int(11) NOT NULL,
   `scrape_process_session_id` int(11) NOT NULL,
+  `ff_real_book_id` int(11) NOT NULL,
   `date_processed` int(11) NOT NULL,
   `ff_book_id` int(11) DEFAULT NULL,
   `ff_author_id` int(11) DEFAULT NULL,
@@ -28,9 +29,10 @@ CREATE TABLE `scrape_book_result_element` (
   `meta_did_successfully_parse` tinyint(4) DEFAULT NULL,
   `did_successfully_parse` tinyint(4) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_scrape_raw_id_scrape_process_session_id` (`scrape_raw_id`,`scrape_process_session_id`),
   KEY `fk_scrape_book_result_element_scrape_session_idx` (`scrape_raw_id`),
   KEY `fk_scrape_book_result_element_scrape_process_session_idx` (`scrape_process_session_id`),
+  KEY `fk_scrape_book_result_element_idx` (`ff_real_book_id`),
+  CONSTRAINT `fk_scrape_book_result_element` FOREIGN KEY (`ff_real_book_id`) REFERENCES `ff_real_book` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_scrape_book_result_element_scrape_process_session` FOREIGN KEY (`scrape_process_session_id`) REFERENCES `scrape_process_session` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_scrape_book_result_element_scrape_raw` FOREIGN KEY (`scrape_raw_id`) REFERENCES `scrape_raw` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
