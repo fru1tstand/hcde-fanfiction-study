@@ -7,7 +7,7 @@ import me.fru1t.fanfiction.web.page.BookSearchPage;
 
 public class ExtractBooksListDataProcess implements Runnable {
 	private static final String PROCESS_SESSION_NAME =
-			"Harry Potter, English, April 7, 2016 - final";
+			"Harry Potter, English, April 8, 2016 - final";
 	private static final String[] SCRAPE_SESSION_NAME =
 			{"Harry Potter, English, March 29, 2016"};
 	
