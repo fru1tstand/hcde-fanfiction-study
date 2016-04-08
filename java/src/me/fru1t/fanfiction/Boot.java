@@ -17,11 +17,14 @@ public class Boot {
 		if (!LOG_TO_FILE) {
 			System.out.println("File logging disabled. To change this setting, edit Boot.java");
 		}
-		
-		(new ExtractBooksListDataProcess()).run();
+		try {
+			(new ExtractBooksListDataProcess()).run();
+		} catch (Exception e) {
+			log(e, null);
+		}
 	}
 
-	private static final boolean LOG_TO_FILE = false;
+	private static final boolean LOG_TO_FILE = true;
 	private static final String LOG_PREFIX = "fanfiction-";
 	private static final SimpleDateFormat dateFormat =
 			new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");

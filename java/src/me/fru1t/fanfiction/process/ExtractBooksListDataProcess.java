@@ -1,7 +1,5 @@
 package me.fru1t.fanfiction.process;
 
-import java.util.Date;
-
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.schema.Scrape;
 import me.fru1t.fanfiction.database.schema.scrape.BufferedRawScrapeProducer;
@@ -17,17 +15,18 @@ public class ExtractBooksListDataProcess implements Runnable {
 	public void run() {
 		BookSearchPage bsp;
 		
-		BufferedRawScrapeProducer brsp = new BufferedRawScrapeProducer(-1, 11, SCRAPE_SESSION_NAME);
+		BufferedRawScrapeProducer brsp = new BufferedRawScrapeProducer(SCRAPE_SESSION_NAME);
 		Scrape.ScrapeRaw scrape = brsp.take();
-		long beforeTime = (new Date()).getTime();
 		while (scrape != null) {
-			bsp = new BookSearchPage(scrape.content);
-			Scrape.uspScrapeAddProcessedBookResultElement(
-					scrape.id, PROCESS_SESSION_NAME, bsp.getBookResultElements());
+			try {
+				bsp = new BookSearchPage(scrape.content);
+				Scrape.uspScrapeAddProcessedBookResultElement(
+						scrape.id, PROCESS_SESSION_NAME, bsp.getBookResultElements());
+			} catch (Exception e) {
+				Boot.log(e, "Skipped scrape with ID " + scrape.id + " due to the following error:");
+			}
 			scrape = brsp.take();
 		}
-		long afterTime = (new Date()).getTime();
-		Boot.log("That session took " + (afterTime - beforeTime) + "ms");
 	}
 
 }

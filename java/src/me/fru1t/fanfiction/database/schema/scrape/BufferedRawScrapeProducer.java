@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -53,6 +54,12 @@ public class BufferedRawScrapeProducer {
 	private boolean isComplete;
 	private Queue<Scrape.ScrapeRaw> queue;
 	
+	private long lastFetchTime;
+	private long currentFetchTime;
+	private int scrapesProcessedSinceLastFetch;
+	private int firstScrapeId;
+	private int lastScrapeId;
+	
 	/**
 	 * Creates a new provider that only returns scrapes between the given range and belong to 
 	 * the given session names.
@@ -71,6 +78,11 @@ public class BufferedRawScrapeProducer {
 	public BufferedRawScrapeProducer(int lowerIdBound, int upperIdBound, String[] sessionNames) {
 		this.lowerIdBound = (lowerIdBound < 0) ? -1 : lowerIdBound;
 		this.upperIdBound = (upperIdBound < 0) ? -1 : upperIdBound;
+		this.lastFetchTime = 0;
+		this.currentFetchTime = 0;
+		this.scrapesProcessedSinceLastFetch = 0;
+		this.firstScrapeId = -1;
+		this.lastScrapeId = -1;
 		
 		// Sanitize session names
 		this.sessionNames = new String[sessionNames.length];
@@ -108,6 +120,8 @@ public class BufferedRawScrapeProducer {
 	public synchronized Scrape.ScrapeRaw take() {
 		// Elements still in queue
 		if (!queue.isEmpty()) {
+			scrapesProcessedSinceLastFetch++;
+			lastScrapeId = queue.peek().id;
 			return queue.poll();
 		}
 		
@@ -117,8 +131,22 @@ public class BufferedRawScrapeProducer {
 		}
 		
 		// No elements in queue and not complete
+		currentFetchTime = (new Date()).getTime();
+		if (lastFetchTime != 0) {
+			Boot.log("Processed "
+					+ scrapesProcessedSinceLastFetch 
+					+ " scrapes, between ["
+					+ firstScrapeId + ", " + lastScrapeId
+					+ "], in "
+					+ (currentFetchTime - lastFetchTime)
+					+ "ms");
+		}
+		lastFetchTime = currentFetchTime;
+		scrapesProcessedSinceLastFetch = 0;
 		refillQueue();
 		if (!queue.isEmpty()) {
+			scrapesProcessedSinceLastFetch++;
+			firstScrapeId = queue.peek().id;
 			return queue.poll();
 		}
 		
