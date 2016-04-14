@@ -20,7 +20,6 @@ public class Scrape {
 	 * Represents the scrape_raw table in the fanfiction database.
 	 */
 	public static class ScrapeRaw extends DatabaseProducer.Row<Integer> {
-		public static final String COLUMN_ID = "id";
 		public static final String COLUMN_SCRAPE_SESSION_ID = "scrapeSessionId";
 		public static final String COLUMN_DATE = "date";
 		public static final String COLUMN_URL = "url";

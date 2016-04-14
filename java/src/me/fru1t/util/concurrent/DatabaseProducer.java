@@ -1,6 +1,8 @@
 package me.fru1t.util.concurrent;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,10 +13,12 @@ import java.util.Queue;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import me.fru1t.fanfiction.Boot;
 import me.fru1t.util.Logger;
 
 public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> {
 	public static abstract class Row<I> {
+		public static final String COLUMN_ID = "id";
 		public I id;
 	}
 	
@@ -27,7 +31,7 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> {
 	// Core class fields
 	private int bufferSize;
 	private String idName;
-	private boolean hasWhereClause;
+	private Boolean hasWhereClause;
 	private Connection connection;
 	
 	private boolean isComplete;
@@ -47,6 +51,7 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> {
 			String idName,
 			Class<T> rowClass,
 			Connection connection,
+			int bufferSize,
 			Logger logger) {
 		this.idName = idName;
 		this.connection = connection;
@@ -54,7 +59,8 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> {
 		this.isComplete = false;
 		this.queue = new LinkedList<>();
 		this.currentId = null;
-		this.hasWhereClause = getUnboundedQuery().contains(QUERY_WHERE_CHECK);
+		this.hasWhereClause = null;
+		this.bufferSize = bufferSize;
 		
 		this.logger = logger;
 		this.firstScrapeId = null;
@@ -110,6 +116,7 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> {
 		return null;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void refillQueue() {
 		String query = getQuery();
 		try {
@@ -118,9 +125,20 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> {
 			T row;
 			while (result.next()) {
 				row = rowClass.newInstance();
-				for (Field field : rowClass.getFields()) {
-					result.getObject(field.getName(), field.getType());
+				
+				// Set the ID to the generic type passed to us. This method gets around Java's type
+				// erasure for generics.
+				rowClass.getField(Row.COLUMN_ID).set(row, result.getObject(Row.COLUMN_ID, 
+						(Class<I>) ((ParameterizedType) rowClass.getGenericSuperclass())
+								.getActualTypeArguments()[0]));
+				
+				// Set the remaining fields through normal reflection as they're not parameterized
+				for (Field field : rowClass.getDeclaredFields()) {
+					if ((field.getModifiers() & Modifier.STATIC) == 0) {
+						field.set(row, result.getObject(field.getName(), field.getType()));
+					}
 				}
+				
 				queue.add(row);
 				currentId = row.id;
 			}
@@ -131,11 +149,18 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> {
 		} catch (InstantiationException | IllegalAccessException e) {
 			// This should never happen as the class is defined within this file
 			throw new RuntimeException(e);
+		} catch (IllegalArgumentException | NoSuchFieldException | SecurityException e) {
+			Boot.getLogger().log(e);
 		}
 	}
 	
 	private String getQuery() {
 		StringBuilder query = new StringBuilder(getUnboundedQuery());
+		
+		if (hasWhereClause == null) {
+			hasWhereClause = getUnboundedQuery().contains(QUERY_WHERE_CHECK);
+		}
+		
 		// ...WHERE... -- Guarantee the start of the where clause
 		if (!hasWhereClause) {
 			query.append(QUERY_WHERE_GUARANTEE);

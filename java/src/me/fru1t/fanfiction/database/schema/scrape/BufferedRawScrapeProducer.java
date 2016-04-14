@@ -1,5 +1,7 @@
 package me.fru1t.fanfiction.database.schema.scrape;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.Database;
 import me.fru1t.fanfiction.database.schema.Scrape;
@@ -16,6 +18,7 @@ import me.fru1t.util.concurrent.DatabaseProducer;
  * TODO (1): Add filtering by scrape_type in BufferedRawScrapeProducer
  */
 public class BufferedRawScrapeProducer extends DatabaseProducer<Scrape.ScrapeRaw, Integer> {
+	private static final int BUFFER_SIZE = 50;
 	private static final String ID_NAME = "`scrape_raw`.`id`";
 	private static final String QUERY_BASE =
 			"SELECT"
@@ -35,6 +38,7 @@ public class BufferedRawScrapeProducer extends DatabaseProducer<Scrape.ScrapeRaw
 	private static final String FMT_QUERY_UPPER_BOUND = "AND `scrape_raw`.`id` < %d ";
 	
 	private static final int DEFAULT_BOUND_VALUE = -1;
+	@Nullable
 	private static final String[] DEFAULT_SCRAPE_SESSIONS = {};
 	
 	private int lowerIdBound;
@@ -56,15 +60,25 @@ public class BufferedRawScrapeProducer extends DatabaseProducer<Scrape.ScrapeRaw
 	 * @param sessionNames The sessions with which scrapes should be included from. Set to an
 	 * empty array to include all.
 	 */
-	public BufferedRawScrapeProducer(int lowerIdBound, int upperIdBound, String[] sessionNames) {
-		super(ID_NAME, Scrape.ScrapeRaw.class, Database.getConnection(), Boot.getLogger());
+	public BufferedRawScrapeProducer(
+			int lowerIdBound,
+			int upperIdBound,
+			@Nullable String[] sessionNames) {
+		super(ID_NAME, Scrape.ScrapeRaw.class, Database.getConnection(),
+				BUFFER_SIZE, Boot.getLogger());
 		this.lowerIdBound = (lowerIdBound < 0) ? -1 : lowerIdBound;
 		this.upperIdBound = (upperIdBound < 0) ? -1 : upperIdBound;
 		
 		// Sanitize session names
-		this.sessionNames = new String[sessionNames.length];
-		for (int i = 0; i < sessionNames.length; i++) {
-			this.sessionNames[i] = sessionNames[i].replaceAll("'", "\\'");
+		this.sessionNames = DEFAULT_SCRAPE_SESSIONS;
+		if (sessionNames != null) {
+			this.sessionNames = new String[sessionNames.length];
+			for (int i = 0; i < sessionNames.length; i++) {
+				String s = sessionNames[i];
+				if (s != null) {
+					this.sessionNames[i] = s.replaceAll("'", "\\'");
+				}
+			}
 		}
 	}
 	
@@ -73,7 +87,7 @@ public class BufferedRawScrapeProducer extends DatabaseProducer<Scrape.ScrapeRaw
 	 * 
 	 * @param sessionNames
 	 */
-	public BufferedRawScrapeProducer(String... sessionNames) {
+	public BufferedRawScrapeProducer(@Nullable String... sessionNames) {
 		this(DEFAULT_BOUND_VALUE, DEFAULT_BOUND_VALUE, sessionNames);
 	}
 	
