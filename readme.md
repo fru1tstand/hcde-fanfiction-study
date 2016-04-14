@@ -22,13 +22,14 @@ Genre-blocked statistics (April 8th, 2016)
 ###### Overview
 
 + Creation of worklog/changelist (this file).
-+ Re-processed the `meta_chapters` column in `scrape_book_result_element`.  
-  Due to a bug in the initial processing code, if the genre was omitted from within the metadata, the processing of the number of chapters would fail and default to "-1". 
++ Successfully re-parsed `metadata` in `scrape_book_result_element` to fix `meta_chapters` (Δ49k rows / ~3mins).  
+  Due to a bug in the initial processing code, if the genre was omitted from within the metadata, the processing of the number of chapters would fail and default to "-1".
 
 ###### Technical
 
 + Abstracted logging from Boot into `me.fru1t.util/Logger.java`.
 + Abstracted thread-safe, type-safe database polling into `me.fru1t.util.concurrent/DatabaseProducer.java`.
++ Created `me.fru1t.fanfiction.process/FixMetadataProcess` script to fix `meta_chapters` in `scrape_book_result_element`
 
 
 #### April 1, 2016 ~ April 8, 2016
