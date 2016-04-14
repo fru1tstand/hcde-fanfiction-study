@@ -1,7 +1,5 @@
-CREATE 
-VIEW `genre_statistics` AS
+CREATE VIEW `overall_statistics` AS
     SELECT 
-        `ff_genre`.`name` AS `genre`,
         COUNT(DISTINCT `scrape_book_result_element`.`ff_book_id`) AS `Stories`,
         COUNT(DISTINCT `scrape_book_result_element`.`ff_author_id`) AS `Authors`,
         MAX(`scrape_book_result_element`.`meta_words`) AS `Most Words`,
@@ -23,4 +21,3 @@ VIEW `genre_statistics` AS
         ((`scrape_book_result_element`
         JOIN `scrape_book_result_ff_genre` ON ((`scrape_book_result_ff_genre`.`ff_book_id` = `scrape_book_result_element`.`ff_book_id`)))
         JOIN `ff_genre` ON ((`ff_genre`.`id` = `scrape_book_result_ff_genre`.`ff_genre_id`)))
-    GROUP BY `ff_genre`.`name`

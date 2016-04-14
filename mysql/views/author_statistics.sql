@@ -1,9 +1,13 @@
-CREATE 
-VIEW `genre_statistics` AS
+CREATE
+VIEW `author_statistics` AS
     SELECT 
-        `ff_genre`.`name` AS `genre`,
+        `scrape_book_result_element`.`ff_author_id` AS `Author ID`,
+        `scrape_book_result_element`.`author` AS `Author Name`,
         COUNT(DISTINCT `scrape_book_result_element`.`ff_book_id`) AS `Stories`,
-        COUNT(DISTINCT `scrape_book_result_element`.`ff_author_id`) AS `Authors`,
+        COUNT(DISTINCT `scrape_book_result_ff_genre`.`ff_genre_id`) AS `Genres Written For`,
+        COUNT(DISTINCT `scrape_book_result_ff_character`.`ff_character_id`) AS `Characters used`,
+        FROM_UNIXTIME(MIN(`scrape_book_result_element`.`meta_date_published`)) AS `First Seen`,
+        FROM_UNIXTIME(MAX(`scrape_book_result_element`.`meta_date_published`)) AS `Last Seen`,
         MAX(`scrape_book_result_element`.`meta_words`) AS `Most Words`,
         MIN(`scrape_book_result_element`.`meta_words`) AS `Least Words`,
         AVG(`scrape_book_result_element`.`meta_words`) AS `Average # of Words`,
@@ -22,5 +26,5 @@ VIEW `genre_statistics` AS
     FROM
         ((`scrape_book_result_element`
         JOIN `scrape_book_result_ff_genre` ON ((`scrape_book_result_ff_genre`.`ff_book_id` = `scrape_book_result_element`.`ff_book_id`)))
-        JOIN `ff_genre` ON ((`ff_genre`.`id` = `scrape_book_result_ff_genre`.`ff_genre_id`)))
-    GROUP BY `ff_genre`.`name`
+        JOIN `scrape_book_result_ff_character` ON ((`scrape_book_result_ff_character`.`ff_book_id` = `scrape_book_result_element`.`ff_book_id`)))
+    GROUP BY `scrape_book_result_element`.`ff_author_id` , `scrape_book_result_element`.`author`
