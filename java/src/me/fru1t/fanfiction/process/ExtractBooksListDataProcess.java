@@ -23,7 +23,7 @@ public class ExtractBooksListDataProcess implements Runnable {
 				Scrape.uspScrapeAddProcessedBookResultElement(
 						scrape.id, PROCESS_SESSION_NAME, bsp.getBookResultElements());
 			} catch (Exception e) {
-				Boot.log(e, "Skipped scrape with ID " + scrape.id + " due to the following error:");
+				Boot.getLogger().log(e, "Skipped scrape with ID " + scrape.id + " due to:");
 			}
 			scrape = brsp.take();
 		}

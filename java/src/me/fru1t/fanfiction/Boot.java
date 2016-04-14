@@ -28,15 +28,4 @@ public class Boot {
 	public static Logger getLogger() {
 		return logger;
 	}
-	
-	// TODO: Remove
-	public static String log(Exception e) {
-		return logger.log(e);
-	}
-	public static String log(String s) {
-		return logger.log(s);
-	}
-	public static String log(Exception e, String s) {
-		return logger.log(e, s);
-	}
 }

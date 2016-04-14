@@ -22,11 +22,11 @@ public class ScrapeBooksListProcess implements Runnable {
 			crawlContent = Crawler.getContents(CRAWL_URL + i);
 			Scrape.insertRaw(SESSION_NAME, Scrape.BROWSE_BY_BOOK_TYPE, CRAWL_URL + i, crawlContent);
 			crawlContentLength = (crawlContent != null) ? crawlContent.length() : 0;
-			Boot.log("Page #" + i + " Content Length: " + crawlContentLength);
+			Boot.getLogger().log("Page #" + i + " Content Length: " + crawlContentLength);
 			try {
 				Thread.sleep(SLEEP_TIME_SECONDS * 1000);
 			} catch (InterruptedException e) {
-				Boot.log(e, null);
+				Boot.getLogger().log(e);
 				return;
 			}
 		}

@@ -142,7 +142,7 @@ public class BookResultElement {
 			Matcher m = COMPONENT_KEY_VALUE_PATTERN.matcher(component);
 			if (!m.matches()) {
 				if (LOG_COMPONENT_IGNORES) {
-					Boot.log("Ignoring component: " + component);
+					Boot.getLogger().log("Ignoring component: " + component);
 				}
 				return;
 			}
@@ -167,7 +167,7 @@ public class BookResultElement {
 				break;
 			default:
 				if (LOG_COMPONENT_IGNORES) {
-					Boot.log("Ignoring component: " + component);
+					Boot.getLogger().log("Ignoring component: " + component);
 				}
 				break;
 			}
@@ -260,9 +260,9 @@ public class BookResultElement {
 			
 			this.didSuccessfullyParse = true;
 		} catch (IndexOutOfBoundsException e) {
-			Boot.log(e, "A required element wasn't found on the page.");
+			Boot.getLogger().log(e, "A required element wasn't found on the page.");
 		} catch (Exception e) {
-			Boot.log(e, "An unknown exception occured");
+			Boot.getLogger().log(e, "An unknown exception occured");
 		}
 	}
 }

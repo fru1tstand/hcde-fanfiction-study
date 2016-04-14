@@ -34,7 +34,7 @@ public class BookSearchPage {
 				.nextSibling()
 				.toString();
 		} catch (IndexOutOfBoundsException e) {
-			Boot.log(e, "Couldn't find the book name from this search page");
+			Boot.getLogger().log(e, "Couldn't find the book name from this search page");
 		}
 		for (Element element : document.select(RESULT_ELEMENTS_SELECTOR)) {
 			resultElements.add(new BookResultElement(this.realBookName, element));

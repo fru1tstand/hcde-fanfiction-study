@@ -108,11 +108,11 @@ public class Scrape {
 		
 		Connection c = Database.getConnection();
 		if (c == null) {
-			Boot.log("Ignored raw scrape insert as the database couldn't be reached");
+			Boot.getLogger().log("Ignored raw scrape insert as the database couldn't be reached");
 			return;
 		}
 		if (content == null) {
-			Boot.log("Ignored raw scrape insert as the content was null");
+			Boot.getLogger().log("Ignored raw scrape insert as the content was null");
 			return;
 		}
 		
@@ -126,7 +126,7 @@ public class Scrape {
 			stmt.execute();
 			stmt.close();
 		} catch (SQLException e) {
-			Boot.log(e, null);
+			Boot.getLogger().log(e, null);
 		}
 	}
 	
@@ -140,7 +140,8 @@ public class Scrape {
 		try {
 			Connection c = Database.getConnection();
 			if (c == null) {
-				Boot.log("Couldn't reach database when adding processed book result elements");
+				Boot.getLogger()
+						.log("Couldn't reach database when adding processed book result elements");
 				return;
 			}
 			
@@ -206,7 +207,7 @@ public class Scrape {
 			genreStmt.executeBatch();
 			genreStmt.close();
 		} catch (SQLException e) {
-			Boot.log(e, null);
+			Boot.getLogger().log(e);
 		}
 	}
 }

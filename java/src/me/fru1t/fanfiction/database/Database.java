@@ -20,7 +20,7 @@ public class Database {
 			try { 
 				connection = DriverManager.getConnection(SQL_CONNECTION_STRING);
 			} catch (SQLException e) {
-				Boot.log(e, null);
+				Boot.getLogger().log(e);
 				connection = null;
 			}
 		}

@@ -40,7 +40,7 @@ public class Crawler {
 			isReader.close();
 			return response.toString();
 		} catch (Exception e) {
-			Boot.log(e, null);
+			Boot.getLogger().log(e);
 			return null;
 		}
 	}
