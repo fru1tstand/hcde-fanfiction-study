@@ -11,6 +11,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.Database;
 import me.fru1t.fanfiction.web.page.element.BookResultElement;
+import me.fru1t.util.concurrent.DatabaseProducer;
 
 public class Scrape {
 	public static final String BROWSE_BY_BOOK_TYPE = "browse-by-book";
@@ -18,16 +19,13 @@ public class Scrape {
 	/**
 	 * Represents the scrape_raw table in the fanfiction database.
 	 */
-	public static class ScrapeRaw {
+	public static class ScrapeRaw extends DatabaseProducer.Row<Integer> {
 		public static final String COLUMN_ID = "id";
-		public static final String COLUMN_SCRAPE_SESSION_ID = "scrape_session_id";
+		public static final String COLUMN_SCRAPE_SESSION_ID = "scrapeSessionId";
 		public static final String COLUMN_DATE = "date";
 		public static final String COLUMN_URL = "url";
 		public static final String COLUMN_CONTENT = "content";
-		public static final String COLUMN_SCRAPE_TYPE_ID = "scrape_type_id";
-		
-		/** id INT(11) AI PK */
-		public int id;
+		public static final String COLUMN_SCRAPE_TYPE_ID = "scrapeTypeId";
 		
 		/** scrape_session_id INT(11) */
 		public int scrapeSessionId;

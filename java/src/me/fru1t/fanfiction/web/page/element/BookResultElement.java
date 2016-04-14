@@ -13,7 +13,7 @@ import me.fru1t.fanfiction.Boot;
 
 public class BookResultElement {
 	public static class Metadata {
-		private static final boolean LOG_COMPONENT_IGNORES = false;
+		private static final boolean LOG_COMPONENT_IGNORES = true;
 		
 		// Text processing regex
 		private static final Pattern NUMBER_SANITIZATION_PATTERN =
@@ -83,7 +83,7 @@ public class BookResultElement {
 			String[] components = metadata.text().split(COMPONENTS_DELIMETER);
 			processComponent(components[RATING_INDEX]);
 			this.language = components[LANGUAGE_INDEX];
-			if (!components[GENRE_INDEX].contains(CHAPTERS_PREFIX)) {
+			if (components[GENRE_INDEX].contains(CHAPTERS_PREFIX)) {
 				this.genres = components[GENRE_INDEX].split(GENRES_DELIMETER);
 				firstNonStaticIndex--;
 			}

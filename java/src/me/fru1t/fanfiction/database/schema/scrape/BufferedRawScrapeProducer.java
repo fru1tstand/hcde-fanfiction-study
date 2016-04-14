@@ -1,16 +1,9 @@
 package me.fru1t.fanfiction.database.schema.scrape;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.Queue;
-
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.Database;
 import me.fru1t.fanfiction.database.schema.Scrape;
+import me.fru1t.util.concurrent.DatabaseProducer;
 
 /**
  * Provides a thread-safe interface for fetching raw scrapes from the fanfiction database. Due
@@ -22,7 +15,8 @@ import me.fru1t.fanfiction.database.schema.Scrape;
  * 
  * TODO (1): Add filtering by scrape_type in BufferedRawScrapeProducer
  */
-public class BufferedRawScrapeProducer {
+public class BufferedRawScrapeProducer extends DatabaseProducer<Scrape.ScrapeRaw, Integer> {
+	private static final String ID_NAME = "`scrape_raw`.`id`";
 	private static final String QUERY_BASE =
 			"SELECT"
 			+ " `scrape_raw`.`id` AS `" + Scrape.ScrapeRaw.COLUMN_ID
@@ -35,30 +29,17 @@ public class BufferedRawScrapeProducer {
 	private static final String QUERY_SESSION_NAME_JOIN =
 			"INNER JOIN scrape_session ON scrape_session.id = scrape_raw.scrape_session_id ";
 	private static final String QUERY_WHERE = "WHERE 1 = 1 ";
-	private static final String QUERY_ORDER = "ORDER BY `scrape_raw`.`id` ASC " ;
 	
 	private static final String FMT_QUERY_SESSION_NAMES = "AND `scrape_session`.`name` IN ('%s') ";
 	private static final String FMT_QUERY_LOWER_BOUND = "AND `scrape_raw`.`id` > %d ";
 	private static final String FMT_QUERY_UPPER_BOUND = "AND `scrape_raw`.`id` < %d ";
-	private static final String FMT_QUERY_LIMIT = "LIMIT %d";
 	
-	private static final int BUFFER_SIZE = 50;
 	private static final int DEFAULT_BOUND_VALUE = -1;
 	private static final String[] DEFAULT_SCRAPE_SESSIONS = {};
 	
 	private int lowerIdBound;
 	private int upperIdBound;
 	private String[] sessionNames;
-	
-	private int currentId;
-	private boolean isComplete;
-	private Queue<Scrape.ScrapeRaw> queue;
-	
-	private long lastFetchTime;
-	private long currentFetchTime;
-	private int scrapesProcessedSinceLastFetch;
-	private int firstScrapeId;
-	private int lastScrapeId;
 	
 	/**
 	 * Creates a new provider that only returns scrapes between the given range and belong to 
@@ -76,23 +57,15 @@ public class BufferedRawScrapeProducer {
 	 * empty array to include all.
 	 */
 	public BufferedRawScrapeProducer(int lowerIdBound, int upperIdBound, String[] sessionNames) {
+		super(ID_NAME, Scrape.ScrapeRaw.class, Database.getConnection(), Boot.getLogger());
 		this.lowerIdBound = (lowerIdBound < 0) ? -1 : lowerIdBound;
 		this.upperIdBound = (upperIdBound < 0) ? -1 : upperIdBound;
-		this.lastFetchTime = 0;
-		this.currentFetchTime = 0;
-		this.scrapesProcessedSinceLastFetch = 0;
-		this.firstScrapeId = -1;
-		this.lastScrapeId = -1;
 		
 		// Sanitize session names
 		this.sessionNames = new String[sessionNames.length];
 		for (int i = 0; i < sessionNames.length; i++) {
 			this.sessionNames[i] = sessionNames[i].replaceAll("'", "\\'");
 		}
-		
-		this.currentId = DEFAULT_BOUND_VALUE;
-		this.isComplete = false;
-		this.queue = new LinkedList<>();
 	}
 	
 	/**
@@ -111,52 +84,8 @@ public class BufferedRawScrapeProducer {
 		this(DEFAULT_BOUND_VALUE, DEFAULT_BOUND_VALUE, DEFAULT_SCRAPE_SESSIONS);
 	}
 	
-	/**
-	 * Attempts to get the next raw scrape from the queue. This method is thread-safe and will
-	 * block other threads until complete.
-	 * 
-	 * @return Raw scrape objects or NULL if there are none left.
-	 */
-	public synchronized Scrape.ScrapeRaw take() {
-		// Elements still in queue
-		if (!queue.isEmpty()) {
-			scrapesProcessedSinceLastFetch++;
-			lastScrapeId = queue.peek().id;
-			return queue.poll();
-		}
-		
-		// No elements in queue and already flagged as complete
-		if (isComplete) {
-			return null;
-		}
-		
-		// No elements in queue and not complete
-		currentFetchTime = (new Date()).getTime();
-		if (lastFetchTime != 0) {
-			Boot.log("Processed "
-					+ scrapesProcessedSinceLastFetch 
-					+ " scrapes, between ["
-					+ firstScrapeId + ", " + lastScrapeId
-					+ "], in "
-					+ (currentFetchTime - lastFetchTime)
-					+ "ms");
-		}
-		lastFetchTime = currentFetchTime;
-		scrapesProcessedSinceLastFetch = 0;
-		refillQueue();
-		if (!queue.isEmpty()) {
-			scrapesProcessedSinceLastFetch++;
-			firstScrapeId = queue.peek().id;
-			return queue.poll();
-		}
-		
-		// No elements in queue and none left in database
-		isComplete = true;
-		return null;
-	}
-	
-	
-	private String createQueryString() {
+	@Override
+	protected String getUnboundedQuery() {
 		// SELECT...FROM...JOIN
 		String query = QUERY_BASE;
 		if (sessionNames.length != 0) {
@@ -171,54 +100,12 @@ public class BufferedRawScrapeProducer {
 		if (upperIdBound != DEFAULT_BOUND_VALUE) {
 			query += String.format(FMT_QUERY_UPPER_BOUND, upperIdBound);
 		}
-		
-		// Always have a lower bound, be it the lower bound specified by the user, or the currentId
-		query += String.format(FMT_QUERY_LOWER_BOUND,
-				(lowerIdBound > currentId) ? lowerIdBound : currentId);
-		
-		// ...ORDER BY...
-		query += QUERY_ORDER;
-		
-		// ...LIMIT...
-		query += String.format(FMT_QUERY_LIMIT, BUFFER_SIZE);
+		if (lowerIdBound != DEFAULT_BOUND_VALUE) {
+			query += String.format(FMT_QUERY_LOWER_BOUND, lowerIdBound);
+		}
 		
 		return query;
 	}
 	
-	private void refillQueue() {
-		String query = createQueryString();
-		try {
-			Connection c = Database.getConnection();
-			if (c == null) {
-				Boot.log("Connection to the database failed when attempting to fill "
-						+ "a BufferedRawScrapeProducer");
-				return;
-			}
-			PreparedStatement stmt = c.prepareStatement(query);
-			ResultSet result = stmt.executeQuery();
-			Scrape.ScrapeRaw rawScrape;
-			while (result.next()) {
-				// Add result to queue
-				rawScrape = new Scrape.ScrapeRaw();
-				rawScrape.id = result.getInt(Scrape.ScrapeRaw.COLUMN_ID);
-				rawScrape.scrapeSessionId =
-						result.getInt(Scrape.ScrapeRaw.COLUMN_SCRAPE_SESSION_ID);
-				rawScrape.date = result.getInt(Scrape.ScrapeRaw.COLUMN_DATE);
-				rawScrape.url = result.getString(Scrape.ScrapeRaw.COLUMN_URL);
-				rawScrape.content = result.getString(Scrape.ScrapeRaw.COLUMN_CONTENT);
-				queue.add(rawScrape);
-				
-				// Set current Id to highest in result set
-				if (rawScrape.id > currentId) {
-					currentId = rawScrape.id;
-				}
-				
-				rawScrape = null;
-			}
-			stmt.close();
-		} catch (SQLException e) {
-			Boot.log(e, null);
-			Boot.log("Using Query: " + query);
-		}
-	}
+
 }
