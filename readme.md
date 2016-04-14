@@ -1,7 +1,18 @@
-# Distributed Mentoring Worklog & Changelist
+# Distributed Mentoring
+Does distributed mentoring have a positive effect on writing ability as demonstrated by several attributes and writing quality?
 
+###### Screenshots
+Scraped Data (April 8th, 2016)  
+![alt text](http://i.imgur.com/TQfSkux.png "Example of scraped data")  
+  
+Overall Statistics (April 8th, 2016)  
+![alt text](http://i.imgur.com/oL8fWfU.png "Overall statistics")  
+  
+Genre-blocked statistics (April 8th, 2016)  
+![alt text](http://i.imgur.com/VLpbKkD.png "Genre-blocked statistics")
 
-#### April 13, 2016 ~ .
+## Worklog & Changelist
+#### April 13, 2016 ~ April 22, 2016
 ###### Goals
 
 1. Scrape select story content.
@@ -17,7 +28,7 @@
 ###### Technical
 
 + Abstracted logging from Boot into `me.fru1t.util/Logger.java`.
-+ Abstracted thread-safe database polling into `me.fru1t.util.concurrent/DatabaseProducer.java`.
++ Abstracted thread-safe, type-safe database polling into `me.fru1t.util.concurrent/DatabaseProducer.java`.
 
 
 #### April 1, 2016 ~ April 8, 2016

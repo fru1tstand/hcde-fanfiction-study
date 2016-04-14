@@ -4,7 +4,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.schema.Scrape;
-import me.fru1t.fanfiction.database.schema.scrape.BufferedRawScrapeProducer;
+import me.fru1t.fanfiction.database.schema.scrape.RawScrapeProducer;
 import me.fru1t.fanfiction.web.page.BookSearchPage;
 
 public class ExtractBooksListDataProcess implements Runnable {
@@ -17,7 +17,7 @@ public class ExtractBooksListDataProcess implements Runnable {
 	@Override
 	public void run() {
 		BookSearchPage bsp;
-		BufferedRawScrapeProducer brsp = new BufferedRawScrapeProducer(SCRAPE_SESSION_NAME);
+		RawScrapeProducer brsp = new RawScrapeProducer(SCRAPE_SESSION_NAME);
 		Scrape.ScrapeRaw scrape = brsp.take();
 		while (scrape != null) {
 			try {
@@ -30,5 +30,4 @@ public class ExtractBooksListDataProcess implements Runnable {
 			scrape = brsp.take();
 		}
 	}
-
 }

@@ -106,10 +106,6 @@ public class Scrape {
 		int currentTime = (int) ((new Date()).getTime() / 1000);
 		
 		Connection c = Database.getConnection();
-		if (c == null) {
-			Boot.getLogger().log("Ignored raw scrape insert as the database couldn't be reached");
-			return;
-		}
 		if (content == null) {
 			Boot.getLogger().log("Ignored raw scrape insert as the content was null");
 			return;

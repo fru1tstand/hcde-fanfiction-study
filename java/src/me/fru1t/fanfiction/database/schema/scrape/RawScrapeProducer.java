@@ -17,7 +17,7 @@ import me.fru1t.util.concurrent.DatabaseProducer;
  * 
  * TODO (1): Add filtering by scrape_type in BufferedRawScrapeProducer
  */
-public class BufferedRawScrapeProducer extends DatabaseProducer<Scrape.ScrapeRaw, Integer> {
+public class RawScrapeProducer extends DatabaseProducer<Scrape.ScrapeRaw, Integer> {
 	private static final int BUFFER_SIZE = 50;
 	private static final String ID_NAME = "`scrape_raw`.`id`";
 	private static final String QUERY_BASE =
@@ -60,7 +60,7 @@ public class BufferedRawScrapeProducer extends DatabaseProducer<Scrape.ScrapeRaw
 	 * @param sessionNames The sessions with which scrapes should be included from. Set to an
 	 * empty array to include all.
 	 */
-	public BufferedRawScrapeProducer(
+	public RawScrapeProducer(
 			int lowerIdBound,
 			int upperIdBound,
 			@Nullable String[] sessionNames) {
@@ -87,14 +87,14 @@ public class BufferedRawScrapeProducer extends DatabaseProducer<Scrape.ScrapeRaw
 	 * 
 	 * @param sessionNames
 	 */
-	public BufferedRawScrapeProducer(@Nullable String... sessionNames) {
+	public RawScrapeProducer(@Nullable String... sessionNames) {
 		this(DEFAULT_BOUND_VALUE, DEFAULT_BOUND_VALUE, sessionNames);
 	}
 	
 	/**
 	 * Creates a new provider that targets all scrapes from the database.
 	 */
-	public BufferedRawScrapeProducer() {
+	public RawScrapeProducer() {
 		this(DEFAULT_BOUND_VALUE, DEFAULT_BOUND_VALUE, DEFAULT_SCRAPE_SESSIONS);
 	}
 	
