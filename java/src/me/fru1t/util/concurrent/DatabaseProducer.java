@@ -94,7 +94,7 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> {
 		if (lastFetchTime != 0) {
 			logger.log("Processed "
 					+ rowsProcessedSinceLastFetch 
-					+ " scrapes, between ["
+					+ " rows, between ["
 					+ ((firstScrapeId != null) ? firstScrapeId.toString() : "null")
 					+ ", "
 					+ ((lastScrapeId != null) ? lastScrapeId.toString() : "null")
