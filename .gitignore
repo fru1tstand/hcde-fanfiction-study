@@ -4,6 +4,7 @@ java/.classpath
 java/.project
 java/.settings/
 java/fanfiction.iml
+.idea/
 
 # Output
 java/bin/
