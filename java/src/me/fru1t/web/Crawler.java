@@ -20,7 +20,8 @@ public class Crawler {
 		StringBuilder response = new StringBuilder();
 		try {
 			java.net.URL website = new java.net.URL(url);
-			URLConnection conn = website.openConnection();conn.setRequestProperty("accept-encoding", "gzip, deflate, sdch");
+			URLConnection conn = website.openConnection();
+			conn.setRequestProperty("accept-encoding", "gzip, deflate, sdch");
 			conn.setRequestProperty("accept-language", "en-US,en;q=0.8");
 			conn.setRequestProperty("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
 			conn.setRequestProperty("user-agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36");

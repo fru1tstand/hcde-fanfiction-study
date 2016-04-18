@@ -1,18 +1,8 @@
 # Distributed Mentoring
 Does distributed mentoring have a positive effect on writing ability as demonstrated by several attributes and writing quality?
 
-###### Screenshots
-Scraped Data (April 8th, 2016)  
-![alt text](http://i.imgur.com/TQfSkux.png "Example of scraped data")  
-  
-Overall Statistics (April 8th, 2016)  
-![alt text](http://i.imgur.com/oL8fWfU.png "Overall statistics")  
-  
-Genre-blocked statistics (April 8th, 2016)  
-![alt text](http://i.imgur.com/VLpbKkD.png "Genre-blocked statistics")
-
 ## Worklog & Changelist
-#### April 13, 2016 ~ April 22, 2016
+### April 13, 2016 ~ April 22, 2016
 ###### Goals
 
 1. Scrape select story content.
@@ -24,15 +14,18 @@ Genre-blocked statistics (April 8th, 2016)
 + Creation of worklog/changelist (this file).
 + Successfully re-parsed `metadata` in `scrape_book_result_element` to fix `meta_chapters` (Δ49k rows / ~3mins).  
   Due to a bug in the initial processing code, if the genre was omitted from within the metadata, the processing of the number of chapters would fail and default to "-1".
++ Added [Apache HttpComponents](https://hc.apache.org/) to handle multi-ip scraping.
++ Created book chapter scrape process.
 
 ###### Technical
 
 + Abstracted logging from Boot into `me.fru1t.util/Logger.java`.
 + Abstracted thread-safe, type-safe database polling into `me.fru1t.util.concurrent/DatabaseProducer.java`.
-+ Created `me.fru1t.fanfiction.process/FixMetadataProcess` script to fix `meta_chapters` in `scrape_book_result_element`
++ Created `me.fru1t.fanfiction.process/FixMetadataProcess` script to fix `meta_chapters` in `scrape_book_result_element`.
++ Created `me.fru1t.fanfiction.process/ScrapeBookChaptersProcess` to scrape book chapters.
 
 
-#### April 1, 2016 ~ April 8, 2016
+### April 1, 2016 ~ April 8, 2016
 ###### Goals
 
 1. Scrape book list data. ✓
@@ -48,6 +41,16 @@ Genre-blocked statistics (April 8th, 2016)
 + Created stored logging within repository to share process runs.
 + Successfully ran book list scrape process (+2.3GB / +18k rows / ~54hrs)
 + Successfully ran scrape processing (+272MB / +449k rows / ~2hrs)
+
+###### Screenshots
+Scraped Data (April 8th, 2016)  
+![alt text](http://i.imgur.com/TQfSkux.png "Example of scraped data")  
+  
+Overall Statistics (April 8th, 2016)  
+![alt text](http://i.imgur.com/oL8fWfU.png "Overall statistics")  
+  
+Genre-blocked statistics (April 8th, 2016)  
+![alt text](http://i.imgur.com/VLpbKkD.png "Genre-blocked statistics")
 
 ###### Technical
 
