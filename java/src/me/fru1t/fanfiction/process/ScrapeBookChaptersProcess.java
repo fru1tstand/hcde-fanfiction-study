@@ -14,7 +14,7 @@ import me.fru1t.web.MultiIPCrawler;
 public class ScrapeBookChaptersProcess implements Runnable {
 	private static final String BOOK_CHAPTER_URL_FMT = "https://www.fanfiction.net/s/%d/%d";
 	private static final String SESSION_NAME =
-			"Harry Potter, English, Account > 5 years old, > 10 reviews, > 2 reviews/chapter, April 26, 2016";
+			"Harry Potter, English, Account > 5 years old, > 10 reviews, > 2 reviews/chapter, April 26, 2016 - Fix 1";
 	private static final String SCRAPE_TYPE = "book-chapter";
 	private static final double AVG_SLEEP_TIME_PER_IP = 7.5;
 	private static final double STDEV = 1.0;
