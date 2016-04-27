@@ -15,19 +15,19 @@ public class BookIdAndChaptersProducer extends DatabaseProducer<BookIdAndChapter
 	private static final String ID_NAME = "`scrape_book_result_element`.`id`";
 	// At least 10 reviews
 	// At least 2 reviews per chapter
-	// At least 5 years old
+	// Author at least 5 years old
 	// Author has at least 10 stories published
 	private static final String RESTRICTED_QUERY = "SELECT"
-			+ " `id` AS `id`,"
-			+ " `ff_book_id` AS `bookId`,"
-			+ " `meta_chapters` AS `metaChapters`"
-			+ " FROM `fanfiction`.`scrape_book_result_element`"
-			+ " WHERE `ff_author_id` IN (SELECT `ff_author_id`"
-				+ " FROM `scrape_book_result_element`"
-				+ " GROUP BY `ff_author_id` HAVING COUNT(`id`) > 10)"
-			+ " AND `meta_date_published` > UNIX_TIMESTAMP(DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -5 YEAR))"
-			+ " AND `meta_reviews` >= 10 "
-			+ " AND `meta_reviews`/`meta_chapters` >= 2";
+			+ "`id` AS `id`,"
+			+ "`ff_book_id` AS `bookId`,"
+			+ "`meta_chapters` AS `metaChapters`"
+			+ "FROM `fanfiction`.`scrape_book_result_element`"
+			+ "WHERE `ff_author_id` IN (SELECT `ff_author_id`"
+				+ "FROM `scrape_book_result_element`"
+				+ "GROUP BY `ff_author_id` HAVING COUNT(`id`) > 10"
+				+ "AND MIN(`meta_date_published`) > UNIX_TIMESTAMP(DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -5 YEAR)))"
+			+ "AND `meta_reviews` >= 10 "
+			+ "AND `meta_reviews`/`meta_chapters` >= 2";
 	
 	public BookIdAndChaptersProducer() {
 		super(ID_NAME, BookIdAndChapters.class, Database.getConnection(), 300, Boot.getLogger());
