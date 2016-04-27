@@ -2,10 +2,10 @@
 Does distributed mentoring have a positive effect on writing ability as demonstrated by several attributes and writing quality?
 
 ## Worklog & Changelist
-### April 13, 2016 ~ April 22, 2016
+### April 11, 2016 ~ April 22, 2016
 ###### Goals
 
-1. Scrape select story content.
+1. Scrape select story content. ✓
 2. (Stretch) Process story content into easy to access metrics.
 3. (Stretch) Process story content using easily implemented [readability tests](https://en.wikipedia.org/wiki/Readability_test).
 
@@ -16,6 +16,7 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
   Due to a bug in the initial processing code, if the genre was omitted from within the metadata, the processing of the number of chapters would fail and default to "-1".
 + Added [Apache HttpComponents](https://hc.apache.org/) to handle multi-ip scraping.
 + Created book chapter scrape process.
++ Successfully ran book chapter scrape process (+6.5GB / +59k rows / ~54hrs)
 
 ###### Technical
 
@@ -23,9 +24,12 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 + Abstracted thread-safe, type-safe database polling into `me.fru1t.util.concurrent/DatabaseProducer.java`.
 + Created `me.fru1t.fanfiction.process/FixMetadataProcess` script to fix `meta_chapters` in `scrape_book_result_element`.
 + Created `me.fru1t.fanfiction.process/ScrapeBookChaptersProcess` to scrape book chapters.
++ Ran `me.fru1t.fanfiction.process/ScrapeBookChaptersProcess` with the following issues:
+  + Wait time calculation was never calculated per ip address used. Fixed by diving total wait time with the number of available IPs.
+  + InvocationTargetException triggered when a possible negative wait time was given. Fixed by `MAX`ing wait times with 200ms.
 
 
-### April 1, 2016 ~ April 8, 2016
+### March 28, 2016 ~ April 8, 2016
 ###### Goals
 
 1. Scrape book list data. ✓
