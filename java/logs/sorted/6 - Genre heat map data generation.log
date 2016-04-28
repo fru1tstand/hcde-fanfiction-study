@@ -1,0 +1,140 @@
+[Thu, 28 Apr 2016 13:19:55 PDT] Running GenreHeatMapValueProcess
+[Thu, 28 Apr 2016 13:19:57 PDT] Added 6896 mappings
+[Thu, 28 Apr 2016 13:19:58 PDT] Added 11164 mappings
+[Thu, 28 Apr 2016 13:19:58 PDT] Added 11792 mappings
+[Thu, 28 Apr 2016 13:19:59 PDT] Added 11774 mappings
+[Thu, 28 Apr 2016 13:19:59 PDT] Added 11906 mappings
+[Thu, 28 Apr 2016 13:20:00 PDT] Added 11640 mappings
+[Thu, 28 Apr 2016 13:20:00 PDT] Added 11736 mappings
+[Thu, 28 Apr 2016 13:20:01 PDT] Added 11646 mappings
+[Thu, 28 Apr 2016 13:20:01 PDT] Added 11764 mappings
+[Thu, 28 Apr 2016 13:20:01 PDT] Added 11448 mappings
+[Thu, 28 Apr 2016 13:20:01 PDT] Processed 100000 rows, between [4217, 2517792], in 6436ms
+[Thu, 28 Apr 2016 13:20:03 PDT] Added 11800 mappings
+[Thu, 28 Apr 2016 13:20:03 PDT] Added 11670 mappings
+[Thu, 28 Apr 2016 13:20:04 PDT] Added 11410 mappings
+[Thu, 28 Apr 2016 13:20:04 PDT] Added 11382 mappings
+[Thu, 28 Apr 2016 13:20:05 PDT] Added 11434 mappings
+[Thu, 28 Apr 2016 13:20:05 PDT] Added 14336 mappings
+[Thu, 28 Apr 2016 13:20:06 PDT] Added 15146 mappings
+[Thu, 28 Apr 2016 13:20:06 PDT] Added 15136 mappings
+[Thu, 28 Apr 2016 13:20:07 PDT] Added 15966 mappings
+[Thu, 28 Apr 2016 13:20:07 PDT] Added 16176 mappings
+[Thu, 28 Apr 2016 13:20:07 PDT] Processed 100000 rows, between [2517801, 4881090], in 5548ms
+[Thu, 28 Apr 2016 13:20:08 PDT] Added 17388 mappings
+[Thu, 28 Apr 2016 13:20:09 PDT] Added 18172 mappings
+[Thu, 28 Apr 2016 13:20:09 PDT] Added 18292 mappings
+[Thu, 28 Apr 2016 13:20:10 PDT] Added 19084 mappings
+[Thu, 28 Apr 2016 13:20:10 PDT] Added 19640 mappings
+[Thu, 28 Apr 2016 13:20:11 PDT] Added 19856 mappings
+[Thu, 28 Apr 2016 13:20:11 PDT] Added 20104 mappings
+[Thu, 28 Apr 2016 13:20:12 PDT] Added 20930 mappings
+[Thu, 28 Apr 2016 13:20:12 PDT] Added 20026 mappings
+[Thu, 28 Apr 2016 13:20:13 PDT] Added 19938 mappings
+[Thu, 28 Apr 2016 13:20:13 PDT] Processed 100000 rows, between [4881103, 7917007], in 5515ms
+[Thu, 28 Apr 2016 13:20:14 PDT] Added 20582 mappings
+[Thu, 28 Apr 2016 13:20:14 PDT] Added 20748 mappings
+[Thu, 28 Apr 2016 13:20:14 PDT] Added 20554 mappings
+[Thu, 28 Apr 2016 13:20:15 PDT] Added 20712 mappings
+[Thu, 28 Apr 2016 13:20:15 PDT] Added 20904 mappings
+[Thu, 28 Apr 2016 13:20:16 PDT] Added 20078 mappings
+[Thu, 28 Apr 2016 13:20:16 PDT] Added 19966 mappings
+[Thu, 28 Apr 2016 13:20:17 PDT] Added 19618 mappings
+[Thu, 28 Apr 2016 13:20:17 PDT] Added 20062 mappings
+[Thu, 28 Apr 2016 13:20:17 PDT] Processed 99154 rows, between [7917015, 11867623], in 4645ms
+[Thu, 28 Apr 2016 13:20:18 PDT] Added 18608 mappings
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+
+
+==============RESULTS=============
+
+
+
+[Thu, 28 Apr 2016 13:20:18 PDT] Baseline:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western
+
+
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 0	1061	324	55	3663	1341	2871	2437	205	3836	324	2008	131	42	13140	182	60	673	707	273	4	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Horror:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 205	612	72	24	435	64	52	32	0	341	72	167	54	59	538	21	18	143	148	271	1	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Spiritual:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 60	186	87	1	141	63	33	64	18	50	87	21	7	42	251	5	0	53	8	127	2	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Romance:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 13140	25148	11924	100	31054	5823	2826	12769	538	46213	11924	2511	607	1971	0	80	251	765	1018	4943	15	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Suspense:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 707	356	85	25	799	99	152	82	148	209	85	305	21	15	1018	11	8	84	0	129	0	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Hurt:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 324	3496	31930	25	1656	5231	154	3727	72	395	0	113	22	219	11924	1	87	82	85	1292	2	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Tragedy:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 273	3876	1292	45	1896	954	122	431	271	278	1292	117	50	392	4943	6	127	51	129	0	0	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Humor:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 3836	994	395	49	3409	3219	896	3973	341	0	395	603	7375	525	46213	52	50	221	209	278	17	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Western:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 4	2	2	0	2	5	0	0	1	17	2	2	7	1	15	0	2	1	0	0	0	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Friendship:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 2437	1312	3727	29	1449	2783	593	0	32	3973	3727	192	37	78	12769	15	64	73	82	431	0	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Sci-Fi:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 182	11	1	1	21	16	97	15	21	52	1	12	2	1	80	0	5	16	11	6	0	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Parody:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 131	123	22	6	148	32	68	37	54	7375	22	31	0	110	607	2	7	18	21	50	7	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Drama:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 3663	8741	1656	84	0	2121	749	1449	435	3409	1656	973	148	427	31054	21	141	354	799	1896	2	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Comfort:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 324	3496	0	25	1656	5231	154	3727	72	395	31930	113	22	219	11924	1	87	82	85	1292	2	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Crime:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 55	48	25	0	84	34	17	29	24	49	25	49	6	7	100	1	1	8	25	45	0	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Fantasy:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 2871	222	154	17	749	338	0	593	52	896	154	301	68	66	2826	97	33	281	152	122	0	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Family:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 1341	2072	5231	34	2121	0	338	2783	64	3219	5231	175	32	104	5823	16	63	92	99	954	5	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Mystery:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 2008	367	113	49	973	175	301	192	167	603	113	0	31	33	2511	12	21	145	305	117	2	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Poetry:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 42	1223	219	7	427	104	66	78	59	525	219	33	110	0	1971	1	42	22	15	392	1	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Angst:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 1061	0	3496	48	8741	2072	222	1312	612	994	3496	367	123	1223	25148	11	186	247	356	3876	2	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
+[Thu, 28 Apr 2016 13:20:18 PDT] Supernatural:
+[Thu, 28 Apr 2016 13:20:18 PDT] Adventure	Angst	Comfort	Crime	Drama	Family	Fantasy	Friendship	Horror	Humor	Hurt	Mystery	Parody	Poetry	Romance	Sci-Fi	Spiritual	Supernatural	Suspense	Tragedy	Western	
+[Thu, 28 Apr 2016 13:20:18 PDT] 673	247	82	8	354	92	281	73	143	221	82	145	18	22	765	16	53	0	84	51	1	
+[Thu, 28 Apr 2016 13:20:18 PDT] 
