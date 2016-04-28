@@ -1,5 +1,6 @@
 # Distributed Mentoring
 Does distributed mentoring have a positive effect on writing ability as demonstrated by several attributes and writing quality?
+[Click here](https://github.com/fru1tstand/hcde-fanfiction-study/archive/master.zip) to download the latest version of this repository (along with the workbooks, source code, etc).
 
 ## Worklog & Changelist
 ### April 25, 2016 ~ April 29, 2016
@@ -9,15 +10,22 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 3. Process story content to analyze with various easy to implement metrics.
   + Word count (per chapter, per sentence).
   + Simple [readability tests](https://en.wikipedia.org/wiki/Readability_test) (per chapter).
-4. Create a comparative spreadsheet (ratings, reviews, chapters, words, etc) of the top 13 sources for each category (-msc)
-5. Create heatmap/spreadsheet for {genres, characters} most paired together
+4. Create a comparative spreadsheet (ratings, reviews, chapters, words, etc) of the top 13 sources for each category (-msc) ✓
+5. Create heatmap/spreadsheet for genres most paired together
 6. (Stretch) Start scraping profile pages
+7. (Stretch) Global metrics for all stories
 
 ###### Overview
-Nothing here yet...
++ Created [Category vs Source Material](https://github.com/fru1tstand/hcde-fanfiction-study/blob/master/spreadsheets/Category%20vs%20Source%20Material.xlsx) spreadsheet.
++ Running the scraper for book chapters process produced an error most likely caused by a drop in internet connection, but has since been restarted.
++ Created processes for generating heatmap data.
 
 ###### Technical
-Nothing here yet...
++ Modified `me.fru1t.fanfiction.process/ScrapeBookChaptersProcess` to continue scraping HP stories
++ Running `ScrapeBookChaptersProcess` on remote server produced `com.mysql.jdbc.exceptions.jdbc4.MySQLNonTransientConnectionException: No operations allowed after connection closed.` after 30 hours of operation.
+  + Process was resumed with backtracking.
++ Created `java/src/me/fru1t/fanfiction/database/schema/scrape/StoryForHeatMapProducer.java` and `java/src/me/fru1t/fanfiction/process/GenreHeatMapValueProcess.java` to generate heatmap data.
+
 
 ### April 11, 2016 ~ April 22, 2016
 ###### Goals

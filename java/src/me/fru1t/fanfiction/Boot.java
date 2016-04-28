@@ -3,7 +3,7 @@ package me.fru1t.fanfiction;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
-import me.fru1t.fanfiction.process.ScrapeBookChaptersProcess;
+import me.fru1t.fanfiction.process.GenreHeatMapValueProcess;
 import me.fru1t.util.Logger;
 
 public class Boot {
@@ -24,7 +24,7 @@ public class Boot {
 		} else {
 			logger.logToFile(LOG_FILE_PREFIX, LOG_FILE_SUFFIX);
 		}
-		(new ScrapeBookChaptersProcess()).run();
+		(new GenreHeatMapValueProcess()).run();
 	}
 	
 	public static Logger getLogger() {
