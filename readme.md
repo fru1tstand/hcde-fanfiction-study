@@ -19,7 +19,7 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 + Created [Category vs Source Material](https://github.com/fru1tstand/hcde-fanfiction-study/blob/master/spreadsheets/Category%20vs%20Source%20Material.xlsx) spreadsheet.
 + Running the scraper for book chapters process produced an error most likely caused by a drop in internet connection, but has since been restarted.
 + Created processes for generating genre heat map data.
-+ Completed process run for genre heat map data generation and created genre heat map.
++ Completed process run for genre heat map data generation and created [genre heat map](https://github.com/fru1tstand/hcde-fanfiction-study/blob/master/spreadsheets/Genre%20Heatmap.xlsx).
 
 ###### Technical
 + Modified `me.fru1t.fanfiction.process/ScrapeBookChaptersProcess` to continue scraping HP stories
