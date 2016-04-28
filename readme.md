@@ -11,7 +11,7 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
   + Word count (per chapter, per sentence).
   + Simple [readability tests](https://en.wikipedia.org/wiki/Readability_test) (per chapter).
 4. Create a comparative spreadsheet (ratings, reviews, chapters, words, etc) of the top 13 sources for each category (-msc) ✓
-5. Create heatmap/spreadsheet for genres most paired together
+5. Create heatmap/spreadsheet for genres most paired together ✓
 6. (Stretch) Start scraping profile pages
 7. (Stretch) Global metrics for all stories
 
@@ -20,6 +20,14 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 + Running the scraper for book chapters process produced an error most likely caused by a drop in internet connection, but has since been restarted.
 + Created processes for generating genre heat map data.
 + Completed process run for genre heat map data generation and created [genre heat map](https://github.com/fru1tstand/hcde-fanfiction-study/blob/master/spreadsheets/Genre%20Heatmap.xlsx).
+
+###### Screenshots
+Genre Heat Map (April 28th, 2016)  
+![alt text](http://i.imgur.com/AfAbwQ2.png "Genre Heatmap")
+
+First 13 Story's Words for all Categories Combined (April 28th, 2016)  
+![alt text](http://i.imgur.com/UOUpukU.png "First 13 Story's Words for all Categories")
+
 
 ###### Technical
 + Modified `me.fru1t.fanfiction.process/ScrapeBookChaptersProcess` to continue scraping HP stories
