@@ -70,6 +70,11 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> {
 		this.rowsProcessedSinceLastFetch = 0;
 	}
 	
+	public DatabaseProducer<T, I> startAt(I id) {
+		this.currentId = id;
+		return this;
+	}
+	
 	/**
 	 * Thread-safely returns the next row from the table, or null if none are left.
 	 * 

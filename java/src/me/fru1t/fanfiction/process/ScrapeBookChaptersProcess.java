@@ -14,7 +14,8 @@ import me.fru1t.web.MultiIPCrawler;
 public class ScrapeBookChaptersProcess implements Runnable {
 	private static final String BOOK_CHAPTER_URL_FMT = "https://www.fanfiction.net/s/%d/%d";
 	private static final String SESSION_NAME =
-			"Harry Potter, English, Account > 5 years old, > 10 reviews, > 2 reviews/chapter, April 26, 2016 - Fix 1";
+			"Harry Potter, English, Account > 5 years old, > 10 reviews, > 2 reviews/chapter, April 26, 2016 - Fix 2";
+	private static final int LAST_ID_FAULT = 120919;
 	private static final String SCRAPE_TYPE = "book-chapter";
 	private static final double AVG_SLEEP_TIME_PER_IP = 7.5;
 	private static final double STDEV = 1.0;
@@ -38,6 +39,7 @@ public class ScrapeBookChaptersProcess implements Runnable {
 		processedBookIds = new HashSet<>();
 		urlsToProcess = new Stack<>();
 		BookIdAndChaptersProducer producer = new BookIdAndChaptersProducer();
+		producer.startAt(LAST_ID_FAULT);
 		
 		BookIdAndChapters book = null;
 		String urlToProcess = null;
@@ -55,8 +57,10 @@ public class ScrapeBookChaptersProcess implements Runnable {
 			}
 			processedBookIds.add(book.bookId);
 			StringBuilder status = new StringBuilder();
-			status.append("Scraping book: " + book.bookId + "; Chapters: "
-					+ book.metaChapters + "; Wait times: ");
+			status.append("id: " + book.id 
+					+ "; bookid: " + book.bookId 
+					+ "; Chapters: " + book.metaChapters 
+					+ "; Wait times: ");
 			
 			for (i = 1; i <= book.metaChapters; i++) {
 				urlsToProcess.add(String.format(BOOK_CHAPTER_URL_FMT, book.bookId, i));
