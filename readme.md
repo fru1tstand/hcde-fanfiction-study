@@ -26,7 +26,7 @@ Genre Heat Map (April 28th, 2016)
 ![alt text](http://i.imgur.com/AfAbwQ2.png "Genre Heatmap")
 
 First 13 Story's Words for all Categories Combined (April 28th, 2016)  
-![alt text](http://i.imgur.com/UOUpukU.png "First 13 Story's Words for all Categories")
+![alt text](http://i.imgur.com/aDLrwHE.png "First 13 Story's Words for all Categories")
 
 
 ###### Technical
