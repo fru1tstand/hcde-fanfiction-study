@@ -13,7 +13,7 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 4. Create a comparative spreadsheet (ratings, reviews, chapters, words, etc) of the top 13 sources for each category (-msc) ✓
 5. Create heatmap/spreadsheet for genres most paired together ✓
 6. (Stretch) Start scraping profile pages
-7. (Stretch) Global metrics for all stories
+7. (Stretch) Global metrics for all stories ✓
 
 ###### Overview
 + Created [Category vs Source Material](https://github.com/fru1tstand/hcde-fanfiction-study/blob/master/spreadsheets/Category%20vs%20Source%20Material.xlsx) spreadsheet.
@@ -27,6 +27,9 @@ Genre Heat Map (April 28th, 2016)
 
 First 13 Story's Words for all Categories Combined (April 28th, 2016)  
 ![alt text](http://i.imgur.com/aDLrwHE.png "First 13 Story's Words for all Categories")
+
+Fandoms per Source per Category  
+![alt text](http://i.imgur.com/ssEOS4o.png "Fandoms per Source per Category")
 
 
 ###### Technical
