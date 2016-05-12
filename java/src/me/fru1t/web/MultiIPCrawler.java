@@ -11,7 +11,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.jdt.annotation.Nullable;
 
-import me.fru1t.fanfiction.Boot;
+import me.fru1t.util.Logger;
 
 public class MultiIPCrawler {
 	private static final String[] USER_AGENTS = {
@@ -34,8 +34,9 @@ public class MultiIPCrawler {
 	
 	private byte[][] ips;
 	private int currentPointer;
+	private Logger logger;
 	
-	public MultiIPCrawler(byte[]... ips) {
+	public MultiIPCrawler(Logger logger, byte[]... ips) {
 		if (ips.length < 1) {
 			throw new RuntimeException("Must have 1 or more IPs specified");
 		}
@@ -66,7 +67,7 @@ public class MultiIPCrawler {
 			return EntityUtils.toString(response.getEntity());
 			
 		} catch (IOException e) {
-			Boot.getLogger().log(e);
+			logger.log(e);
 		}
 		
 		return null;

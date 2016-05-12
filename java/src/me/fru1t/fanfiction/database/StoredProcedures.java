@@ -79,6 +79,7 @@ public class StoredProcedures {
 			stmt.setInt(2, currentTime); // 2 scrape_date INT(10)
 			stmt.setString(3, url); // 3 url VARCHAR(255)
 			stmt.setString(4, content); // 4 content MEDIUMTEXT
+			stmt.execute();
 		} catch (SQLException e) {
 			Boot.getLogger().log(e);
 		}

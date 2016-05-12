@@ -9,7 +9,7 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 2. Process story content to analyze with various easy to implement metrics.
   + Word count (per chapter, per sentence).
   + Simple [readability tests](https://en.wikipedia.org/wiki/Readability_test) (per chapter).
-3. Scrape top 100 stories (ordered by number of reviews) for top 13 fandoms (ordered by number of stories) for all categories (excluding msc).
+3. Scrape top 100 stories (ordered by number of reviews) for top 13 fandoms (ordered by number of stories) for all categories (excluding msc). ✓
 4. Create heatmap of genres from the 100 stories for every fandom.
 5. (Stretch) Create compiled tool on server for scrape jobs (server/client GUI tool).
 
@@ -23,12 +23,16 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 + Integrated new database structure into back end.
   + Organized database-interacting code files better.
   + Deprecated all DatabaseProducer and Processes (I'm deferring the fixing of these files until they're used again).
++ Created process to scrape top 100 stories.
+  + Successfully ran with 680 book list pages from 136 fandom pages scraped.
 
 ###### Technical
 + Removed all old tables for shorter, cleaner names: `category`, `character`, `fandom`, `genre`, `language`, `process_list_scrape_to_story`, `rating`, `scrape`, `session`, `story`, `story_character`, `story_genre`, `user`
 + Added insfet functions for `category`, `character`, `fandom`, `genre`, `language`, `rating`, `session`, `user`.
 + Re-added insert usps `add_character_to_story`, `add_genre_to_story`, `add_scrape`, `process_list_scrape_to_story`.
 + `usp_scrape_add_processed_book_result_element` replaced with `process_list_scrape_to_story` which more rigorously checks and keeps the most up-to-date information.
++ `ScrapeBookPageFromCategoriesProcess` used for the 100 stories from 13 fandoms on all categories.
+
 
 ### April 25, 2016 ~ April 29, 2016
 ###### Goals
