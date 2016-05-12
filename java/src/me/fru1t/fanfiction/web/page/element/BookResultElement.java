@@ -197,36 +197,36 @@ public class BookResultElement {
 	
 	// Direct element values
 	public Element element;
-	public String realBookName;
+	public String fandom;
 	public String bookTitle;
 	public String bookUrl;
 	public String coverImageUrl;
 	public String coverImageOriginalUrl;
-	public String author;
+	public String user_name;
 	public String authorUrl;
 	public String synopsis;
 	public String metadata;
 	
 	// Processed values
-	public int ffAuthorId;
+	public int ffUserId;
 	public int ffBookId;
 	public Metadata processedMetadata;
 	
 	public boolean didSuccessfullyParse;
 	
-	public BookResultElement(String realBookName, Element result) {
-		this.realBookName = realBookName;
+	public BookResultElement(String fandom, Element result) {
+		this.fandom = fandom;
 		this.didSuccessfullyParse = false;
 		this.element = result;
 		this.bookTitle = "";
 		this.bookUrl = "";
 		this.coverImageUrl = "";
 		this.coverImageOriginalUrl = "";
-		this.author = "";
+		this.user_name = "";
 		this.authorUrl = "";
 		this.synopsis = "";
 		this.metadata = "";
-		this.ffAuthorId = -1;
+		this.ffUserId = -1;
 		this.ffBookId = -1;
 		
 		try {
@@ -240,7 +240,7 @@ public class BookResultElement {
 			this.coverImageOriginalUrl = coverImage.attr("data-original");
 			
 			Element author = result.select(AUTHOR_SELECTOR).get(0);
-			this.author = author.ownText();
+			this.user_name = author.ownText();
 			this.authorUrl = author.attr("href");
 			
 			this.synopsis = result.select(SYNOPSIS_SELECTOR).get(0).ownText();
@@ -250,7 +250,7 @@ public class BookResultElement {
 			Matcher bookIdMatcher = BOOK_ID_LINK_PATTERN.matcher(bookUrl);
 			authorIdMatcher.matches();
 			bookIdMatcher.matches();
-			this.ffAuthorId = Integer.parseInt(authorIdMatcher.group(1));
+			this.ffUserId = Integer.parseInt(authorIdMatcher.group(1));
 			this.ffBookId = Integer.parseInt(bookIdMatcher.group(1));
 			
 			// Metadata

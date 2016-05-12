@@ -3,9 +3,36 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 [Click here](https://github.com/fru1tstand/hcde-fanfiction-study/archive/master.zip) to download the latest version of this repository (along with the workbooks, source code, etc).
 
 ## Worklog & Changelist
+### May 2, 2016 ~ May 12, 2016
+###### Goals
+1. Extract story content from raw scrape data.
+2. Process story content to analyze with various easy to implement metrics.
+  + Word count (per chapter, per sentence).
+  + Simple [readability tests](https://en.wikipedia.org/wiki/Readability_test) (per chapter).
+3. Scrape top 100 stories (ordered by number of reviews) for top 13 fandoms (ordered by number of stories) for all categories (excluding msc).
+4. Create heatmap of genres from the 100 stories for every fandom.
+5. (Stretch) Create compiled tool on server for scrape jobs (server/client GUI tool).
+
+###### Overview
++ Freak accident week -- Hooray... Hard drive with database crashes and remains unreadable.
++ Database structure recovered (with no data) on new hard drive.
+  + Simplified relationships and removed many circular references.
+  + Normalized all tables.
+  + Created insert or fetch (insfet) functions for all look up tables (LUTs).
+  + Created more rugged stored procedures for inserting data.
++ Integrated new database structure into back end.
+  + Organized database-interacting code files better.
+  + Deprecated all DatabaseProducer and Processes (I'm deferring the fixing of these files until they're used again).
+
+###### Technical
++ Removed all old tables for shorter, cleaner names: `category`, `character`, `fandom`, `genre`, `language`, `process_list_scrape_to_story`, `rating`, `scrape`, `session`, `story`, `story_character`, `story_genre`, `user`
++ Added insfet functions for `category`, `character`, `fandom`, `genre`, `language`, `rating`, `session`, `user`.
++ Re-added insert usps `add_character_to_story`, `add_genre_to_story`, `add_scrape`, `process_list_scrape_to_story`.
++ `usp_scrape_add_processed_book_result_element` replaced with `process_list_scrape_to_story` which more rigorously checks and keeps the most up-to-date information.
+
 ### April 25, 2016 ~ April 29, 2016
 ###### Goals
-1. (Potentially) Scrape more Harry Potter stories.
+1. (Potentially) Scrape more Harry Potter stories. ✓
 2. Extract story content from raw scrape data.
 3. Process story content to analyze with various easy to implement metrics.
   + Word count (per chapter, per sentence).
@@ -30,7 +57,6 @@ First 13 Story's Words for all Categories Combined (April 28th, 2016)
 
 Fandoms per Source per Category  
 ![alt text](http://i.imgur.com/ssEOS4o.png "Fandoms per Source per Category")
-
 
 ###### Technical
 + Modified `me.fru1t.fanfiction.process/ScrapeBookChaptersProcess` to continue scraping HP stories

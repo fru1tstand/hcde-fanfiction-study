@@ -10,8 +10,8 @@ import java.util.regex.Pattern;
 
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.Database;
-import me.fru1t.fanfiction.database.schema.scrape.MetadataFixScrapeProducer;
-import me.fru1t.fanfiction.database.schema.scrape.MetadataFixScrapeProducer.MetadataScrape;
+import me.fru1t.fanfiction.database.producers.MetadataFixScrapeProducer;
+import me.fru1t.fanfiction.database.producers.MetadataFixScrapeProducer.MetadataScrape;
 
 public class FixMetadataProcess implements Runnable {
 	private static final String UPDATE_QUERY =

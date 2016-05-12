@@ -6,17 +6,19 @@ import java.util.Set;
 import java.util.Stack;
 
 import me.fru1t.fanfiction.Boot;
-import me.fru1t.fanfiction.database.schema.Scrape;
-import me.fru1t.fanfiction.database.schema.scrape.BookIdAndChaptersProducer;
-import me.fru1t.fanfiction.database.schema.scrape.BookIdAndChaptersProducer.BookIdAndChapters;
-import me.fru1t.web.MultiIPCrawler;
+import me.fru1t.fanfiction.database.producers.BookIdAndChaptersProducer;
+import me.fru1t.fanfiction.database.producers.BookIdAndChaptersProducer.BookIdAndChapters;
 
+/**
+ * Fix before use
+ * @deprecated
+ */
 public class ScrapeBookChaptersProcess implements Runnable {
 	private static final String BOOK_CHAPTER_URL_FMT = "https://www.fanfiction.net/s/%d/%d";
 	private static final String SESSION_NAME =
 			"Harry Potter, English, Account > 5 years old, > 10 reviews, > 2 reviews/chapter, April 26, 2016 - Fix 2";
 	private static final int LAST_ID_FAULT = 120919;
-	private static final String SCRAPE_TYPE = "book-chapter";
+//	private static final String SCRAPE_TYPE = "book-chapter";
 	private static final double AVG_SLEEP_TIME_PER_IP = 7.5;
 	private static final double STDEV = 1.0;
 	private static final byte[][] ips = {
@@ -34,7 +36,7 @@ public class ScrapeBookChaptersProcess implements Runnable {
 	@Override
 	public void run() {
 		Boot.getLogger().log("Running ScrapeBookChaptersProcess with Session Name " + SESSION_NAME);
-		MultiIPCrawler crawler = new MultiIPCrawler(ips);
+//		MultiIPCrawler crawler = new MultiIPCrawler(ips);
 		Random rand = new Random();
 		processedBookIds = new HashSet<>();
 		urlsToProcess = new Stack<>();
@@ -42,7 +44,7 @@ public class ScrapeBookChaptersProcess implements Runnable {
 		producer.startAt(LAST_ID_FAULT);
 		
 		BookIdAndChapters book = null;
-		String urlToProcess = null;
+//		String urlToProcess = null;
 		int i = 0;
 		int waitTime = 0;
 		while (true) {
@@ -66,9 +68,9 @@ public class ScrapeBookChaptersProcess implements Runnable {
 				urlsToProcess.add(String.format(BOOK_CHAPTER_URL_FMT, book.bookId, i));
 			}
 			while (!urlsToProcess.isEmpty()) {
-				urlToProcess = urlsToProcess.pop();
-				Scrape.insertRaw(SESSION_NAME, SCRAPE_TYPE,
-						urlToProcess, crawler.getContents(urlToProcess));
+//				urlToProcess = urlsToProcess.pop();
+//				Scrape.insertRaw(SESSION_NAME, SCRAPE_TYPE,
+//						urlToProcess, crawler.getContents(urlToProcess));
 				try {
 					waitTime = Math.max(0, 
 							(int) ((rand.nextGaussian() * STDEV 

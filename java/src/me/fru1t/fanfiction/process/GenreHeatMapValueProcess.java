@@ -11,8 +11,8 @@ import java.util.TreeMap;
 
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.Database;
-import me.fru1t.fanfiction.database.schema.scrape.StoryForHeatMapProducer;
-import me.fru1t.fanfiction.database.schema.scrape.StoryForHeatMapProducer.Story;
+import me.fru1t.fanfiction.database.producers.StoryForHeatMapProducer;
+import me.fru1t.fanfiction.database.producers.StoryForHeatMapProducer.Story;
 
 /**
  * This process iterates over all entries in the scrape_book_result_ff_genre table to make a map

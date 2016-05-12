@@ -1,10 +1,9 @@
-package me.fru1t.fanfiction.database.schema.scrape;
+package me.fru1t.fanfiction.database.producers;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.Database;
-import me.fru1t.fanfiction.database.schema.Scrape;
 import me.fru1t.util.concurrent.DatabaseProducer;
 
 /**
@@ -17,25 +16,46 @@ import me.fru1t.util.concurrent.DatabaseProducer;
  * 
  * TODO (1): Add filtering by scrape_type in BufferedRawScrapeProducer
  */
-public class RawScrapeProducer extends DatabaseProducer<Scrape.ScrapeRaw, Integer> {
+public class RawScrapeProducer extends DatabaseProducer<RawScrapeProducer.Scrape, Integer> {
+	/**
+	 * Represents the scrape_raw table in the fanfiction database.
+	 */
+	public static class Scrape extends DatabaseProducer.Row<Integer> {
+		public static final String COLUMN_SESSION_ID = "sessionId";
+		public static final String COLUMN_DATE = "date";
+		public static final String COLUMN_URL = "url";
+		public static final String COLUMN_CONTENT = "content";
+		
+		/** scrape_session_id INT(11) */
+		public int sessionId;
+		
+		/** date INT(10) */
+		public int date;
+		
+		/** url VARCHAR(255) */
+		public String url;
+		
+		/** content MEDIUMTEXT*/
+		public String content;
+	}
+	
 	private static final int BUFFER_SIZE = 50;
 	private static final String ID_NAME = "`scrape_raw`.`id`";
 	private static final String QUERY_BASE =
 			"SELECT"
-			+ " `scrape_raw`.`id` AS `" + Scrape.ScrapeRaw.COLUMN_ID
-			+ "`, `scrape_raw`.`scrape_session_id` AS `" + Scrape.ScrapeRaw.COLUMN_SCRAPE_SESSION_ID
-			+ "`, `scrape_raw`.`date` AS `" + Scrape.ScrapeRaw.COLUMN_DATE
-			+ "`, `scrape_raw`.`url` AS `" + Scrape.ScrapeRaw.COLUMN_URL
-			+ "`, `scrape_raw`.`content` AS `" + Scrape.ScrapeRaw.COLUMN_CONTENT
-			+ "`, `scrape_raw`.`scrape_Type_id` AS `" + Scrape.ScrapeRaw.COLUMN_SCRAPE_TYPE_ID
-			+ "` FROM `scrape_raw` ";
+			+ " `scrape`.`id` AS `" + Scrape.COLUMN_ID
+			+ "`, `scrape`.`session_id` AS `" + Scrape.COLUMN_SESSION_ID
+			+ "`, `scrape`.`date` AS `" + Scrape.COLUMN_DATE
+			+ "`, `scrape`.`url` AS `" + Scrape.COLUMN_URL
+			+ "`, `scrape`.`content` AS `" + Scrape.COLUMN_CONTENT
+			+ "` FROM `scrape` ";
 	private static final String QUERY_SESSION_NAME_JOIN =
-			"INNER JOIN scrape_session ON scrape_session.id = scrape_raw.scrape_session_id ";
+			"INNER JOIN `session` ON `session`.`id` = `scrape`.`session_id` ";
 	private static final String QUERY_WHERE = "WHERE 1 = 1 ";
 	
-	private static final String FMT_QUERY_SESSION_NAMES = "AND `scrape_session`.`name` IN ('%s') ";
-	private static final String FMT_QUERY_LOWER_BOUND = "AND `scrape_raw`.`id` > %d ";
-	private static final String FMT_QUERY_UPPER_BOUND = "AND `scrape_raw`.`id` < %d ";
+	private static final String FMT_QUERY_SESSION_NAMES = "AND `session`.`name` IN ('%s') ";
+	private static final String FMT_QUERY_LOWER_BOUND = "AND `scrape`.`id` > %d ";
+	private static final String FMT_QUERY_UPPER_BOUND = "AND `scrape`.`id` < %d ";
 	
 	private static final int DEFAULT_BOUND_VALUE = -1;
 	@Nullable
@@ -64,7 +84,7 @@ public class RawScrapeProducer extends DatabaseProducer<Scrape.ScrapeRaw, Intege
 			int lowerIdBound,
 			int upperIdBound,
 			@Nullable String[] sessionNames) {
-		super(ID_NAME, Scrape.ScrapeRaw.class, Database.getConnection(),
+		super(ID_NAME, Scrape.class, Database.getConnection(),
 				BUFFER_SIZE, Boot.getLogger());
 		this.lowerIdBound = (lowerIdBound < 0) ? -1 : lowerIdBound;
 		this.upperIdBound = (upperIdBound < 0) ? -1 : upperIdBound;

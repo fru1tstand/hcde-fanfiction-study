@@ -1,9 +1,13 @@
-package me.fru1t.fanfiction.database.schema.scrape;
+package me.fru1t.fanfiction.database.producers;
 
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.Database;
 import me.fru1t.util.concurrent.DatabaseProducer;
 
+/**
+ * Fix before use.
+ * @deprecated 
+ */
 public class MetadataFixScrapeProducer extends DatabaseProducer<MetadataFixScrapeProducer.MetadataScrape, Integer> {
 	public static class MetadataScrape extends DatabaseProducer.Row<Integer> {
 		public static final String COLUMN_METADATA = "metadata";

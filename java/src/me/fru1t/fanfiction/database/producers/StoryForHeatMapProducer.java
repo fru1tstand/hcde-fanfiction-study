@@ -1,10 +1,14 @@
-package me.fru1t.fanfiction.database.schema.scrape;
+package me.fru1t.fanfiction.database.producers;
 
 import java.sql.Connection;
 
 import me.fru1t.util.Logger;
 import me.fru1t.util.concurrent.DatabaseProducer;
 
+/**
+ * TODO: Fix before use.
+ * @deprecated
+ */
 public class StoryForHeatMapProducer extends DatabaseProducer<StoryForHeatMapProducer.Story, Integer> {
 	public static class Story extends DatabaseProducer.Row<Integer> {}
 	
