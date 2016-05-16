@@ -1,5 +1,10 @@
 package me.fru1t.fanfiction.database.producers;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import org.eclipse.jdt.annotation.Nullable;
 
 import me.fru1t.fanfiction.Boot;
@@ -13,10 +18,8 @@ import me.fru1t.util.concurrent.DatabaseProducer;
  * manner to allow multi-threaded processing.
  * 
  * This provider will always return scrapes from oldest to newest (lowest id to highest).
- * 
- * TODO (1): Add filtering by scrape_type in BufferedRawScrapeProducer
  */
-public class RawScrapeProducer extends DatabaseProducer<RawScrapeProducer.Scrape, Integer> {
+public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Integer> {
 	/**
 	 * Represents the scrape_raw table in the fanfiction database.
 	 */
@@ -40,22 +43,24 @@ public class RawScrapeProducer extends DatabaseProducer<RawScrapeProducer.Scrape
 	}
 	
 	private static final int BUFFER_SIZE = 50;
-	private static final String ID_NAME = "`scrape_raw`.`id`";
+	private static final String ID_NAME = "`scrape`.`id`";
 	private static final String QUERY_BASE =
 			"SELECT"
-			+ " `scrape`.`id` AS `" + Scrape.COLUMN_ID
-			+ "`, `scrape`.`session_id` AS `" + Scrape.COLUMN_SESSION_ID
-			+ "`, `scrape`.`date` AS `" + Scrape.COLUMN_DATE
-			+ "`, `scrape`.`url` AS `" + Scrape.COLUMN_URL
-			+ "`, `scrape`.`content` AS `" + Scrape.COLUMN_CONTENT
-			+ "` FROM `scrape` ";
-	private static final String QUERY_SESSION_NAME_JOIN =
-			"INNER JOIN `session` ON `session`.`id` = `scrape`.`session_id` ";
-	private static final String QUERY_WHERE = "WHERE 1 = 1 ";
+			+ " `id` AS `" + Scrape.COLUMN_ID
+			+ "`, `session_id` AS `" + Scrape.COLUMN_SESSION_ID
+			+ "`, `date` AS `" + Scrape.COLUMN_DATE
+			+ "`, `url` AS `" + Scrape.COLUMN_URL
+			+ "`, `content` AS `" + Scrape.COLUMN_CONTENT
+			+ "` FROM `scrape` "
+			+ "WHERE 1 = 1 ";
 	
-	private static final String FMT_QUERY_SESSION_NAMES = "AND `session`.`name` IN ('%s') ";
 	private static final String FMT_QUERY_LOWER_BOUND = "AND `scrape`.`id` > %d ";
 	private static final String FMT_QUERY_UPPER_BOUND = "AND `scrape`.`id` < %d ";
+	
+	private static final String SESSION_QUERY_BASE_FMT =
+			"SELECT `id` FROM `session` WHERE `name` IN ('%s')";
+	private static final String SESSION_RESTRICT_FMT = "AND (%s) ";
+	private static final String SESSION_RESTRICT_PART_FMT = "`session_id` = %d";
 	
 	private static final int DEFAULT_BOUND_VALUE = -1;
 	@Nullable
@@ -64,6 +69,7 @@ public class RawScrapeProducer extends DatabaseProducer<RawScrapeProducer.Scrape
 	private int lowerIdBound;
 	private int upperIdBound;
 	private String[] sessionNames;
+	private String sessionIdSql;
 	
 	/**
 	 * Creates a new provider that only returns scrapes between the given range and belong to 
@@ -80,7 +86,7 @@ public class RawScrapeProducer extends DatabaseProducer<RawScrapeProducer.Scrape
 	 * @param sessionNames The sessions with which scrapes should be included from. Set to an
 	 * empty array to include all.
 	 */
-	public RawScrapeProducer(
+	public ScrapeProducer(
 			int lowerIdBound,
 			int upperIdBound,
 			@Nullable String[] sessionNames) {
@@ -91,7 +97,9 @@ public class RawScrapeProducer extends DatabaseProducer<RawScrapeProducer.Scrape
 		
 		// Sanitize session names
 		this.sessionNames = DEFAULT_SCRAPE_SESSIONS;
+		this.sessionIdSql = "";
 		if (sessionNames != null) {
+			// Set sessionNames field
 			this.sessionNames = new String[sessionNames.length];
 			for (int i = 0; i < sessionNames.length; i++) {
 				String s = sessionNames[i];
@@ -99,6 +107,25 @@ public class RawScrapeProducer extends DatabaseProducer<RawScrapeProducer.Scrape
 					this.sessionNames[i] = s.replaceAll("'", "\\'");
 				}
 			}
+			
+			// Fetch sessionids
+			String[] sessionParts = new String[sessionNames.length];
+			try {
+				Connection c = Database.getConnection();
+				String getSessionIdsQuery =
+						String.format(SESSION_QUERY_BASE_FMT, String.join("','", this.sessionNames));
+				PreparedStatement stmt = c.prepareStatement(getSessionIdsQuery);
+				ResultSet result = stmt.executeQuery();
+				int i = 0;
+				while (result.next()) {
+					sessionParts[i] = String.format(SESSION_RESTRICT_PART_FMT, result.getInt(1));
+					i++;
+				}
+			} catch (SQLException e) {
+				Boot.getLogger().log(e);
+				throw new RuntimeException(e);
+			}
+			this.sessionIdSql = String.format(SESSION_RESTRICT_FMT, String.join(" OR ", sessionParts));
 		}
 	}
 	
@@ -107,14 +134,14 @@ public class RawScrapeProducer extends DatabaseProducer<RawScrapeProducer.Scrape
 	 * 
 	 * @param sessionNames
 	 */
-	public RawScrapeProducer(@Nullable String... sessionNames) {
+	public ScrapeProducer(@Nullable String... sessionNames) {
 		this(DEFAULT_BOUND_VALUE, DEFAULT_BOUND_VALUE, sessionNames);
 	}
 	
 	/**
 	 * Creates a new provider that targets all scrapes from the database.
 	 */
-	public RawScrapeProducer() {
+	public ScrapeProducer() {
 		this(DEFAULT_BOUND_VALUE, DEFAULT_BOUND_VALUE, DEFAULT_SCRAPE_SESSIONS);
 	}
 	
@@ -122,15 +149,10 @@ public class RawScrapeProducer extends DatabaseProducer<RawScrapeProducer.Scrape
 	protected String getUnboundedQuery() {
 		// SELECT...FROM...JOIN
 		String query = QUERY_BASE;
-		if (sessionNames.length != 0) {
-			query += QUERY_SESSION_NAME_JOIN;
-		}
 		
 		// ...WHERE...
-		query += QUERY_WHERE;
-		if (sessionNames.length != 0) {
-			query += String.format(FMT_QUERY_SESSION_NAMES, String.join("', '", sessionNames));
-		}
+		query += this.sessionIdSql;
+		
 		if (upperIdBound != DEFAULT_BOUND_VALUE) {
 			query += String.format(FMT_QUERY_UPPER_BOUND, upperIdBound);
 		}

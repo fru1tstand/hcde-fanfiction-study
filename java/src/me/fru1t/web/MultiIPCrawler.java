@@ -2,6 +2,8 @@ package me.fru1t.web;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Date;
+import java.util.Random;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -12,7 +14,11 @@ import org.apache.http.util.EntityUtils;
 import org.eclipse.jdt.annotation.Nullable;
 
 import me.fru1t.util.Logger;
+import me.fru1t.util.ThreadUtils;
 
+/**
+ * A simple crawler that uses multiple IP addresses.
+ */
 public class MultiIPCrawler {
 	private static final String[] USER_AGENTS = {
 			"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1",
@@ -35,24 +41,44 @@ public class MultiIPCrawler {
 	private byte[][] ips;
 	private int currentPointer;
 	private Logger logger;
+	private int ipRestPeriodInMs;
+	private int lastGetTime;
+	private Random rand;
 	
-	public MultiIPCrawler(Logger logger, byte[]... ips) {
+	public MultiIPCrawler(Logger logger, int ipRestPeriodInMs, byte[]... ips) {
 		if (ips.length < 1) {
 			throw new RuntimeException("Must have 1 or more IPs specified");
 		}
 		
+		this.rand = new Random();
+		this.lastGetTime = 0;
 		this.ips = ips;
+		this.ipRestPeriodInMs = ipRestPeriodInMs;
 		this.currentPointer = 0;
+		this.logger = logger;
 	}
 	
 	/**
-	 * Retrieves the data returned by the server.
+	 * Retrieves the data returned by the server. Ensures the IP isn't flooded with requests.
 	 * 
 	 * @param url
 	 * @return
+	 * @throws InterruptedException 
 	 */
 	@Nullable
-	public String getContents(String url) {
+	public synchronized String getContents(String url) throws InterruptedException {
+		// See if we need to wait between crawls
+		int currentTime = (int) ((new Date()).getTime() / 1000);
+		int waitTime = (int) (
+				(ipRestPeriodInMs / ips.length) // Default rest time
+				- (currentTime - lastGetTime) // - Time elapsed
+				+ (rand.nextGaussian() * 100)); // + Some random time
+		if (waitTime > 0) {
+			ThreadUtils.waitGauss(waitTime);
+		}
+
+		CloseableHttpClient client = null;
+		CloseableHttpResponse response = null;
 		try {
 			RequestConfig config = RequestConfig.custom()
 					.setLocalAddress(InetAddress.getByAddress(ips[currentPointer++]))
@@ -62,15 +88,34 @@ public class MultiIPCrawler {
 			get.setConfig(config);
 			get.setHeader("user-agent", getRandomUserAgent());
 			
-			CloseableHttpClient client = HttpClients.createDefault();
-			CloseableHttpResponse response = client.execute(get);
+			client = HttpClients.createDefault();
+			response = client.execute(get);
 			return EntityUtils.toString(response.getEntity());
-			
 		} catch (IOException e) {
 			logger.log(e);
+		} finally {
+				try {
+					if (client != null) client.close();
+				} catch (IOException e) {
+					logger.log(e, "MultiIpCrawler couldn't close client due to...");
+				}
+				try {
+					if (response != null) response.close();
+				} catch (IOException e) {
+					logger.log(e, "MultiIpCrawler couldn't close response due to...");
+				}
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Returns the number of ips this crawler has.
+	 * 
+	 * @return
+	 */
+	public int getIpCount() {
+		return ips.length;
 	}
 	
 	private static String getRandomUserAgent() {

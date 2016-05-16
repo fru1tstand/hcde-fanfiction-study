@@ -1,15 +1,8 @@
-CREATE TABLE `fanfiction`.`story_genre` (
-  `story_id` INT(11) NOT NULL COMMENT '',
-  `genre_id` INT NOT NULL COMMENT '',
-  PRIMARY KEY (`story_id`, `genre_id`)  COMMENT '',
-  INDEX `fk_story_genre_genre_idx` (`genre_id` ASC)  COMMENT '',
-  CONSTRAINT `fk_story_genre_story`
-    FOREIGN KEY (`story_id`)
-    REFERENCES `fanfiction`.`story` (`id`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_story_genre_genre`
-    FOREIGN KEY (`genre_id`)
-    REFERENCES `fanfiction`.`genre` (`id`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE);
+CREATE TABLE `story_genre` (
+   `story_id` int(11) NOT NULL,
+   `genre_id` int(11) NOT NULL,
+   KEY `fk_story_genre_story_idx` (`story_id`),
+   KEY `fk_story_genre_genre_idx` (`genre_id`),
+   CONSTRAINT `fk_story_genre_genre` FOREIGN KEY (`genre_id`) REFERENCES `genre` (`id`) ON UPDATE CASCADE,
+   CONSTRAINT `fk_story_genre_story` FOREIGN KEY (`story_id`) REFERENCES `story` (`id`) ON UPDATE CASCADE
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8

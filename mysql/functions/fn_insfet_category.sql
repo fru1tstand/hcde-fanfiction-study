@@ -3,17 +3,15 @@ DROP function IF EXISTS `fn_insfet_category`;
 
 DELIMITER $$
 USE `fanfiction`$$
-CREATE FUNCTION `fn_insfet_category` (name VARCHAR(128))
-RETURNS INTEGER
+CREATE DEFINER=`root`@`localhost` FUNCTION `fn_insfet_category`(in_category_name VARCHAR(128)) RETURNS int(11)
 BEGIN
-	DECLARE ret_id INT DEFAULT (SELECT `id` FROM `category` WHERE `category`.`name` = name);
-    IF (ret_id IS NULL) THEN
-		INSERT INTO `category` (`name`) VALUES (name);
+	DECLARE v_category_id INT DEFAULT (SELECT `id` FROM `category` WHERE `category`.`name` = in_category_name);
+    IF (v_category_id IS NULL) THEN
+		INSERT INTO `category` (`name`) VALUES (in_category_name);
         RETURN LAST_INSERT_ID();
     END IF;
-    RETURN ret_id;
-END
-$$
+    RETURN v_category_id;
+END$$
 
 DELIMITER ;
 

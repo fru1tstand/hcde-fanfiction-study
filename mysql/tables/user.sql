@@ -1,6 +1,9 @@
-CREATE TABLE `fanfiction`.`user` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT COMMENT '',
-  `ff_id` INT NOT NULL COMMENT '',
-  `name` VARCHAR(128) NOT NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
-  UNIQUE INDEX `ff_id_UNIQUE` (`ff_id` ASC)  COMMENT '');
+CREATE TABLE `user` (
+   `id` int(11) NOT NULL AUTO_INCREMENT,
+   `ff_id` int(11) NOT NULL,
+   `name` varchar(128) NOT NULL,
+   PRIMARY KEY (`id`),
+   UNIQUE KEY `ff_id_UNIQUE` (`ff_id`),
+   KEY `ix_name` (`name`),
+   KEY `ix_ff_id` (`ff_id`)
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8

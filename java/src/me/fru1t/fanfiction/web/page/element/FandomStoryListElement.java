@@ -10,8 +10,9 @@ import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 import me.fru1t.fanfiction.Boot;
+import me.fru1t.util.Preconditions;
 
-public class BookResultElement {
+public class FandomStoryListElement {
 	public static class Metadata {
 		private static final boolean LOG_COMPONENT_IGNORES = true;
 		
@@ -19,7 +20,7 @@ public class BookResultElement {
 		private static final Pattern NUMBER_SANITIZATION_PATTERN =
 				Pattern.compile("[^0-9]");
 		private static final Pattern COMPONENT_KEY_VALUE_PATTERN =
-				Pattern.compile("(\\w+): ([a-zA-Z0-9,+]+)");
+				Pattern.compile("(\\w+): ([a-zA-Z0-9/,+]+)");
 		private static final Pattern CHARACTER_MATCH_PATTERN =
 				Pattern.compile("(\\w[^,\\[\\]]+)");
 		
@@ -32,8 +33,12 @@ public class BookResultElement {
 		private static final int RATING_INDEX = 0;
 		private static final int LANGUAGE_INDEX = 1;
 		private static final int GENRE_INDEX = 2;
-		private static final int FIRST_NON_STATIC_INDEX = 3;
+		private static final int CHAPTERS_INDEX_WITHOUT_GENRES = 2;
+		private static final int CHAPTERS_INDEX_WITH_GENRES = 3;
 		
+		// Chapters - words - reviews - favs - follows
+		private static final int STATIC_METADATA_COUNT = 5;
+
 		// Prefixes (these are optionally included)
 		private static final String RATING_PREFIX = "Rated";
 		private static final String CHAPTERS_PREFIX = "Chapters";
@@ -41,6 +46,8 @@ public class BookResultElement {
 		private static final String REVIEWS_PREFIX = "Reviews";
 		private static final String FAVORITES_PREFIX = "Favs";
 		private static final String FOLLOWERS_PREFIX = "Follows";
+		private static final String UPDATED_PREFIX = "Updated";
+		private static final String PUBLISHED_PREFIX = "Published";
 		
 		// Date processing
 		private static final String DATES_SELECTOR = "span";
@@ -69,34 +76,40 @@ public class BookResultElement {
 			this.rating = "";
 			this.language = "";
 			this.genres = new String[0];
-			this.chapters = -1;
-			this.words = -1;
-			this.reviews = -1;
-			this.favorites = -1;
-			this.followers = -1;
+			this.chapters = 0;
+			this.words = 0;
+			this.reviews = 0;
+			this.favorites = 0;
+			this.followers = 0;
 			this.datePublished = -1;
 			this.dateUpdated = -1;
 			this.characters = new ArrayList<>();
 			this.isComplete = false;
 			
-			int firstNonStaticIndex = FIRST_NON_STATIC_INDEX;
 			String[] components = metadata.text().split(COMPONENTS_DELIMETER);
+			
+			// Rating and language always exist
 			processComponent(components[RATING_INDEX]);
 			this.language = components[LANGUAGE_INDEX];
-			if (components[GENRE_INDEX].contains(CHAPTERS_PREFIX)) {
+			
+			// Check if genres exist
+			int chaptersIndex = CHAPTERS_INDEX_WITHOUT_GENRES;
+			if (!components[GENRE_INDEX].contains(CHAPTERS_PREFIX)) {
 				this.genres = components[GENRE_INDEX].split(GENRES_DELIMETER);
-				firstNonStaticIndex--;
+				chaptersIndex = CHAPTERS_INDEX_WITH_GENRES;
 			}
 			
-			for (int i = firstNonStaticIndex; i < components.length; i++) {
-				processComponent(components[i]);
+			// Process the [up to] 5 static metadata objects
+			for (int i = chaptersIndex; i < chaptersIndex + STATIC_METADATA_COUNT; i++) {
+				if (!processComponent(components[i])) {
+					break;
+				}
 			}
 			
 			// Date parsing
-			// Published date will always appear, but update date is optional. Components that
-			// appear after dates are all optional and include: characters and completion.
+			// Published date will always appear, but update date is optional.
 			Elements dateElements = metadata.select(DATES_SELECTOR);
-			if (dateElements.size() < 1 || dateElements.size() > 2) {
+			if (!Preconditions.isWithin(dateElements.size(), 1, 2)) {
 				throw new Exception(dateElements.size()
 						+ " date elements were found when only expecting 1 or 2.");
 			}
@@ -105,7 +118,7 @@ public class BookResultElement {
 				this.dateUpdated = sanitizeInteger(dateElements.get(0).attr("data-xutime"));
 			}
 			
-			// After date parsing: characters and completion
+			// Characters / Complete
 			Node afterDateText = dateElements.last().nextSibling();
 			if (afterDateText != null) {
 				// This should ever only contain 2 or 3 elements where the first element is always
@@ -130,7 +143,7 @@ public class BookResultElement {
 			}
 			this.didSuccessfullyParse = true;
 		}
-		
+
 		private void processCharacters(String charactersComponent) {
 			Matcher m = CHARACTER_MATCH_PATTERN.matcher(charactersComponent);
 			while (m.find()) {
@@ -138,39 +151,43 @@ public class BookResultElement {
 			}
 		}
 		
-		private void processComponent(String component) {
+		private boolean processComponent(String component) {
 			Matcher m = COMPONENT_KEY_VALUE_PATTERN.matcher(component);
 			if (!m.matches()) {
 				if (LOG_COMPONENT_IGNORES) {
 					Boot.getLogger().log("Ignoring component: " + component);
 				}
-				return;
+				return false;
 			}
 			switch (m.group(1)) {
 			case RATING_PREFIX:
 				this.rating = m.group(2);
-				break;
+				return true;
 			case CHAPTERS_PREFIX:
 				this.chapters = sanitizeInteger(m.group(2));
-				break;
+				return true;
 			case WORDS_PREFIX:
 				this.words = sanitizeInteger(m.group(2));
-				break;
+				return true;
 			case REVIEWS_PREFIX:
 				this.reviews = sanitizeInteger(m.group(2));
-				break;
+				return true;
 			case FAVORITES_PREFIX:
 				this.favorites = sanitizeInteger(m.group(2));
-				break;
+				return true;
 			case FOLLOWERS_PREFIX:
 				this.followers = sanitizeInteger(m.group(2));
-				break;
+				return true;
+			case UPDATED_PREFIX:
+			case PUBLISHED_PREFIX:
+				return false;
 			default:
 				if (LOG_COMPONENT_IGNORES) {
 					Boot.getLogger().log("Ignoring component: " + component);
 				}
 				break;
 			}
+			return false;
 		}
 
 		/**
@@ -212,9 +229,14 @@ public class BookResultElement {
 	public int ffBookId;
 	public Metadata processedMetadata;
 	
+	@Override
+	public String toString() {
+		return "Meta: " + metadata;
+	}
+
 	public boolean didSuccessfullyParse;
 	
-	public BookResultElement(String fandom, Element result) {
+	public FandomStoryListElement(String fandom, Element result) {
 		this.fandom = fandom;
 		this.didSuccessfullyParse = false;
 		this.element = result;

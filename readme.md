@@ -3,6 +3,32 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 [Click here](https://github.com/fru1tstand/hcde-fanfiction-study/archive/master.zip) to download the latest version of this repository (along with the workbooks, source code, etc).
 
 ## Worklog & Changelist
+### May 16, 2016 ~ May 19, 2016
+###### Goals
+1. Scrape all of My Little Pony, Harry Potter, and Dr. Who. ✓
+  + Process all scrapes for component metadata. ✓
+2. Create Reviews vs Review Ranking graph in Tableau
+3. Scrape all My Little Pony, Harry Potter, and Dr. Who author profiles.
+  + Process all scrapes for profile information including join date.
+4. Create Reviews per Story vs # of days author has been on FanFiction.net
+5. (Stretch) Work on genre heat map data.
+
+###### Changelist
++ Attempting to pinpoint and remove possible memory leaks.
+  + `StoredProcedures` now always explicitly closes all SQL statements.
++ Cleaned up/Renamed files according to agreed upon naming conventions.
+  + `RawScrapeProducer` -> `ScrapeProducer`
+  + `ExtractBooksListDataProcess` -> (Removed)
+  + `ScrapeBookPageFromCategoriesProcess` -> `ScrapeBooksListProcess`
+  + `BookSearchPage` -> `FandomStoryListPage`
+  + `BookResultElement` -> `FandomStoryListElement`
++ Improved internal tooling.
+  + `MultiIPCrawler` now self-regulates crawl intervals and it thread-safe.
++ Reworked `BookResultElement` to process metadata in a cleaner, more strategic way which is less prone to anomaly errors.
++ Modified naming conventions in database to fix bugs caused by columns, variables, and parameters being named the same.
++ Added strategic indexing in database to improve throughput.
+
+
 ### May 2, 2016 ~ May 12, 2016
 ###### Goals
 1. Extract story content from raw scrape data.

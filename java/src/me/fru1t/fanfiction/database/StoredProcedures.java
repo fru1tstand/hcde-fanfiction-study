@@ -9,7 +9,8 @@ import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
 
 import me.fru1t.fanfiction.Boot;
-import me.fru1t.fanfiction.web.page.element.BookResultElement;
+import me.fru1t.fanfiction.web.page.element.FandomStoryListElement;
+import me.fru1t.util.DatabaseUtils;
 
 public class StoredProcedures {
 	/**
@@ -44,7 +45,7 @@ public class StoredProcedures {
 	 * 2 character_name VARCHAR(128)
 	 */
 	private static final String USP_ADD_CHARACTER_TO_STORY =
-			"{CALL usp_add_character_to_Story(?, ?)}";
+			"{CALL usp_add_character_to_story(?, ?)}";
 
 	/**
 	 * 1 ff_story_id INT
@@ -64,8 +65,9 @@ public class StoredProcedures {
 	
 	/**
 	 * Adds scrape content to the database.
+	 * @throws InterruptedException 
 	 */
-	public static void addScrape(String sessionName, String url, @Nullable String content) {
+	public static void addScrape(String sessionName, String url, @Nullable String content) throws InterruptedException {
 		int currentTime = (int) ((new Date()).getTime() / 1000);
 		Connection c = Database.getConnection();
 		if (content == null) {
@@ -79,9 +81,9 @@ public class StoredProcedures {
 			stmt.setInt(2, currentTime); // 2 scrape_date INT(10)
 			stmt.setString(3, url); // 3 url VARCHAR(255)
 			stmt.setString(4, content); // 4 content MEDIUMTEXT
-			stmt.execute();
+			DatabaseUtils.executeStatement(stmt, Boot.getLogger());
 		} catch (SQLException e) {
-			Boot.getLogger().log(e);
+			Boot.getLogger().log(e, "The following error occured when adding a scrape: ");
 		}
 	}
 	
@@ -92,17 +94,20 @@ public class StoredProcedures {
 			int scrapeId,
 			String sessionName,
 			String categoryName,
-			List<BookResultElement> bookResultElements) {
+			List<FandomStoryListElement> bookResultElements) {
 		int dateProcessed = Math.round((new Date()).getTime()/1000f);
+		Connection c = Database.getConnection();
+
+		CallableStatement storyStmt = null;
+		CallableStatement charStmt = null;
+		CallableStatement genreStmt = null;
 		try {
-			Connection c = Database.getConnection();
-			
 			// Prepare all statements
-			CallableStatement storyStmt = c.prepareCall(USP_PROCESS_LIST_SCRAPE_TO_STORY);
-			CallableStatement charStmt = c.prepareCall(USP_ADD_CHARACTER_TO_STORY);
-			CallableStatement genreStmt = c.prepareCall(USP_ADD_GENRE_TO_STORY);
+			storyStmt = c.prepareCall(USP_PROCESS_LIST_SCRAPE_TO_STORY);
+			charStmt = c.prepareCall(USP_ADD_CHARACTER_TO_STORY);
+			genreStmt = c.prepareCall(USP_ADD_GENRE_TO_STORY);
 			
-			for (BookResultElement bre : bookResultElements) {
+			for (FandomStoryListElement bre : bookResultElements) {
 				// Element
 				storyStmt.setString(1, categoryName); // 1 category_name VARCHAR(128),
 				storyStmt.setString(2, bre.fandom); // 2 fandom_name VARCHAR(128),
@@ -143,13 +148,14 @@ public class StoredProcedures {
 				}
 			}
 			storyStmt.executeBatch();
-			storyStmt.close();
 			charStmt.executeBatch();
-			charStmt.close();
 			genreStmt.executeBatch();
-			genreStmt.close();
 		} catch (SQLException e) {
 			Boot.getLogger().log(e);
+		} finally {
+			DatabaseUtils.closeStatement(storyStmt, Boot.getLogger());
+			DatabaseUtils.closeStatement(charStmt, Boot.getLogger());
+			DatabaseUtils.closeStatement(genreStmt, Boot.getLogger());
 		}
 	}
 }

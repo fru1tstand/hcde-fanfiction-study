@@ -1,5 +1,7 @@
-CREATE TABLE `fanfiction`.`genre` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT COMMENT '',
-  `name` VARCHAR(128) NOT NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC)  COMMENT '');
+CREATE TABLE `genre` (
+   `id` int(11) NOT NULL AUTO_INCREMENT,
+   `name` varchar(128) NOT NULL,
+   PRIMARY KEY (`id`),
+   UNIQUE KEY `name_UNIQUE` (`name`),
+   KEY `ix_name` (`name`)
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8

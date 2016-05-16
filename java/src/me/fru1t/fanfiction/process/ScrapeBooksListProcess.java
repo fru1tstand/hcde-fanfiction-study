@@ -1,37 +1,36 @@
 package me.fru1t.fanfiction.process;
 
 import me.fru1t.fanfiction.Boot;
-import me.fru1t.web.Crawler;
+import me.fru1t.fanfiction.database.StoredProcedures;
+import me.fru1t.web.MultiIPCrawler;
 
-/**
- * Fix before use
- * @deprecated
- */
 public class ScrapeBooksListProcess implements Runnable {
-//	private static final String SESSION_NAME = "Harry Potter, English, March 29, 2016";
-	private static final String CRAWL_URL = "https://www.fanfiction.net/book/Harry-Potter/?&srt=2&lan=1&r=103&p=";
+	private static final String SESSION_NAME = "Dr Who, English, May 13 2016";
+	private static final String CRAWL_URL = "https://www.fanfiction.net/tv/Doctor-Who/?&srt=2&lan=1&r=103&p=";
 	
-	private static final int MAX_PAGES = 17996;
-	private static final int SLEEP_TIME_SECONDS = 10;
+	private static final int MAX_PAGES = 2163;
+	private static final int AVG_SLEEP_TIME_PER_IP = 7500;
+	private static final byte[][] ips = {
+			{ (byte) 104, (byte) 128, (byte) 237, (byte) 128 },
+			{ (byte) 104, (byte) 128, (byte) 233, (byte) 73 },
+			{ (byte) 45, (byte) 58, (byte) 54, (byte) 250 }
+	};
 
 	@Override
 	public void run() {
-		int i = 0;
-		int crawlContentLength = 0;
-		String crawlContent = null;
-		
-		while (i < MAX_PAGES) {
-			i++;
-			crawlContent = Crawler.getContents(CRAWL_URL + i);
-//			Scrape.insertRaw(SESSION_NAME, Scrape.BROWSE_BY_BOOK_TYPE, CRAWL_URL + i, crawlContent);
-			crawlContentLength = (crawlContent != null) ? crawlContent.length() : 0;
-			Boot.getLogger().log("Page #" + i + " Content Length: " + crawlContentLength);
-			try {
-				Thread.sleep(SLEEP_TIME_SECONDS * 1000);
-			} catch (InterruptedException e) {
-				Boot.getLogger().log(e);
-				return;
+		Boot.getLogger().log("Running scrapeBooksListProcess with session name: " + SESSION_NAME);
+		try {
+			// Non inclusive start page
+			int page = 24;
+			MultiIPCrawler crawler = new MultiIPCrawler(Boot.getLogger(), AVG_SLEEP_TIME_PER_IP, ips);
+			while (page++ < MAX_PAGES) {
+				String crawlUrl = CRAWL_URL + page;
+				String crawlContent = crawler.getContents(crawlUrl);
+				Boot.getLogger().log("Page " + crawlUrl + " Content Length: " + ((crawlContent != null) ? crawlContent.length() : 0));
+				StoredProcedures.addScrape(SESSION_NAME, crawlUrl, crawlContent);
 			}
+		} catch (InterruptedException e) {
+			Boot.getLogger().log(e, "ScrapeBooksListProcess session " + SESSION_NAME + " was interrupted by:");
 		}
 	}
 

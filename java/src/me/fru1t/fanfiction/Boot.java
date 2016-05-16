@@ -3,7 +3,7 @@ package me.fru1t.fanfiction;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
-import me.fru1t.fanfiction.process.ScrapeBookPageFromCategoriesProcess;
+import me.fru1t.fanfiction.process.StoryListScrapeToStoriesProcess;
 import me.fru1t.util.Logger;
 
 public class Boot {
@@ -18,14 +18,13 @@ public class Boot {
 		logger = new Logger();
 		logger.logMessagePrefix(LOG_MESSAGE_PREFIX);
 		
-		
 		if (!LOG_TO_FILE) {
 			System.out.println("File logging disabled. To change this setting, edit Boot.java");
 		} else {
 			logger.logToFile(LOG_FILE_PREFIX, LOG_FILE_SUFFIX);
 		}
 		
-		(new ScrapeBookPageFromCategoriesProcess()).run();
+		(new StoryListScrapeToStoriesProcess()).run();
 	}
 	
 	public static Logger getLogger() {

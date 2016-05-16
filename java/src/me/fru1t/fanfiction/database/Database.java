@@ -8,7 +8,7 @@ import me.fru1t.fanfiction.Boot;
 
 public class Database {
 	private static final String SQL_CONNECTION_STRING = 
-			"jdbc:mysql://local.fru1t.me/fanfiction?user=fanfiction&password=mypwISsoSecure";
+			"jdbc:mysql://localhost/fanfiction?user=fanfiction&password=mypwISsoSecure";
 
 	private static Connection connection;
 

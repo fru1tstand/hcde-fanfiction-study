@@ -1,14 +1,11 @@
-CREATE TABLE `fanfiction`.`scrape` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT COMMENT '',
-  `session_id` INT(11) NOT NULL COMMENT '',
-  `date` INT(10) NOT NULL COMMENT '',
-  `url` VARCHAR(255) NOT NULL COMMENT '',
-  `content` MEDIUMTEXT NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
-  INDEX `fk_scrape_session_idx` (`session_id` ASC)  COMMENT '',
-  UNIQUE INDEX `uq_session_url` (`session_id` ASC, `url` ASC)  COMMENT '',
-  CONSTRAINT `fk_scrape_session`
-    FOREIGN KEY (`session_id`)
-    REFERENCES `fanfiction`.`session` (`id`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE);
+CREATE TABLE `scrape` (
+   `id` int(11) NOT NULL AUTO_INCREMENT,
+   `session_id` int(11) NOT NULL,
+   `date` int(10) NOT NULL,
+   `url` varchar(255) NOT NULL,
+   `content` mediumtext,
+   PRIMARY KEY (`id`),
+   UNIQUE KEY `uq_session_url` (`session_id`,`url`),
+   KEY `fk_scrape_session_idx` (`session_id`),
+   CONSTRAINT `fk_scrape_session` FOREIGN KEY (`session_id`) REFERENCES `session` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8
