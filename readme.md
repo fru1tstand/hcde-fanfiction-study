@@ -7,11 +7,30 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 ###### Goals
 1. Scrape all of My Little Pony, Harry Potter, and Dr. Who. ✓
   + Process all scrapes for component metadata. ✓
-2. Create Reviews vs Review Ranking graph in Tableau
-3. Scrape all My Little Pony, Harry Potter, and Dr. Who author profiles.
+2. Create Reviews vs Review Ranking graph in Tableau. ✓
+3. (Stretch) Scrape all My Little Pony, Harry Potter, and Dr. Who author profiles.
   + Process all scrapes for profile information including join date.
-4. Create Reviews per Story vs # of days author has been on FanFiction.net
+4. (Stretch) Create Reviews per Story vs # of days author has been on FanFiction.net.
 5. (Stretch) Work on genre heat map data.
+
+###### Screenshots
+All graphs use data collected only from Harry Potter, My Little Pony, and Dr. Who.  
+  
+  
+Most Reviews to Least Reviews per Story.  
+![alt text](http://i.imgur.com/WUfRT7J.png "Most Reviews to Least Reviews per Story for Harry Potter, Dr. Who, and My Little Pony.")
+
+Average # of Reviews per Date Updated by Month.  
+![alt text](http://i.imgur.com/9pWV4hL.png "Average # of Reviews per Date Updated by Month.")
+
+Number of Stories per Date Updated by Month.  
+![alt text](http://i.imgur.com/1R1WN2U.png "Number of Stories per Date Updated by Month.")
+
+Number of Reviews per Chapter per Story, from Most to Least.  
+![alt text](http://i.imgur.com/LDNDfpb.png "Number of Reviews per Chapter per Story, from Most to Least.")
+
+Chapter vs Favorites for each Story.  
+![alt text](http://i.imgur.com/XSc7I0H.png "Chapter vs Favorites for each Story.")
 
 ###### Changelist
 + Attempting to pinpoint and remove possible memory leaks.
