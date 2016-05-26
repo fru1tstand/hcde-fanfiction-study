@@ -6,12 +6,15 @@ import java.util.regex.Pattern;
 import org.eclipse.jdt.annotation.Nullable;
 
 import me.fru1t.fanfiction.Boot;
-import me.fru1t.fanfiction.database.StoredProcedures;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
 import me.fru1t.fanfiction.web.page.FandomStoryListPage;
 
 
+/**
+ * @deprecated Pass fandom url to processListScrapeStory
+ */
+@Deprecated
 public class StoryListScrapeToStoriesProcess implements Runnable {
 	private static final String PROCESS_SESSION_NAME =
 			"Harry Potter, Rated M, English, 5-22-16, Story List to Stories";
@@ -44,11 +47,11 @@ public class StoryListScrapeToStoriesProcess implements Runnable {
 
 			try {
 				FandomStoryListPage fslp = new FandomStoryListPage(scrape.content);
-				StoredProcedures.processListScrapeToStory(
-						scrape.id,
-						PROCESS_SESSION_NAME,
-						m.group(MATCHER_CATEGORY_NAME_GROUP),
-						fslp.getBookResultElements());
+//				StoredProcedures.processListScrapeToStory(
+//						scrape.id,
+//						PROCESS_SESSION_NAME,
+//						m.group(MATCHER_CATEGORY_NAME_GROUP),
+//						fslp.getBookResultElements());
 				Boot.getLogger().log("Processed scrape id: " + scrape.id + " with url: " + scrape.url);
 			} catch (Exception e) {
 				Boot.getLogger().log(e, "Skipped scrape with ID " + scrape.id + " due to:");

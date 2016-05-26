@@ -16,6 +16,7 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 + Removed processes and associated files that were single-use.
 + Revamped scraping interface through singleton instance.
 + Fixed `ThreadUtils` normal distribution for wait times.
++ Added `url` column to `Fandom` table.
 
 
 ### May 16, 2016 ~ May 19, 2016
