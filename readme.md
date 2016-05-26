@@ -3,6 +3,21 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 [Click here](https://github.com/fru1tstand/hcde-fanfiction-study/archive/master.zip) to download the latest version of this repository (along with the workbooks, source code, etc).
 
 ## Worklog & Changelist
+### May 23, 2016 ~ May 27, 2016
+###### Goals
+0. Scraped remaining Harry Potter (Rated M) story list metadata. ✓
+1. Scrape all of English Harry Potter story content.
+  + This was determined to be infeasible as we'd be attempting to scrape over 2 million pages.
+2. Scrape all of FanFiction.net Metadata.
+
+###### Changelist
++ Revamped database interface to a pooled resource with automated fail-safe execution plan.
+  + Updated all processes to conform to new system.
++ Removed processes and associated files that were single-use.
++ Revamped scraping interface through singleton instance.
++ Fixed `ThreadUtils` normal distribution for wait times.
+
+
 ### May 16, 2016 ~ May 19, 2016
 ###### Goals
 1. Scrape all of My Little Pony, Harry Potter, and Dr. Who. ✓

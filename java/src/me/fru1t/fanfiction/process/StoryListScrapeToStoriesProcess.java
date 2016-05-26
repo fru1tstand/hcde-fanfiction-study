@@ -14,23 +14,25 @@ import me.fru1t.fanfiction.web.page.FandomStoryListPage;
 
 public class StoryListScrapeToStoriesProcess implements Runnable {
 	private static final String PROCESS_SESSION_NAME =
-			"All English MLP, HP, and DW - Storylist scrape to story - May 14 2016 - fix 2";
+			"Harry Potter, Rated M, English, 5-22-16, Story List to Stories";
 	@Nullable
-	private static final String[] SCRAPE_SESSION_NAMES = {
-			"My Little Pony, English, May 13 2016",
-			"Harry Potter, English, May 13 2016",
-			"Dr Who, English, May 13 2016"
-			};
+	private static final String[] SCRAPE_SESSION_NAMES = { "Harry Potter, Rated M, English, 5-22-16, Fix 2"};
 
 	private static final Pattern STORY_URL_PATTERN =
 			Pattern.compile("^https://www.fanfiction.net/([^/]+)/([^/]+)/.+$");
-	
+
 	private static final int MATCHER_CATEGORY_NAME_GROUP = 1;
-	
+
 	@Override
 	public void run() {
 		Boot.getLogger().log("Running StoryListScrapeToStoriesProcess with Session: " + PROCESS_SESSION_NAME);
-		ScrapeProducer sp = new ScrapeProducer(1050, -1, SCRAPE_SESSION_NAMES);
+		ScrapeProducer sp;
+		try {
+			sp = new ScrapeProducer(SCRAPE_SESSION_NAMES);
+		} catch (InterruptedException e) {
+			Boot.getLogger().log(e);
+			return;
+		}
 		Scrape scrape = sp.take();
 		while (scrape != null) {
 			Matcher m = STORY_URL_PATTERN.matcher(scrape.url);
@@ -39,7 +41,7 @@ public class StoryListScrapeToStoriesProcess implements Runnable {
 				scrape = sp.take();
 				continue;
 			}
-			
+
 			try {
 				FandomStoryListPage fslp = new FandomStoryListPage(scrape.content);
 				StoredProcedures.processListScrapeToStory(
