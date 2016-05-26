@@ -3,12 +3,14 @@ package me.fru1t.fanfiction;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
+import me.fru1t.fanfiction.process.ScrapeProcess;
+import me.fru1t.fanfiction.process.scrape.FandomPage;
 import me.fru1t.util.DatabaseConnectionPool;
 import me.fru1t.util.Logger;
 import me.fru1t.web.MultiIPCrawler;
 
 public class Boot {
-	public static final boolean IS_RUNNING_LOCALLY = false;
+	public static final boolean IS_RUNNING_LOCALLY = true;
 
 	// Log params
 	private static final boolean LOG_TO_FILE = false;
@@ -20,7 +22,7 @@ public class Boot {
 	// Crawler params
 	private static final int AVG_SLEEP_TIME_PER_IP = 7500;
 	private static final byte[][] LOCAL_IPS = {
-			{ (byte) 192, (byte) 168, (byte) 1, (byte) 1 }
+			{ (byte) 192, (byte) 168, (byte) 1, (byte) 147 }
 	};
 	private static final byte[][] REMOTE_IPS = {
 			{ (byte) 104, (byte) 128, (byte) 237, (byte) 128 },
@@ -50,6 +52,7 @@ public class Boot {
 			logger.logToFile(LOG_FILE_PREFIX, LOG_FILE_SUFFIX);
 		}
 
+		(new ScrapeProcess(new FandomPage(), FandomPage.SESSION_NAME)).run();
 //		(new ScrapeStoryContentFromStoriesProcess()).run();
 	}
 

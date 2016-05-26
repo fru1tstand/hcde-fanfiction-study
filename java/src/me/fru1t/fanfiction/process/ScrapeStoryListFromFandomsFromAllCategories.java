@@ -11,7 +11,9 @@ import me.fru1t.web.MultiIPCrawler;
 
 /**
  * Scrapes story listings from fandoms within all categories.
+ * @deprecated Convert to ScrapeProcess module instead.
  */
+@Deprecated
 public class ScrapeStoryListFromFandomsFromAllCategories implements Runnable {
 	private static final String SESSION_NAME = "Top 100 stories from top 15 fandoms from all categories, May 12, 2016";
 	private static final byte[][] ips = {
@@ -20,15 +22,15 @@ public class ScrapeStoryListFromFandomsFromAllCategories implements Runnable {
 			{ (byte) 45, (byte) 58, (byte) 54, (byte) 250 }
 	};
 	private static final int AVG_SLEEP_TIME_PER_IP = 7500;
-	
+
 	private static final int FANDOMS_TO_FETCH_PER_CATEGORY = 15;
 	private static final String LINK_ATTRIBUTE = "href";
-	
+
 	private static final String CATEGORY_CRAWL_URL = "https://www.fanfiction.net/%s";
 	private static final String FANFICTION_BASE_URL = "https://www.fanfiction.net";
 	private static final String[] CATEGORIES =
 		{ "anime", "book", "cartoon", "comic","game", "play", "movie", "tv" };
-	
+
 	private static final String STORY_LIST_PARAMETERS = "?&srt=3&lan=1&r=103&p=";
 
 	@Override
@@ -39,7 +41,7 @@ public class ScrapeStoryListFromFandomsFromAllCategories implements Runnable {
 		try {
 			ArrayList<String> fandomUrls = new ArrayList<>();
 			MultiIPCrawler crawler = new MultiIPCrawler(Boot.getLogger(), AVG_SLEEP_TIME_PER_IP, ips);
-			
+
 			// Get fandom urls
 			for (String category : CATEGORIES) {
 				String categoryPageUrl = String.format(CATEGORY_CRAWL_URL, category);
@@ -55,9 +57,9 @@ public class ScrapeStoryListFromFandomsFromAllCategories implements Runnable {
 					}
 				}
 			}
-			
+
 			Boot.getLogger().log("Found " + fandomUrls.size() + " fandoms to scrape.");
-	
+
 			// Fetch page and scrape story
 			int pagesScraped = 0;
 			for (String fandomUrl : fandomUrls) {
@@ -69,7 +71,7 @@ public class ScrapeStoryListFromFandomsFromAllCategories implements Runnable {
 					pagesScraped++;
 				}
 			}
-			
+
 			Boot.getLogger().log("Scraped " + pagesScraped + " book list pages.");
 		} catch (InterruptedException ie) {
 			Boot.getLogger().log(ie, "ScrapeBookPageFromCategoriesProcess session " + SESSION_NAME + " was interrupted by:");

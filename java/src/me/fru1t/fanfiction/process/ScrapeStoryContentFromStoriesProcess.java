@@ -7,7 +7,10 @@ import me.fru1t.fanfiction.database.StoredProcedures;
 import me.fru1t.fanfiction.database.producers.StoryIdAndChaptersProducer;
 import me.fru1t.fanfiction.database.producers.StoryIdAndChaptersProducer.StoryIdAndChapters;
 
-
+/**
+ * @deprecated Convert to ScrapeProcess module instead.
+ */
+@Deprecated
 public class ScrapeStoryContentFromStoriesProcess implements Runnable {
 	private static final String BOOK_CHAPTER_URL_FMT = "https://www.fanfiction.net/s/%d/%d";
 	private static final String SESSION_NAME =

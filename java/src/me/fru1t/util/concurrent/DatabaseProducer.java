@@ -16,7 +16,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.util.Logger;
 
-public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> {
+public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> extends GenericProducer<T> {
 	public static abstract class Row<I> {
 		public static final String COLUMN_ID = "id";
 		public I id;
@@ -86,6 +86,7 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> {
 	 *
 	 * @return The next row from the table, or null if none are left.
 	 */
+	@Override
 	@Nullable
 	public final synchronized T take() {
 		// Queue still has stuff
