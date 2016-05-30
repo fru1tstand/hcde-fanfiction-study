@@ -16,6 +16,12 @@ import org.eclipse.jdt.annotation.Nullable;
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.util.Logger;
 
+/**
+ * Provides methods that allow for sequential access to a database.
+ *
+ * @param <T> The type returned by this producer.
+ * @param <I> The index type.
+ */
 public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> extends GenericProducer<T> {
 	public static abstract class Row<I> {
 		public static final String COLUMN_ID = "id";

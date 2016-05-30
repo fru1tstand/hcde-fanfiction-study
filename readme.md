@@ -5,6 +5,19 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 ## Worklog & Changelist
 ### May 23, 2016 ~ May 27, 2016
 ###### Goals
+0. Increase throughput of scraping process via increased IP allocation (using IPv6).
+1. Scrape & Process all category pages.
+2. Scrape & Process all fandom (story list) pages.
+3. Start building of heatmap (genre distribution) application.
+
+###### Changelist
++ Removed unsorted logs from repo.
++ Abstracted converter process.
++ Added 'url' column to `fandom` table and subsequent functions and stored procedures.
++ Created and ran `scrape/CategoryPage` and `convert/CategoryToFandoms` successfully adding all fandoms to the database.
+
+### May 23, 2016 ~ May 27, 2016
+###### Goals
 0. Scraped remaining Harry Potter (Rated M) story list metadata. ✓
 1. Scrape all of English Harry Potter story content.
   + This was determined to be infeasible as we'd be attempting to scrape over 2 million pages.
@@ -17,7 +30,7 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 + Revamped scraping interface through singleton instance.
 + Fixed `ThreadUtils` normal distribution for wait times.
 + Added `url` column to `Fandom` table.
-
++ Abstracted scrape process to reduce redundancy in fail-safe code.
 
 ### May 16, 2016 ~ May 19, 2016
 ###### Goals
@@ -99,7 +112,7 @@ Chapter vs Favorites for each Story.
 ###### Goals
 1. (Potentially) Scrape more Harry Potter stories. ✓
 2. Extract story content from raw scrape data.
-3. Process story content to analyze with various easy to implement metrics.
+3. Process story content to analyze with various easy to implement metrics. 
   + Word count (per chapter, per sentence).
   + Simple [readability tests](https://en.wikipedia.org/wiki/Readability_test) (per chapter).
 4. Create a comparative spreadsheet (ratings, reviews, chapters, words, etc) of the top 13 sources for each category (-msc) ✓

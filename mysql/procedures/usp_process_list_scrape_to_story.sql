@@ -7,7 +7,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `usp_process_list_scrape_to_story`(
 	-- story data
 	in_category_name VARCHAR(128),
     in_fandom_name VARCHAR(128),
-    in_fandom_url VARCHAR(1000),
+    in_fandom_url VARCHAR(2000),
+    
     in_user_ff_id INT,
     in_user_name VARCHAR(128),
     in_rating_name VARCHAR(45),

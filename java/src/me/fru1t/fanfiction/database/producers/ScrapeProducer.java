@@ -34,7 +34,7 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 		/** date INT(10) */
 		public int date;
 
-		/** url VARCHAR(255) */
+		/** url VARCHAR(2000) */
 		public String url;
 
 		/** content MEDIUMTEXT*/

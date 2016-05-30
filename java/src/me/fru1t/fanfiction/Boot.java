@@ -3,17 +3,18 @@ package me.fru1t.fanfiction;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
-import me.fru1t.fanfiction.process.ScrapeProcess;
-import me.fru1t.fanfiction.process.scrape.FandomPage;
+import me.fru1t.fanfiction.database.producers.ScrapeProducer;
+import me.fru1t.fanfiction.process.ConvertProcess;
+import me.fru1t.fanfiction.process.convert.CategoryToFandoms;
 import me.fru1t.util.DatabaseConnectionPool;
 import me.fru1t.util.Logger;
 import me.fru1t.web.MultiIPCrawler;
 
 public class Boot {
 	public static final boolean IS_RUNNING_LOCALLY = true;
+	private static final boolean LOG_TO_FILE = true;
 
 	// Log params
-	private static final boolean LOG_TO_FILE = false;
 	private static final String LOG_FILE_PREFIX = "fanfiction-";
 	private static final String LOG_FILE_SUFFIX = ".log";
 	private static final SimpleDateFormat LOG_MESSAGE_PREFIX =
@@ -32,9 +33,9 @@ public class Boot {
 
 	// Database params
 	private static final String SQL_CONNECTION_STRING =
-			"jdbc:mysql://local.fru1t.me/fanfiction?user=fanfiction&password=mypwISsoSecure";
+			"jdbc:mysql://local.fru1t.me/fanfiction?user=fanfiction&password=mypwISsoSecure!";
 	private static final String LOCAL_SQL_CONNECTION_STRING =
-			"jdbc:mysql://localhost/fanfiction?user=fanfiction&password=mypwISsoSecure";
+			"jdbc:mysql://localhost/fanfiction?user=fanfiction&password=mypwISsoSecure!";
 
 	private static Logger logger;
 	private static MultiIPCrawler crawler;
@@ -52,8 +53,11 @@ public class Boot {
 			logger.logToFile(LOG_FILE_PREFIX, LOG_FILE_SUFFIX);
 		}
 
-		(new ScrapeProcess(new FandomPage(), FandomPage.SESSION_NAME)).run();
-//		(new ScrapeStoryContentFromStoriesProcess()).run();
+//		(new ScrapeProcess(new CategoryPage(), "Category Pages 5-26-2016")).run();
+		(new ConvertProcess<ScrapeProducer.Scrape>(
+				new ScrapeProducer("Category Pages 5-26-2016"),
+				new CategoryToFandoms(),
+				"Category Pages 5-26-2016 - Convert")).run();
 	}
 
 	public static Logger getLogger() {

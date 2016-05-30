@@ -4,6 +4,9 @@ import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.StoredProcedures;
 import me.fru1t.util.concurrent.GenericProducer;
 
+/**
+ * Scrapes whatever urls are given from a producer into the database.
+ */
 public class ScrapeProcess implements Runnable {
 	private GenericProducer<String> urlProducer;
 	private String sessionName;
