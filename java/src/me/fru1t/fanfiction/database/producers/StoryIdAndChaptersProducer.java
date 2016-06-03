@@ -23,7 +23,7 @@ public class StoryIdAndChaptersProducer extends DatabaseProducer<StoryIdAndChapt
 			+ " WHERE `fandom`.`name` = 'Harry Potter '";
 
 	public StoryIdAndChaptersProducer() throws InterruptedException {
-		super(ID_NAME, StoryIdAndChapters.class, Boot.getDatabaseConnectionPool().getConnection(), 300, Boot.getLogger());
+		super(ID_NAME, StoryIdAndChapters.class, Boot.getDatabaseConnectionPool(), 300, Boot.getLogger());
 	}
 
 	@Override

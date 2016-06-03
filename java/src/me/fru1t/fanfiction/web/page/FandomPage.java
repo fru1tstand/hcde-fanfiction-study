@@ -11,7 +11,7 @@ import me.fru1t.web.Page;
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.web.page.element.FandomStoryListElement;
 
-public class FandomStoryListPage extends Page {
+public class FandomPage extends Page {
 	private static final String RESULT_ELEMENTS_SELECTOR = 
 			"#content_wrapper_inner .z-list.zhover.zpointer";
 	private static final String FANDOM_PREV_ELEMENT_SELECT =
@@ -20,11 +20,11 @@ public class FandomStoryListPage extends Page {
 	private List<FandomStoryListElement> resultElements;
 	private String fandom;
 	
-	public FandomStoryListPage(String document) {
+	public FandomPage(String document) {
 		this(Jsoup.parse(document));
 	}
 	
-	public FandomStoryListPage(Document document) {
+	public FandomPage(Document document) {
 		super(document);
 		this.resultElements = new ArrayList<>();
 		try {
@@ -41,7 +41,7 @@ public class FandomStoryListPage extends Page {
 		}
 	}
 	
-	public List<FandomStoryListElement> getBookResultElements() {
+	public List<FandomStoryListElement> getStoryElements() {
 		return resultElements;
 	}
 }

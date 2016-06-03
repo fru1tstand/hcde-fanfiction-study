@@ -3,7 +3,6 @@ package me.fru1t.fanfiction.process;
 import java.util.Stack;
 
 import me.fru1t.fanfiction.Boot;
-import me.fru1t.fanfiction.database.StoredProcedures;
 import me.fru1t.fanfiction.database.producers.StoryIdAndChaptersProducer;
 import me.fru1t.fanfiction.database.producers.StoryIdAndChaptersProducer.StoryIdAndChapters;
 
@@ -48,7 +47,7 @@ public class ScrapeStoryContentFromStoriesProcess implements Runnable {
 						Boot.getLogger().log("Story doesn't exist anymore, skipping.");
 						break;
 					}
-					StoredProcedures.addScrape(SESSION_NAME, crawlUrl, crawlContent);
+//					StoredProcedures.addScrape(SESSION_NAME, crawlUrl, crawlContent);
 					Boot.getLogger().log("Page " + crawlUrl
 							+ "; Content Length: " + ((crawlContent != null) ? crawlContent.length() : 0));
 				}

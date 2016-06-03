@@ -8,7 +8,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
-import me.fru1t.fanfiction.web.page.FandomStoryListPage;
 
 
 /**
@@ -24,7 +23,7 @@ public class StoryListScrapeToStoriesProcess implements Runnable {
 	private static final Pattern STORY_URL_PATTERN =
 			Pattern.compile("^https://www.fanfiction.net/([^/]+)/([^/]+)/.+$");
 
-	private static final int MATCHER_CATEGORY_NAME_GROUP = 1;
+//	private static final int MATCHER_CATEGORY_NAME_GROUP = 1;
 
 	@Override
 	public void run() {
@@ -46,7 +45,7 @@ public class StoryListScrapeToStoriesProcess implements Runnable {
 			}
 
 			try {
-				FandomStoryListPage fslp = new FandomStoryListPage(scrape.content);
+//				FandomPage fslp = new FandomPage(scrape.content);
 //				StoredProcedures.processListScrapeToStory(
 //						scrape.id,
 //						PROCESS_SESSION_NAME,

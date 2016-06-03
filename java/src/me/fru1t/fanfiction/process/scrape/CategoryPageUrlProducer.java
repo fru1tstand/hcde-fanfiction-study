@@ -4,14 +4,14 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import me.fru1t.util.concurrent.GenericProducer;
 
-public class CategoryPage extends GenericProducer<String> {
+public class CategoryPageUrlProducer extends GenericProducer<String> {
 	private static final String[] CATEGORIES =
 		{ "anime", "book", "cartoon", "comic", "game", "misc", "play", "movie", "tv" };
 	private static final String FORMAT_URL = "https://www.fanfiction.net/%s/";
 
 	private int categoryIndex;
 
-	public CategoryPage() {
+	public CategoryPageUrlProducer() {
 		categoryIndex = 0;
 	}
 

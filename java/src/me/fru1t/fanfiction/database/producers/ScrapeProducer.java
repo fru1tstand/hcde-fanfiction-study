@@ -90,7 +90,7 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 			int lowerIdBound,
 			int upperIdBound,
 			@Nullable String[] sessionNames) throws InterruptedException {
-		super(ID_NAME, Scrape.class, Boot.getDatabaseConnectionPool().getConnection(),
+		super(ID_NAME, Scrape.class, Boot.getDatabaseConnectionPool(),
 				BUFFER_SIZE, Boot.getLogger());
 		this.lowerIdBound = (lowerIdBound < 0) ? -1 : lowerIdBound;
 		this.upperIdBound = (upperIdBound < 0) ? -1 : upperIdBound;

@@ -13,7 +13,8 @@ import java.util.Queue;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import me.fru1t.fanfiction.Boot;
+import me.fru1t.util.DatabaseConnectionPool;
+import me.fru1t.util.DatabaseConnectionPool.Statement;
 import me.fru1t.util.Logger;
 
 /**
@@ -38,7 +39,7 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 	private int bufferSize;
 	private String idName;
 	private Boolean hasWhereClause;
-	private Connection connection;
+	private DatabaseConnectionPool dbcp;
 
 	private boolean isComplete;
 	private Class<T> rowClass;
@@ -56,11 +57,11 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 	public DatabaseProducer(
 			String idName,
 			Class<T> rowClass,
-			Connection connection,
+			DatabaseConnectionPool dbcp,
 			int bufferSize,
 			Logger logger) {
 		this.idName = idName;
-		this.connection = connection;
+		this.dbcp = dbcp;
 		this.rowClass = rowClass;
 		this.isComplete = false;
 		this.queue = new LinkedList<>();
@@ -123,6 +124,7 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 		lastFetchTime = currentFetchTime;
 		rowsProcessedSinceLastFetch = 0;
 		refillQueue();
+
 		if (!queue.isEmpty()) {
 			rowsProcessedSinceLastFetch++;
 			firstScrapeId = queue.peek().id;
@@ -138,38 +140,54 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 	private void refillQueue() {
 		String query = getQuery();
 		try {
-			PreparedStatement stmt = connection.prepareStatement(query);
-			ResultSet result = stmt.executeQuery();
-			T row;
-			while (result.next()) {
-				row = rowClass.newInstance();
+			dbcp.executeStatement(new Statement() {
+				@Override
+				public void execute(Connection c) throws SQLException {
+					try {
+						PreparedStatement stmt = c.prepareStatement(query);
+						ResultSet result = stmt.executeQuery();
+						T row;
+						while (result.next()) {
+							row = rowClass.newInstance();
 
-				// Set the ID to the generic type passed to us. This method gets around Java's type
-				// erasure for generics.
-				rowClass.getField(Row.COLUMN_ID).set(row, result.getObject(Row.COLUMN_ID,
-						(Class<I>) ((ParameterizedType) rowClass.getGenericSuperclass())
-								.getActualTypeArguments()[0]));
+							// Set the ID to the generic type passed to us. This method gets around
+							// Java's type erasure for generics.
+							rowClass
+								.getField(Row.COLUMN_ID)
+								.set(row, result.getObject(Row.COLUMN_ID,
+										(Class<I>) ((ParameterizedType) rowClass
+												.getGenericSuperclass())
+											.getActualTypeArguments()[0]));
 
-				// Set the remaining fields through normal reflection as they're not parameterized
-				for (Field field : rowClass.getDeclaredFields()) {
-					if ((field.getModifiers() & Modifier.STATIC) == 0) {
-						field.set(row, result.getObject(field.getName(), field.getType()));
+							// Set the remaining fields through normal reflection as they're not
+							// parameterized
+							for (Field field : rowClass.getDeclaredFields()) {
+								if ((field.getModifiers() & Modifier.STATIC) == 0) {
+									field.set(row,
+											result.getObject(field.getName(), field.getType()));
+								}
+							}
+
+							queue.add(row);
+							currentId = row.id;
+						}
+						stmt.close();
+						result.close();
+					} catch (InstantiationException | IllegalAccessException
+							| IllegalArgumentException | NoSuchFieldException
+							| SecurityException e) {
+						// These exceptions would only be thrown if an error in the programming
+						// allowed it to be so. They're also non-recoverable.
+						throw new RuntimeException(e);
 					}
 				}
-
-				queue.add(row);
-				currentId = row.id;
-			}
-			stmt.close();
-			result.close();
-		} catch (SQLException e) {
-			logger.log(e, "Using query: " + query);
-		} catch (InstantiationException | IllegalAccessException e) {
-			// This should never happen as the class is defined within this file
-			throw new RuntimeException(e);
-		} catch (IllegalArgumentException | NoSuchFieldException | SecurityException e) {
-			Boot.getLogger().log(e);
+			});
+		} catch (InterruptedException e) {
+			// Interrupt occurred, dump everything and stop.
+			logger.log(e, "Interrupt occured when refilling the DatabaseProducer's queue.");
+			queue = new LinkedList<>();
 		}
+
 	}
 
 	private String getQuery() {

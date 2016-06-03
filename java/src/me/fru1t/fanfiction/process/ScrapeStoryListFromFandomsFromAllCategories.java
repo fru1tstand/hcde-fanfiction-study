@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import org.jsoup.nodes.Element;
 
 import me.fru1t.fanfiction.Boot;
-import me.fru1t.fanfiction.database.StoredProcedures;
 import me.fru1t.fanfiction.web.page.CategoryPage;
 import me.fru1t.web.MultiIPCrawler;
 
@@ -47,7 +46,7 @@ public class ScrapeStoryListFromFandomsFromAllCategories implements Runnable {
 				String categoryPageUrl = String.format(CATEGORY_CRAWL_URL, category);
 				Boot.getLogger().log("Scraping " + categoryPageUrl);
 				String categoryPageScrape = crawler.getContents(categoryPageUrl);
-				StoredProcedures.addScrape(SESSION_NAME + " - category", categoryPageUrl, categoryPageScrape);
+//				StoredProcedures.addScrape(SESSION_NAME + " - category", categoryPageUrl, categoryPageScrape);
 				CategoryPage catPage = new CategoryPage(categoryPageScrape);
 				int i = 0;
 				for (Element fandomLinkEl : catPage.getFandomLinks()) {
@@ -66,8 +65,8 @@ public class ScrapeStoryListFromFandomsFromAllCategories implements Runnable {
 				for (int page = 1; page < 6; page++) {
 					String listUrl = FANFICTION_BASE_URL + fandomUrl + STORY_LIST_PARAMETERS + page;
 					Boot.getLogger().log("Scraping " + listUrl);
-					String listScrape = crawler.getContents(listUrl);
-					StoredProcedures.addScrape(SESSION_NAME + " - booklist", listUrl, listScrape);
+//					String listScrape = crawler.getContents(listUrl);
+//					StoredProcedures.addScrape(SESSION_NAME + " - booklist", listUrl, listScrape);
 					pagesScraped++;
 				}
 			}

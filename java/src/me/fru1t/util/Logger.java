@@ -11,10 +11,11 @@ import java.util.Date;
 import org.eclipse.jdt.annotation.Nullable;
 
 public class Logger {
+
 	private SimpleDateFormat messagePrefix;
 	private boolean logToFile;
 	private BufferedWriter fileWriter;
-	
+
 	/**
 	 * Creates a new logger.
 	 */
@@ -23,10 +24,10 @@ public class Logger {
 		this.logToFile = false;
 		this.fileWriter = null;
 	}
-	
+
 	/**
 	 * Sets up logging to a file
-	 * 
+	 *
 	 * @param fileNamePrefix
 	 * @param fileNameSuffix
 	 * @throws IOException
@@ -36,7 +37,7 @@ public class Logger {
 				fileNamePrefix + (new Date()).getTime() + fileNameSuffix, true));
 		logToFile = true;
 	}
-	
+
 	/**
 	 * Sets up message prefixing
 	 * @param sdf
@@ -44,17 +45,17 @@ public class Logger {
 	public void logMessagePrefix(SimpleDateFormat sdf) {
 		this.messagePrefix = sdf;
 	}
-	
+
 	/**
 	 * Logs a string message.
-	 * 
+	 *
 	 * @param message
 	 * @return
 	 */
 	public String log(String message) {
 		// Log to console
 		System.out.println(getLogStringPrefix() + message);
-		
+
 		// Log to file
 		if (logToFile) {
 			try {
@@ -70,10 +71,10 @@ public class Logger {
 
 		return message;
 	}
-	
+
 	/**
 	 * Consumes an exception by adding it to the working log and returning the error that occurred.
-	 * 
+	 *
 	 * @param e The exception to handle.
 	 * @return A formatted user-friendly alert string.
 	 */
@@ -83,11 +84,11 @@ public class Logger {
 		e.printStackTrace(new PrintWriter(errors));
 		return log(errors.toString() + " [Error ID: " + check  + "]");
 	}
-	
+
 	/**
 	 * Consumes an exception by adding it to the working log and returning a formatted user-facing
 	 * error string.
-	 * 
+	 *
 	 * @param e The exception to handle.
 	 * @param userMessage A user-friendly alert string.
 	 * @return A formatted user-friendly alert string.
@@ -99,12 +100,31 @@ public class Logger {
 		return log("User message: " + userMessage + "\r\n"
 				+ errors.toString() + " [Error ID: " + check  + "]");
 	}
-	
+
+	/**
+	 * Submits an anonymous debug dialogue to the console.
+	 *
+	 * @param debugMessage The debug message.
+	 */
+	public void debug(@Nullable String debugMessage) {
+		log("[DEBUG-Unknown] " + debugMessage);
+	}
+
+	/**
+	 * Submits a named debug dialogue to the console.
+	 *
+	 * @param debugMessage The debug message.
+	 * @param callingClass The class to display in the debug hint.
+	 */
+	public void debug(@Nullable String debugMessage, Class<?> callingClass) {
+		log("[DEBUG-" + callingClass.getSimpleName() + "] " + debugMessage);
+	}
+
 	private String getLogStringPrefix() {
 		if (messagePrefix != null) {
 			return "[" + messagePrefix.format(new Date()) + "] ";
 		}
-		
+
 		return "";
 	}
 }

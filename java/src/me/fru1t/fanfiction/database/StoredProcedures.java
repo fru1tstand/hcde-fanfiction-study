@@ -9,6 +9,7 @@ import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
 
 import me.fru1t.fanfiction.Boot;
+import me.fru1t.fanfiction.Session;
 import me.fru1t.fanfiction.web.page.element.FandomStoryListElement;
 import me.fru1t.util.DatabaseConnectionPool.Statement;
 
@@ -68,11 +69,17 @@ public class StoredProcedures {
 	 * Adds scrape content to the database.
 	 * @throws InterruptedException
 	 */
-	public static void addScrape(String sessionName, String url, @Nullable String content)
+	public static void addScrape(Session session, String url, @Nullable String content)
 			throws InterruptedException {
 		int currentTime = (int) ((new Date()).getTime() / 1000);
 		if (content == null) {
 			Boot.getLogger().log("Ignored raw scrape insert as the content was null");
+			return;
+		}
+
+		if (Boot.DEBUG) {
+			Boot.getLogger().debug("Fake storing content length: "
+					+ content.length() + "; url: " + url, StoredProcedures.class);
 			return;
 		}
 
@@ -81,7 +88,7 @@ public class StoredProcedures {
 			public void execute(Connection c) throws SQLException {
 				CallableStatement stmt = c.prepareCall(USP_ADD_SCRAPE);
 				try {
-					stmt.setString(1, sessionName); // 1 session_name VARCHAR(128)
+					stmt.setString(1, session.name()); // 1 session_name VARCHAR(128)
 					stmt.setInt(2, currentTime); // 2 scrape_date INT(10)
 					stmt.setString(3, url); // 3 url VARCHAR(255)
 					stmt.setString(4, content); // 4 content MEDIUMTEXT

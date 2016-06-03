@@ -3,9 +3,10 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 [Click here](https://github.com/fru1tstand/hcde-fanfiction-study/archive/master.zip) to download the latest version of this repository (along with the workbooks, source code, etc).
 
 ## Worklog & Changelist
-### May 23, 2016 ~ May 27, 2016
+### May 30, 2016 ~ June 9, 2016
 ###### Goals
 0. Increase throughput of scraping process via increased IP allocation (using IPv6).
+  + FanFiction.net does not support IPv6.
 1. Scrape & Process all category pages.
 2. Scrape & Process all fandom (story list) pages.
 3. Start building of heatmap (genre distribution) application.
@@ -15,6 +16,16 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 + Abstracted converter process.
 + Added 'url' column to `fandom` table and subsequent functions and stored procedures.
 + Created and ran `scrape/CategoryPage` and `convert/CategoryToFandoms` successfully adding all fandoms to the database.
++ Added debugging logic for easier testing on larger url scrapes.
++ Attempted to implement IPv6 support, but found out that FanFiction.net has no AAAA (IPv6) DNS record, meaning we can't scrape the site using our IPv6 addresses.
++ Added a minimum content length parameter to the scraper as a fail-safe method for non-erroring returned requests.
++ Added Sessions enum to track session pragmatically.
++ Abstracted database connectivity through a custom `DatabaseConnectionPool` interface which allows for automatical retrying, reconnecting, and resolving of issues with less boilerplate code.
++ Updated all `Producer`s to utilize the new `DatabaseConnectionPool` interface.
++ Heavily modified FandomScrape to automatically calculate maximum number of pages within itself and scrape all.
++ Renamed a couple classes for consistency.
++ Added more User-Agent headers in MultiIPScraper.
+
 
 ### May 23, 2016 ~ May 27, 2016
 ###### Goals
