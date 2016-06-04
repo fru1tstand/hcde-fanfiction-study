@@ -3,6 +3,9 @@ package me.fru1t.web;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Date;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -12,12 +15,29 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import me.fru1t.util.Logger;
+import me.fru1t.util.SizedHashMap;
 import me.fru1t.util.ThreadUtils;
 
 /**
- * A simple crawler that uses multiple IP addresses.
+ * Concurrent crawler that utilizes mutliple IP Addresses
  */
 public class MultiIPCrawler {
+	/**
+	 * Represents an IP address.
+	 */
+	private static class IP {
+		public byte[] ip;
+		public boolean inUse;
+		public long lastUsed;
+		public String name;
+		public IP(byte[] ip, String name) {
+			this.ip = ip;
+			this.name = name;
+			this.lastUsed = 0;
+			this.inUse = false;
+		}
+	}
+	private static final int LOCAL_CACHE_SIZE = 10;
 	private static final String[] USER_AGENTS = {
 			"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1",
 			"Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0",
@@ -125,24 +145,27 @@ public class MultiIPCrawler {
 			"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11) AppleWebKit/601.1.39 (KHTML, like Gecko) Version/9.0 Safari/601.1.39"
 	};
 
-	private byte[][] ips;
-	private int currentIpPointer;
+	private IP[] ips;
 	private Logger logger;
 	private int ipRestPeriodInMs;
-	private int lastGetTime;
 	private int minContentLength;
+	final private Deque<Request> requests;
+	private HashMap<String, String> localCache;
 
 	public MultiIPCrawler(Logger logger, int ipRestPeriodInMs, byte[][] ips) {
 		if (ips.length < 1) {
 			throw new RuntimeException("Must have 1 or more IPs specified");
 		}
 
-		this.lastGetTime = 0;
-		this.ips = ips;
+		this.ips = new IP[ips.length];
+		for (int i = 0; i < ips.length; i++){
+			this.ips[i] = new IP(ips[i], Integer.toString(i));
+		}
 		this.ipRestPeriodInMs = ipRestPeriodInMs;
-		this.currentIpPointer = 0;
 		this.logger = logger;
 		this.minContentLength = -1;
+		this.requests = new ConcurrentLinkedDeque<>();
+		this.localCache = new SizedHashMap<String, String>(LOCAL_CACHE_SIZE);
 	}
 
 	/**
@@ -159,76 +182,134 @@ public class MultiIPCrawler {
 	}
 
 	/**
-	 * Retrieves the data returned by the server. Ensures the IP isn't flooded with requests.
+	 * Queues the given request to be fetched.
 	 *
-	 * @param url
-	 * @return
-	 * @throws InterruptedException
+	 * @param request
 	 */
-	public synchronized String getContents(String url) throws InterruptedException {
-		StringBuilder status = new StringBuilder();
-		status.append("Crawling: " + url);
-
-		CloseableHttpClient client = null;
-		CloseableHttpResponse response = null;
-		try {
-			while (true) {
-				// See if we need to wait between crawls
-				int currentTime = (int) ((new Date()).getTime() / 1000);
-				int waitTime = (int) ((ipRestPeriodInMs * 1.0 / ips.length) // Default rest time
-						- (currentTime - lastGetTime)); // - Time elapsed
-				if (waitTime > 0) {
-					ThreadUtils.waitGauss(waitTime);
-					status.append("; Waiting " + waitTime + "ms");
-				}
-				lastGetTime = currentTime;
-
-				// Set IP for crawler
-				status.append("; Using IP " + currentIpPointer);
-				RequestConfig config = RequestConfig.custom()
-						.setLocalAddress(InetAddress.getByAddress(ips[currentIpPointer++]))
-						.build();
-				currentIpPointer %= ips.length;
-				HttpGet get = new HttpGet(url);
-				get.setConfig(config);
-				get.setHeader("user-agent", getRandomUserAgent()); // And a user agent just in case
-
-				// Get contents
-				client = HttpClients.createDefault();
-				response = client.execute(get); // Closed later
-				String responseString = EntityUtils.toString(response.getEntity());
-				status.append("; Length: " + responseString.length());
-
-				// Min content length check
-				if (minContentLength > 0 && responseString.length() < minContentLength) {
-					status.append("; Failed minimum content length check of "
-							+ minContentLength + ", retrying");
-					continue; // retry
-				}
-
-				status.append("; Success!");
-				return responseString;
-			}
-		} catch (IOException e) {
-			logger.log(e);
-		} finally {
-			logger.log(status.toString());
-			try { if (client != null) client.close(); }
-			catch (IOException e) { logger.log(e, "MultiIPCrawler couldn't close client"); }
-			try { if (response != null) response.close(); }
-			catch (IOException e) { logger.log(e, "MultiIpCrawler couldn't close response"); }
-		}
-
-		return null;
+	public void sendRequest(Request request) {
+		requests.addLast(request);
+		fulfillRequests();
 	}
 
 	/**
-	 * Returns the number of ips this crawler has.
+	 * Queues the given request to be fetched before any other.
 	 *
-	 * @return
+	 * @param request
 	 */
-	public int getIpCount() {
-		return ips.length;
+	public void sendHighPriorityRequest(Request request) {
+		requests.addFirst(request);
+		fulfillRequests();
+	}
+
+	private synchronized void fulfillRequests() {
+		// Check for requests.
+		if (requests.isEmpty()) {
+			return;
+		}
+		final Request request = requests.pollFirst();
+
+		// Check if in cache
+		if (localCache.containsKey(request.getUrl())) {
+			logger.log("Cache hit for " + request.getUrl() + "; Success!");
+			request.onSuccess(localCache.get(request.getUrl()));
+			fulfillRequests();
+			return;
+		}
+
+		// Check for available IPs
+		IP tempIP = null;
+		long bestTime = Long.MAX_VALUE;
+		for (IP ip : ips) {
+			if (!ip.inUse && ip.lastUsed < bestTime) {
+				bestTime = ip.lastUsed;
+				tempIP = ip;
+			}
+		}
+		if (tempIP == null) {
+			requests.addFirst(request); // Give it back :(
+			return;
+		}
+
+		final IP ip = tempIP;
+		ip.inUse = true;
+
+		(new Thread(new Runnable() {
+			@Override
+			public void run() {
+				long startTime = (new Date()).getTime();
+				StringBuilder status = new StringBuilder();
+				status.append("Crawling: " + request.getUrl()
+						+ "; IP: " + ip.name);
+
+				CloseableHttpClient client = null;
+				CloseableHttpResponse response = null;
+				try {
+					// Do until it reaches all the way through the return or an error exits the
+					// while loop.
+					while (true) {
+						// See if we need to wait between crawls
+						int waitTime = (int) (ipRestPeriodInMs
+								- (startTime - ip.lastUsed)); // - Time elapsed
+						if (waitTime > 0) {
+							ThreadUtils.waitGauss(waitTime);
+						} else {
+							waitTime = 0;
+						}
+						status.append("; Waiting " + waitTime + "ms");
+
+						// Set IP for crawler
+						RequestConfig config = RequestConfig.custom()
+								.setLocalAddress(InetAddress.getByAddress(ip.ip))
+								.build();
+						HttpGet get = new HttpGet(request.getUrl());
+						get.setConfig(config);
+						get.setHeader("user-agent", getRandomUserAgent());
+
+						// Get contents
+						long requestStartTime = (new Date()).getTime();
+						client = HttpClients.createDefault();
+						response = client.execute(get); // Closed later
+						String responseString = EntityUtils.toString(response.getEntity());
+						long requestEndTime = (new Date()).getTime();
+						status.append("; Length: " + responseString.length()
+								+ "; Request: " + (requestEndTime - requestStartTime) + "ms");
+
+						// Min content length check
+						if (minContentLength > 0
+								&& responseString.length() < minContentLength) {
+							status.append("; Failed minimum content length check of "
+									+ minContentLength + ", retrying");
+							continue; // retry
+						}
+
+						long endTime = (new Date()).getTime();
+						ip.lastUsed = endTime;
+						ip.inUse = false; // Free ip
+						status.append("; Success! Total: " + (endTime - startTime) + "ms");
+						localCache.put(request.getUrl(), responseString);
+						request.onSuccess(responseString);
+						return;
+					}
+				} catch (IOException | InterruptedException e) {
+					logger.log(e);
+					status.append("; FAILED! Calling onFailure");
+					request.onFailure(e.getMessage());
+					if (request.shouldRetryOnFail()) {
+						status.append("; Requeueing at front.");
+						requests.addFirst(request);
+					}
+				} finally {
+					logger.log(status.toString());
+					try { if (client != null) client.close(); }
+					catch (IOException e) { logger.log(e, "MultiIPCrawler couldn't close client"); }
+					try { if (response != null) response.close(); }
+					catch (IOException e) { logger.log(e, "MultiIpCrawler couldn't close response"); }
+
+					// There are some serious problems if it doesn't reach here.
+					fulfillRequests();
+				}
+			}
+		})).start();
 	}
 
 	private static String getRandomUserAgent() {

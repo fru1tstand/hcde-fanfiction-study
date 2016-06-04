@@ -3,18 +3,18 @@ package me.fru1t.fanfiction.process;
 import org.eclipse.jdt.annotation.Nullable;
 
 import me.fru1t.fanfiction.Boot;
+import me.fru1t.util.Consumer;
 import me.fru1t.util.concurrent.DatabaseProducer;
-import me.fru1t.util.concurrent.GenericConsumer;
 
 /**
  * Converts rows from a table in the database into something else.
  */
 public class ConvertProcess<T extends DatabaseProducer.Row<?>> implements Runnable {
 	private DatabaseProducer<T, ?> producer;
-	private GenericConsumer<T> converter;
+	private Consumer<T> converter;
 	private String sessionName;
 
-	public ConvertProcess(DatabaseProducer<T, ?> producer, GenericConsumer<T> converter,
+	public ConvertProcess(DatabaseProducer<T, ?> producer, Consumer<T> converter,
 			String sessionName) {
 		this.producer = producer;
 		this.converter = converter;

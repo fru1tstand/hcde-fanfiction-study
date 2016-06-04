@@ -1,4 +1,4 @@
-package me.fru1t.util.concurrent;
+package me.fru1t.util;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -7,7 +7,7 @@ import org.eclipse.jdt.annotation.Nullable;
  *
  * @param <T> The type produced by this producer.
  */
-public abstract class GenericProducer<T> {
+public abstract class Producer<T> {
 	/**
 	 * Retrieves the next item of this producer.
 	 */

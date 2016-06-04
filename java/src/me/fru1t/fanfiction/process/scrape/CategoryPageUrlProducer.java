@@ -2,9 +2,9 @@ package me.fru1t.fanfiction.process.scrape;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import me.fru1t.util.concurrent.GenericProducer;
+import me.fru1t.util.Producer;
 
-public class CategoryPageUrlProducer extends GenericProducer<String> {
+public class CategoryPageUrlProducer extends Producer<String> {
 	private static final String[] CATEGORIES =
 		{ "anime", "book", "cartoon", "comic", "game", "misc", "play", "movie", "tv" };
 	private static final String FORMAT_URL = "https://www.fanfiction.net/%s/";

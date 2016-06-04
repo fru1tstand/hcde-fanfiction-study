@@ -14,7 +14,6 @@ import me.fru1t.web.MultiIPCrawler;
 
 public class Boot {
 	public static final boolean IS_RUNNING_LOCALLY = false;
-	private static final boolean LOG_TO_FILE = true;
 	public static final boolean DEBUG = false;
 
 	// Log params
@@ -28,13 +27,7 @@ public class Boot {
 	private static final String[] REMOTE_IPS = {
 			"104.128.237.128",
 			"104.128.233.73",
-			"45.58.54.250",
-//			"2602:ffc5:20::2:f686%venet0",
-//			"2602:ffc5:20::2:93f0%venet0",
-//			"2602:ffc5:20::2:c42%venet0",
-//			"2602:ffc5:20::2:997c%venet0",
-//			"2602:ffc5:20::2:c037%venet0",
-//			"2602:ffc5:20::2:4cbe%venet0"
+			"45.58.54.250"
 	};
 
 	private static final int MIN_CONTENT_LENGTH = 1000;
@@ -55,8 +48,9 @@ public class Boot {
 		logger = new Logger();
 		logger.logMessagePrefix(LOG_MESSAGE_PREFIX);
 
-		if (!LOG_TO_FILE) {
-			System.out.println("File logging disabled. To change this setting, edit Boot.java");
+		if (DEBUG) {
+			System.out.println("File logging disabled due to debug mode. "
+					+ "To change this setting, edit Boot.java");
 		} else {
 			logger.logToFile(LOG_FILE_PREFIX, LOG_FILE_SUFFIX);
 		}
@@ -92,7 +86,8 @@ public class Boot {
 				throw new RuntimeException(e);
 			}
 			crawler = new MultiIPCrawler(logger, AVG_SLEEP_TIME_PER_IP, ips);
-			crawler.setMinContentLength(MIN_CONTENT_LENGTH);
+			crawler
+				.setMinContentLength(MIN_CONTENT_LENGTH);
 		}
 		return crawler;
 	}

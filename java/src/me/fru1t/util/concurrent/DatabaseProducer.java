@@ -16,6 +16,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import me.fru1t.util.DatabaseConnectionPool;
 import me.fru1t.util.DatabaseConnectionPool.Statement;
 import me.fru1t.util.Logger;
+import me.fru1t.util.Producer;
 
 /**
  * Provides methods that allow for sequential access to a database.
@@ -23,7 +24,7 @@ import me.fru1t.util.Logger;
  * @param <T> The type returned by this producer.
  * @param <I> The index type.
  */
-public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> extends GenericProducer<T> {
+public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> extends Producer<T> {
 	public static abstract class Row<I> {
 		public static final String COLUMN_ID = "id";
 		public I id;

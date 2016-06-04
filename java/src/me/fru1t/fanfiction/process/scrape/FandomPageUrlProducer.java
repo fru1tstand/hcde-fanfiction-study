@@ -1,5 +1,6 @@
 package me.fru1t.fanfiction.process.scrape;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,14 +13,17 @@ import org.jsoup.select.Elements;
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.producers.FandomProducer.Fandom;
 import me.fru1t.fanfiction.web.page.FandomPage;
-import me.fru1t.util.concurrent.GenericProducer;
+import me.fru1t.util.Consumer;
+import me.fru1t.util.Producer;
+import me.fru1t.util.concurrent.ConcurrentProducer;
+import me.fru1t.web.Request;
 
 /**
  * Defines the production of URLs for fandom pages. Fandom pages contain a list of stories with
  * metadata.
  * (eg https://www.fanfiction.net/anime/Naruto/?&srt=1&r=103&p=3)
  */
-public class FandomPageUrlProducer extends GenericProducer<String> {
+public class FandomPageUrlProducer extends ConcurrentProducer<String> {
 	/**
 	 * Format parameters:
 	 * 1 Category
@@ -37,15 +41,19 @@ public class FandomPageUrlProducer extends GenericProducer<String> {
 	private static final int PAGE_COUNT_GROUP = 1;
 	private static final String LINK_HREF_ATTR = "href";
 	private static final int MAX_RETRIES = 5;
+	private static final int EXTRA_PAGE_MIN_STORIES_THRESHOLD = 5000;
 
 
-	private GenericProducer<Fandom> fandomProducer;
+	private static boolean isBlocked;
+
+	private Producer<Fandom> fandomProducer;
 	private Fandom currentFandom;
 	private int currentPage;
 	private int maxPages;
+	private boolean isDebugging;
 
 	public FandomPageUrlProducer(Fandom fandom) {
-		this(new GenericProducer<Fandom>() {
+		this(new Producer<Fandom>() {
 			boolean hasTaken = false;
 			@Override
 			public @Nullable Fandom take() {
@@ -57,9 +65,11 @@ public class FandomPageUrlProducer extends GenericProducer<String> {
 			}
 
 		});
+		this.isDebugging = Boot.DEBUG;
 	}
 
-	public FandomPageUrlProducer(GenericProducer<Fandom> fandomProducer) {
+	public FandomPageUrlProducer(Producer<Fandom> fandomProducer) {
+		isBlocked = false;
 		this.currentFandom = null;
 		this.currentPage = -1;
 		this.maxPages = -1;
@@ -69,12 +79,14 @@ public class FandomPageUrlProducer extends GenericProducer<String> {
 
 	@Override
 	public synchronized @Nullable String take() {
+		isBlocked = true;
 		// Check if there are any more pages + 1 for good measure
-		if (currentPage > maxPages + 1) {
+		if (currentPage > maxPages + ((maxPages > EXTRA_PAGE_MIN_STORIES_THRESHOLD) ? 1 : 0)) {
 			if (!nextFandom()) {
 				return null;
 			}
 		}
+		isBlocked = false;
 		return getFandomUrl(currentFandom, currentPage++);
 	}
 
@@ -96,16 +108,28 @@ public class FandomPageUrlProducer extends GenericProducer<String> {
 		int retries = 0;
 		do {
 			// Get fandom content
-			String fandomPageString = "";
+			final String[] fandomPageString = new String[1];
 			try {
-				fandomPageString = Boot.getCrawler().getContents(getFandomUrl(currentFandom, 1));
+				// Because the crawler fetch is asynchronous, we need a CountDownLatch to make this
+				// process sleep until it's returned.
+				final CountDownLatch doneSignal = new CountDownLatch(1);
+				Boot.getCrawler().sendHighPriorityRequest(new Request(
+						getFandomUrl(currentFandom, 1),
+						new Consumer<String>() {
+							@Override
+							public void eat(String content) {
+								fandomPageString[0] = content;
+								doneSignal.countDown();
+							}
+				}));
+				doneSignal.await();
 			} catch (InterruptedException e) {
 				Boot.getLogger().log(e, "Interrupted when fetching page details in scrape/FandomPage");
 				return false;
 			}
 
 			// Look for max pages
-			Document fandomPageDoc = Jsoup.parse(fandomPageString);
+			Document fandomPageDoc = Jsoup.parse(fandomPageString[0]);
 			Elements pageNumberLinks = fandomPageDoc.select(PAGE_NUMBERS_SELECTOR);
 			for (Element pageNumberLink : pageNumberLinks) {
 				Matcher m = PAGE_NUMBERS_HREF_PATTERN.matcher(pageNumberLink.attr(LINK_HREF_ATTR));
@@ -120,14 +144,10 @@ public class FandomPageUrlProducer extends GenericProducer<String> {
 					foundMaxPages = thisPageNumber;
 				}
 			}
-			if (foundMaxPages < 0) {
-				Boot.getLogger().log("No page number links found when starting to scrape fandom "
-						+ currentFandom.toString() + ". Retrying.");
-			}
-			if (Boot.DEBUG && foundMaxPages > 0) {
-				Boot.getLogger().debug("Found " + foundMaxPages + " pages, but setting to 1 for"
-						+ "debug purposes", this.getClass());
-				foundMaxPages = 1;
+			if (isDebugging && foundMaxPages > 10) {
+				Boot.getLogger().debug("Found " + foundMaxPages + " pages, but setting to 10 for"
+						+ " debug purposes", this.getClass());
+				foundMaxPages = 10;
 			}
 
 			// The page loaded correctly if there are book result elements, so if we still haven't
@@ -135,6 +155,10 @@ public class FandomPageUrlProducer extends GenericProducer<String> {
 			fp = new FandomPage(fandomPageDoc);
 			if (foundMaxPages < 1 && fp.getStoryElements().size() > 0) {
 				foundMaxPages = 1;
+			}
+			if (foundMaxPages < 0 && fp.getStoryElements().size() < 1) {
+				Boot.getLogger().log("No page number links found when starting to scrape fandom "
+						+ currentFandom.toString() + ". Retrying.");
 			}
 
 			// While no max pages found, no stories found, and within retry limits.
@@ -158,5 +182,10 @@ public class FandomPageUrlProducer extends GenericProducer<String> {
 
 	private String getFandomUrl(Fandom fandom, int page) {
 		return BASE_URL + fandom.url + ANY_RATING_ANY_LANGUAGE_SORTED_PUBLISH + PAGE_PARAM + page;
+	}
+
+	@Override
+	public Boolean isBlocked() {
+		return isBlocked;
 	}
 }

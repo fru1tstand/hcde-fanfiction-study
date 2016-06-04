@@ -14,10 +14,10 @@ import org.jsoup.select.Elements;
 
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
+import me.fru1t.util.Consumer;
 import me.fru1t.util.DatabaseConnectionPool.Statement;
-import me.fru1t.util.concurrent.GenericConsumer;
 
-public class CategoryToFandoms extends GenericConsumer<Scrape> {
+public class CategoryToFandoms extends Consumer<Scrape> {
 	/**
 	 * Simple Java class to store fandom information.
 	 */
