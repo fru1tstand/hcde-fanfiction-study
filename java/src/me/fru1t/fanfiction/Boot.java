@@ -5,15 +5,16 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 
-import me.fru1t.fanfiction.database.producers.FandomProducer;
-import me.fru1t.fanfiction.process.ScrapeProcess;
-import me.fru1t.fanfiction.process.scrape.FandomPageUrlProducer;
+import me.fru1t.fanfiction.database.producers.ScrapeProducer;
+import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
+import me.fru1t.fanfiction.process.ConvertProcess;
+import me.fru1t.fanfiction.process.convert.FandomToStories;
 import me.fru1t.util.DatabaseConnectionPool;
 import me.fru1t.util.Logger;
 import me.fru1t.web.MultiIPCrawler;
 
 public class Boot {
-	public static final boolean IS_RUNNING_LOCALLY = false;
+	public static final boolean IS_RUNNING_LOCALLY = true;
 	public static final boolean DEBUG = false;
 
 	// Log params
@@ -60,9 +61,13 @@ public class Boot {
 //				new ScrapeProducer("Category Pages 5-26-2016"),
 //				new CategoryToFandoms(),
 //				"Category Pages 5-26-2016 - Convert")).run();
-		(new ScrapeProcess(
-				new FandomPageUrlProducer(new FandomProducer()),
-				Session.SCRAPE_ALL_FANDOM_PAGES_16_6_1)).run();
+//		(new ScrapeProcess(
+//				new FandomPageUrlProducer(new FandomProducer()),
+//				Session.SCRAPE_ALL_FANDOM_PAGES_16_6_1)).run();
+		(new ConvertProcess<Scrape>(
+				new ScrapeProducer(Session.SCRAPE_ALL_FANDOM_PAGES_16_6_1),
+				new FandomToStories(Session.CONVERT_ALL_FANDOM_PAGES_16_6_6),
+				Session.CONVERT_ALL_FANDOM_PAGES_16_6_6)).run();
 	}
 
 	public static Logger getLogger() {

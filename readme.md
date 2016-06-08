@@ -8,7 +8,7 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
 0. Increase throughput of scraping process via increased IP allocation (using IPv6). ✓
   + FanFiction.net does not support IPv6.
 1. Scrape & Process all category pages. ✓
-2. Scrape & Process all fandom (story list) pages.
+2. Scrape & Process all fandom (story list) pages. ✓
 3. Start building of heatmap (genre distribution) application.
 
 ###### Changelist
@@ -29,6 +29,8 @@ Does distributed mentoring have a positive effect on writing ability as demonstr
   + `MultiIPCrawler` now only supports asynchronous fetching of pages.
   + Rewrote `ScrapeProcess`, `FandomProducer`, and all related submodules to conform to new concurrent paradigm.
   + Disabled non-conforming code for old processes.
++ Successfully scraped all fandom pages.
++ Created and successfully ran `convert/FandomToStories`
 
 
 ### May 23, 2016 ~ May 27, 2016

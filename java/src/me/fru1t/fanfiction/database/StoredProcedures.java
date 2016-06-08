@@ -40,7 +40,7 @@ public class StoredProcedures {
 	 * 23 metadata TEXT
 	 */
 	private static final String USP_PROCESS_LIST_SCRAPE_TO_STORY =
-			"{CALL usp_process_list_scrape_to_story(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
+			"{CALL usp_process_list_scrape_to_story(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
 
 	/**
 	 * 1 ff_story_id INT
@@ -107,7 +107,7 @@ public class StoredProcedures {
 	 */
 	public static void processListScrapeToStory(
 			int scrapeId,
-			String sessionName,
+			Session convertSession,
 			String categoryName,
 			String fandomUrl,
 			List<FandomStoryListElement> bookResultElements) throws InterruptedException {
@@ -140,7 +140,7 @@ public class StoredProcedures {
 						storyStmt.setInt(16, bre.processedMetadata.dateUpdated);// 16 date_updated INT(10),
 						storyStmt.setBoolean(17, bre.processedMetadata.isComplete); // 17 is_complete TINYINT,
 						storyStmt.setInt(18, scrapeId); // 18 scrape_id INT,
-						storyStmt.setString(19, sessionName); // 19 session_name VARCHAR(128),
+						storyStmt.setString(19, convertSession.name()); // 19 session_name VARCHAR(128),
 						storyStmt.setInt(20, dateProcessed); // 20 process_date INT(10),
 						storyStmt.setBoolean(21, bre.processedMetadata.didSuccessfullyParse); // 21 meta_did_successfully_parse TINYINT,
 						storyStmt.setBoolean(22, bre.didSuccessfullyParse); // 22 story_did_successfully_parse TINYINT,

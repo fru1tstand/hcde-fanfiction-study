@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import org.eclipse.jdt.annotation.Nullable;
 
 import me.fru1t.fanfiction.Boot;
+import me.fru1t.fanfiction.Session;
 import me.fru1t.util.concurrent.DatabaseProducer;
 
 /**
@@ -63,7 +64,7 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 
 	private static final int DEFAULT_BOUND_VALUE = -1;
 	@Nullable
-	private static final String[] DEFAULT_SCRAPE_SESSIONS = {};
+	private static final Session[] DEFAULT_SCRAPE_SESSIONS = {};
 
 	private int lowerIdBound;
 	private int upperIdBound;
@@ -89,44 +90,40 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 	public ScrapeProducer(
 			int lowerIdBound,
 			int upperIdBound,
-			@Nullable String[] sessionNames) throws InterruptedException {
+			Session[] sessionNames) throws InterruptedException {
 		super(ID_NAME, Scrape.class, Boot.getDatabaseConnectionPool(),
 				BUFFER_SIZE, Boot.getLogger());
 		this.lowerIdBound = (lowerIdBound < 0) ? -1 : lowerIdBound;
 		this.upperIdBound = (upperIdBound < 0) ? -1 : upperIdBound;
 
 		// Sanitize session names
-		this.sessionNames = DEFAULT_SCRAPE_SESSIONS;
+		this.sessionNames = new String[sessionNames.length];
 		this.sessionIdSql = "";
-		if (sessionNames != null) {
-			// Set sessionNames field
-			this.sessionNames = new String[sessionNames.length];
-			for (int i = 0; i < sessionNames.length; i++) {
-				String s = sessionNames[i];
-				if (s != null) {
-					this.sessionNames[i] = s.replaceAll("'", "\\'");
-				}
+		for (int i = 0; i < sessionNames.length; i++) {
+			String s = sessionNames[i].name();
+			if (s != null) {
+				this.sessionNames[i] = s.replaceAll("'", "\\'");
 			}
-
-			// Fetch sessionids
-			String[] sessionParts = new String[sessionNames.length];
-			try {
-				Connection c = Boot.getDatabaseConnectionPool().getConnection();
-				String getSessionIdsQuery =
-						String.format(SESSION_QUERY_BASE_FMT, String.join("','", this.sessionNames));
-				PreparedStatement stmt = c.prepareStatement(getSessionIdsQuery);
-				ResultSet result = stmt.executeQuery();
-				int i = 0;
-				while (result.next()) {
-					sessionParts[i] = String.format(SESSION_RESTRICT_PART_FMT, result.getInt(1));
-					i++;
-				}
-			} catch (SQLException e) {
-				Boot.getLogger().log(e);
-				throw new RuntimeException(e);
-			}
-			this.sessionIdSql = String.format(SESSION_RESTRICT_FMT, String.join(" OR ", sessionParts));
 		}
+
+		// Fetch sessionids
+		String[] sessionParts = new String[sessionNames.length];
+		try {
+			Connection c = Boot.getDatabaseConnectionPool().getConnection();
+			String getSessionIdsQuery =
+					String.format(SESSION_QUERY_BASE_FMT, String.join("','", this.sessionNames));
+			PreparedStatement stmt = c.prepareStatement(getSessionIdsQuery);
+			ResultSet result = stmt.executeQuery();
+			int i = 0;
+			while (result.next()) {
+				sessionParts[i] = String.format(SESSION_RESTRICT_PART_FMT, result.getInt(1));
+				i++;
+			}
+		} catch (SQLException e) {
+			Boot.getLogger().log(e);
+			throw new RuntimeException(e);
+		}
+		this.sessionIdSql = String.format(SESSION_RESTRICT_FMT, String.join(" OR ", sessionParts));
 	}
 
 	/**
@@ -135,7 +132,7 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 	 * @param sessionNames
 	 * @throws InterruptedException
 	 */
-	public ScrapeProducer(@Nullable String... sessionNames) throws InterruptedException {
+	public ScrapeProducer(@Nullable Session... sessionNames) throws InterruptedException {
 		this(DEFAULT_BOUND_VALUE, DEFAULT_BOUND_VALUE, sessionNames);
 	}
 

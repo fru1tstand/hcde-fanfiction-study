@@ -284,14 +284,13 @@ public class MultiIPCrawler {
 
 						long endTime = (new Date()).getTime();
 						ip.lastUsed = endTime;
-						ip.inUse = false; // Free ip
 						status.append("; Success! Total: " + (endTime - startTime) + "ms");
 						localCache.put(request.getUrl(), responseString);
 						request.onSuccess(responseString);
 						return;
 					}
 				} catch (IOException | InterruptedException e) {
-					logger.log(e);
+					ip.lastUsed = (new Date()).getTime();
 					status.append("; FAILED! Calling onFailure");
 					request.onFailure(e.getMessage());
 					if (request.shouldRetryOnFail()) {
@@ -299,6 +298,7 @@ public class MultiIPCrawler {
 						requests.addFirst(request);
 					}
 				} finally {
+					ip.inUse = false; // Free ip
 					logger.log(status.toString());
 					try { if (client != null) client.close(); }
 					catch (IOException e) { logger.log(e, "MultiIPCrawler couldn't close client"); }
