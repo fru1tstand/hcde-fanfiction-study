@@ -1,0 +1,4 @@
+[submodule "web/php/me/fru1t/common"]
+	path = web/php/me/fru1t/common
+	url = git@github.com:fru1tstand/fru1tme-common-php.git
+	branch = master

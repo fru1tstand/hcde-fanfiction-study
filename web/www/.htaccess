@@ -1,5 +1,4 @@
+## See https://github.com/fru1tstand/fru1tme-common-php/tree/master/router#pretty-urls
 RewriteEngine On
-
-RewriteRule ^.+\..+$ - [L,NC]
-
-RewriteRule ^([^?.]+)(\?.+)?$ /index.php?page=$1 [L,QSA]
+RewriteRule ^index\.php.*$ - [L,NC]
+RewriteRule ^([^?]+)(\?.+|)$ /index.php?page=$1 [L,QSA]

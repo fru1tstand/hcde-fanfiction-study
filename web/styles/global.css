@@ -1,0 +1,131 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box; }
+
+a, a:link, a:visited, label, label:link, label:visited {
+  text-decoration: none;
+  color: #ffa146;
+  cursor: pointer; }
+a:hover, a:active, label:hover, label:active {
+  color: #bc7137; }
+
+html, body {
+  font-family: Raleway, serif;
+  background-color: #f9f9f9;
+  color: #2f5f5d;
+  min-width: 1000px; }
+
+.flex {
+  display: flex; }
+
+.flex-liquid {
+  flex: 1 1 auto; }
+
+.bold {
+  font-weight: bold; }
+
+.container {
+  padding: 0 80px;
+  max-width: 1600px; }
+
+.state {
+  display: none; }
+
+.carousel {
+  background-color: #efefef;
+  padding: 30px 0;
+  font-size: 0;
+  white-space: nowrap;
+  overflow: auto; }
+  .carousel img {
+    height: 70vh;
+    max-height: 700px;
+    vertical-align: middle;
+    display: inline-block;
+    padding-left: 20px; }
+    .carousel img:nth-child(2) {
+      padding-left: 0; }
+  .carousel .padding {
+    width: 80px;
+    display: inline-block;
+    height: 100px;
+    vertical-align: middle; }
+
+.content-push {
+  height: 60px; }
+
+.content-push-small {
+  height: 25px; }
+
+.container {
+  margin: 0 auto; }
+
+.section-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333; }
+
+.home-title {
+  font-size: 34px;
+  font-weight: bold;
+  color: #333; }
+
+.home-nav {
+  list-style: none;
+  font-size: 0; }
+  .home-nav li {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 16px; }
+    .home-nav li.spacer {
+      width: 1px;
+      background-color: #a7a7a7;
+      height: 10px;
+      margin: 0 10px; }
+
+.section-subtitle {
+  font-weight: bold; }
+
+.researchers {
+  list-style: disc; }
+
+.download {
+  flex: 0 0 400px;
+  font-size: 16px;
+  text-align: center; }
+  .download i {
+    font-size: 46px;
+    padding-bottom: 8px; }
+
+.submission-flex {
+  align-items: center; }
+
+.submission-text {
+  border-right: 1px solid #e8e8e8;
+  padding-right: 80px; }
+
+.required-software > li {
+  padding-top: 25px; }
+.required-software p,
+.required-software .padded {
+  padding-top: 8px;
+  width: 720px; }
+.required-software img {
+  width: 100%; }
+.required-software .required-software-flex {
+  flex: 0 0 800px; }
+  .required-software .required-software-flex p,
+  .required-software .required-software-flex .padded {
+    width: 100%;
+    padding-right: 80px; }
+.required-software .step-by-step li {
+  padding-top: 4px; }
+
+.state + .software-setup .hide {
+  display: none; }
+
+.state:checked + .software-setup .hide {
+  display: block; }
+
+/*# sourceMappingURL=global.css.map */
