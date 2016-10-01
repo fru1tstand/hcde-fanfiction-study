@@ -1,0 +1,97 @@
+// Shared styles like sections headers, titles, etc.
+
+// Layouts
+%restricted {
+  padding: 0 $content-spacing;
+  max-width: 1600px;
+}
+
+.flex {
+  display: flex;
+}
+.flex-liquid {
+  flex: 1 1 auto;
+}
+
+.state {
+  display: none;
+}
+
+.container {
+  @extend %restricted;
+  margin: 0 auto;
+
+  p {
+    padding-top: 6px;
+    width: 800px - $content-spacing;
+  }
+}
+
+.guide {
+  background-color: $color-background-off;
+  padding: $content-spacing-small/2 $content-spacing/2;
+  align-items: center;
+  margin-top: $content-spacing-small;
+
+  .title {
+    padding-top: 0;
+    padding-right: $content-spacing-small;
+    font-weight: bold;
+  }
+  img {
+    width: 100%;
+    padding-top: $content-spacing-small;
+  }
+  .step-by-step {
+    padding-right: $content-spacing-small;
+
+    li {
+      padding-top: 8px;
+    }
+    ul {
+      padding-left: 18px;
+    }
+  }
+
+  .left-flex {
+    flex: 0 0 800px;
+  }
+}
+.state:not(:checked) + .guide {
+  display: none;
+}
+
+
+// Titles and headings
+.section-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: $color-title;
+}
+.section-subtitle {
+  font-weight: bold;
+  padding-top: $content-spacing-small;
+}
+.subsection {
+  padding-top: $content-spacing-small;
+}
+
+// Spacing
+.content-push {
+  height: $content-push;
+}
+.content-push-small {
+  height: $content-spacing-small;
+}
+
+.padded {
+  width: 800px - $content-spacing;
+}
+.top-padded {
+  padding-top: 6px;
+}
+
+// Generic styles
+.bold {
+  font-weight: bold;
+}

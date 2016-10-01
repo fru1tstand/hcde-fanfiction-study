@@ -37,6 +37,16 @@ Router::setup()
         ->provide('../static/start-server.bat')
         ->withHeader('Content-Disposition: attachment; filename="start-server.bat"')
         ->build())
+    ->map(Route::newBuilder()
+        ->whenRequested('img3.png')
+        ->provide('../static/mysql-workbench.png')
+        ->withHeader('Content-Type: image/png')
+        ->build())
+    ->map(Route::newBuilder()
+        ->whenRequested('img4.png')
+        ->provide('../static/importing.png')
+        ->withHeader('Content-Type: image/png')
+        ->build())
     ->complete();
 Templates::setup()->complete();
 

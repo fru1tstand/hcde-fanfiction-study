@@ -1,0 +1,21 @@
+// Styles used in the "our submission" section
+.sub-researchers {
+  list-style: disc;
+}
+.sub-download {
+  flex: 0 0 400px;
+  font-size: 16px;
+  text-align: center;
+
+  i {
+    font-size: 46px;
+    padding-bottom: 8px;
+  }
+}
+.submission-flex {
+  align-items: center;
+}
+.submission-text {
+  border-right: 1px solid #e8e8e8;
+  padding-right: $content-spacing;
+}
