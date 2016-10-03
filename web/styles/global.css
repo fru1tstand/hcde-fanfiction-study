@@ -146,9 +146,28 @@ html, body {
   font-size: 0; }
   .about-tables .table {
     display: inline-block;
-    font-size: 16px;
-    width: 33.3333%;
-    padding: 14px 25px;
-    min-width: 400px; }
+    vertical-align: top;
+    font-size: 12px;
+    width: 50%;
+    min-width: 500px;
+    padding: 14px 12.5px; }
+    .about-tables .table .title {
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #f3f3f3;
+      padding: 4px 12.5px 0; }
+    .about-tables .table > .descr {
+      background-color: #f3f3f3;
+      padding: 0 12.5px 4px; }
+  .about-tables .column-container {
+    padding: 4px 12.5px; }
+    .about-tables .column-container .name {
+      font-size: 14px; }
+    .about-tables .column-container .descr {
+      color: #9b9b9b; }
+    .about-tables .column-container .column {
+      padding-top: 4px; }
+      .about-tables .column-container .column:nth-child(1) {
+        padding-top: 0; }
 
 /*# sourceMappingURL=global.css.map */
