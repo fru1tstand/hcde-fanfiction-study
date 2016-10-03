@@ -25,6 +25,7 @@ class EmptyPage extends Template {
 	<title>Fru1tMe Research - {$fields[self::FIELD_HTML_TITLE]}</title>
 	<meta charset="UTF-8" />
 	
+	<link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
 	<link type="text/css" rel="stylesheet" href="styles.css" />
 	<link type="text/css" rel="stylesheet"
 	      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
