@@ -145,12 +145,11 @@ html, body {
 .about-tables {
   font-size: 0; }
   .about-tables .table {
-    display: inline-block;
-    vertical-align: top;
     font-size: 12px;
     width: 50%;
     min-width: 500px;
-    padding: 14px 12.5px; }
+    padding: 14px 12.5px;
+    float: left; }
     .about-tables .table .title {
       font-size: 16px;
       font-weight: bold;
@@ -169,5 +168,17 @@ html, body {
       padding-top: 4px; }
       .about-tables .column-container .column:nth-child(1) {
         padding-top: 0; }
+
+.terminology-list {
+  list-style: none;
+  font-size: 0; }
+  .terminology-list li {
+    display: inline-block;
+    font-size: 14px;
+    width: 33.3333%;
+    padding: 12.5px 12.5px 0 0;
+    vertical-align: top; }
+  .terminology-list .word {
+    font-weight: bold; }
 
 /*# sourceMappingURL=global.css.map */

@@ -119,8 +119,21 @@ class UsingTheData extends Template {
     return <<<HTML
 <div class="container accessing-data-container">
   <div class="section-title">Using the Data</div>
+  <!-- Terminology -->
+  <div class="section-subtitle">Terminology:</div>
+  <ul class="terminology-list">
+    <li><span class="word">Category</span> is the medium with which the fandom is presented in.
+      There are a total of 9 categories: Anime, Book, Cartoon, Comic, Game, Misc, Movie, Play,
+      and TV. Categories are a creation of fanfiction.net.</li>
+    <li><span class="word">Fandom</span> or <span class="word">source material</span> is the
+      original, official anime/book/cartoon/etc. For example "Harry Potter" and "Bleach" are both
+      fandoms. A fandom will always fall under a category.</li>
+    <li><span class="word">Story</span> means a user written piece of work. Stories are always
+      text-based due to the format of fanfiction.net, though the fandom it's associated to may
+      or may not be.</li>
+  </ul>
   
-  <!-- About the Database -->
+  <!-- Database tables -->
   <div class="section-subtitle">Database Tables:</div>
   <p>The tables and their columns are explained in this section.</p>
   <div class="about-tables">{$tablesHtml}</div>
