@@ -19,8 +19,6 @@ $body = <<<HTML
     <li><a href="#downloads">Downloads &amp; Setting Up</a></li>
     <li class="spacer"></li>
     <li><a href="#using-the-data">Using the Data</a></li>
-    <li class="spacer"></li>
-    <li><a href="#related">Related Links</a></li>
   </ul>
 </div>
 
@@ -48,9 +46,6 @@ $body = <<<HTML
 <!-- Using the Data -->
 <div class="content-push" id="using-the-data"></div>
 {$usingTheData}
-
-<!-- Related Links -->
-<div class="content-push" id="related"></div>
 
 <div class="content-push"></div>
 HTML;

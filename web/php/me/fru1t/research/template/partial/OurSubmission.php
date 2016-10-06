@@ -31,10 +31,10 @@ class OurSubmission extends Template {
         <li><a href="http://faculty.washington.edu/aragon/"
                target="_blank">Cecilia Aragon</a>,
           University of Washington, Human Centered Design & Engineering, Professor</li>
-        <li>Katie Davis,
-          University of Washington, Information School, Assistant Professor</li>
         <li>Sarah Evans,
           University of Washington, School of Education, PhD Student</li>
+        <li>Katie Davis,
+          University of Washington, Information School, Assistant Professor</li>
       </ul>
       
       <div class="section-subtitle">Abstract:</div>
@@ -52,9 +52,7 @@ class OurSubmission extends Template {
         database of raw metadata available so that other researchers can explore further
         questions related to online fanfiction communities.</div>
     </div>
-    <div class="sub-download">
-        <a><i class="fa fa-file-pdf-o"></i><br />Download link coming soon...</a>
-    </div>
+    <div class="sub-download"></div>
   </div>
 </div>
 HTML;

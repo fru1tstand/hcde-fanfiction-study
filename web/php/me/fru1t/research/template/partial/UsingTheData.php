@@ -38,8 +38,8 @@ class UsingTheData extends Template {
                 'date_published' => 'The unix datetime stamp (in seconds) the story was published,'
                     . 'reported by Fanfiction.net',
                 'date_updated' => 'The latest unix datetime stamp (in seconds) the story was '
-                    . 'updated, if applicable, reported by Fanfiction.net',
-                'is_complete' => 'If the story is complete as reported by the author.'
+                    . 'updated, or "-1" if not applicable, reported by Fanfiction.net.',
+                'is_complete' => 'If the story is "complete" as reported by the author.'
             ]),
         new UsingTheDataTable('fandom',
             'Fandom or "source material". For example, Harry Potter, Bleach, etc.',
@@ -135,8 +135,96 @@ class UsingTheData extends Template {
   
   <!-- Database tables -->
   <div class="section-subtitle">Database Tables:</div>
-  <p>The tables and their columns are explained in this section.</p>
-  <div class="about-tables">{$tablesHtml}</div>
+  <div class="about-tables">
+    {$tablesHtml}
+    <div class="clearfix"></div>
+  </div>
+  
+  <!-- Using MySQL workbench -->
+  <div class="section-subtitle">Using MySQL Workbench:</div>
+  <p><label for="using-mysql-workbench">Click here</label> to expand the description image.</p>
+  <input type="checkbox" class="state" id="using-mysql-workbench" />
+  <div class="guide">
+    <img src="/img5.png" alt="k" />
+    <div class="title">
+      Tips:
+    </div>
+    <ul class="step-by-step">
+      <li>Set 'fanfiction' as the default schema so that you can omit the schema in the queries</li>
+      <li>You can press ctrl + enter to execute scripts from within the active query panel</li>
+      <li>The workbench will automatically syntax highlight and underline errors</li>
+      <li>Click the arrow next to 'tables' to see a list of all tables in the fanfiction
+        database</li>
+    </ul>
+  </div>
+  
+  <!-- Example Queries -->
+  <div class="section-subtitle">Example Queries:</div>
+  <ul class="example-queries">
+    <li>
+      <div>Show the use of genres</div>
+      <pre>
+SELECT
+  genre.name AS genre,
+  COUNT(story_genre.story_id) AS stories
+FROM story_genre
+INNER JOIN genre ON genre.id = story_genre.genre_id
+GROUP BY genre.name
+ORDER BY stories DESC
+</pre>
+    </li>
+    <li>
+      <div>
+        Basic statistical analysis
+        <p>Note: while possible to obtain median directly through MySQL, it'd be wise to use a 3rd
+          party program to do it. The SQL solution is not a pretty one.</p>
+      </div>
+      <pre>
+SELECT
+    COUNT(id) AS stories,
+    COUNT(DISTINCT user_id) AS authors,
+    COUNT(DISTINCT language_id) AS languages,
+    SUM(chapters) AS `total chapters`,
+    AVG(chapters) AS `average chapters`,
+    SUM(words) AS `total words`,
+    AVG(words) AS `average words`,
+    SUM(reviews) AS `total reviews`,
+    AVG(reviews) AS `average reviews`,
+    SUM(favorites) AS `total favorites`,
+    AVG(favorites) AS `average favorites`,
+    SUM(followers) AS `total followers`,
+    AVG(followers) AS `average followers`
+FROM story
+</pre>
+    </li>
+    <li>
+      <div>
+        Basic statistical analysis by genre
+        <p>Caution: This query may take > 30 minutes to execute.</p>
+      </div>
+      <pre>
+SELECT
+    genre.name AS genre,
+    COUNT(story.id) AS stories,
+    COUNT(DISTINCT story.user_id) AS authors,
+    COUNT(DISTINCT story.language_id) AS languages,
+    SUM(story.chapters) AS `total chapters`,
+    AVG(story.chapters) AS `average chapters`,
+    SUM(story.words) AS `total words`,
+    AVG(story.words) AS `average words`,
+    SUM(story.reviews) AS `total reviews`,
+    AVG(story.reviews) AS `average reviews`,
+    SUM(story.favorites) AS `total favorites`,
+    AVG(story.favorites) AS `average favorites`,
+    SUM(story.followers) AS `total followers`,
+    AVG(story.followers) AS `average followers`
+FROM story_genre
+INNER JOIN story ON story.id = story_genre.story_id
+INNER JOIN genre ON genre.id = story_genre.genre_id
+GROUP BY genre
+</pre>
+    </li>
+  </ul>
 </div>
 HTML;
 

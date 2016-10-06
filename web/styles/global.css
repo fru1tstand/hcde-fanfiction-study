@@ -97,6 +97,9 @@ html, body {
 .state:not(:checked) + .guide {
   display: none; }
 
+.clearfix {
+  clear: both; }
+
 .section-title {
   font-size: 24px;
   font-weight: bold;
@@ -180,5 +183,28 @@ html, body {
     vertical-align: top; }
   .terminology-list .word {
     font-weight: bold; }
+
+.example-queries {
+  list-style: none;
+  width: 50%;
+  display: block; }
+  .example-queries li {
+    margin-top: 16px;
+    display: block;
+    background-color: #f3f3f3;
+    padding: 8px; }
+    .example-queries li > div {
+      margin-bottom: 8px;
+      font-weight: bold; }
+  .example-queries p {
+    width: auto;
+    font-size: 12px;
+    color: #a7a7a7;
+    padding-top: 0;
+    font-weight: normal; }
+  .example-queries pre {
+    background-color: #FFF;
+    padding: 4px 25px;
+    overflow: auto; }
 
 /*# sourceMappingURL=global.css.map */

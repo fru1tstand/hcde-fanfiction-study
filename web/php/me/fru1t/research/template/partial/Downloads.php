@@ -26,7 +26,8 @@ class Downloads extends Template {
   <!-- Quick start guide -->
   <div class="section-subtitle">Setup Guide:</div>
   <p>Here we'll walk you through getting up and running as quick as possible.</p>
-  <p class="top-padded"><label for="quick-start-guide">Click here</label> to expand this guide.</p>
+  <p class="top-padded"><label for="quick-start-guide">Click here</label> to expand the Windows
+    guide.</p>
   <input type="checkbox" class="state" id="quick-start-guide" />
   <div class="flex guide">
     <div class="left-flex">

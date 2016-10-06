@@ -47,6 +47,11 @@ Router::setup()
         ->provide('../static/importing.png')
         ->withHeader('Content-Type: image/png')
         ->build())
+    ->map(Route::newBuilder()
+        ->whenRequested('img5.png')
+        ->provide('../static/mysql-workbench-use.png')
+        ->withHeader('Content-Type: image/png')
+        ->build())
     ->complete();
 Templates::setup()->complete();
 
