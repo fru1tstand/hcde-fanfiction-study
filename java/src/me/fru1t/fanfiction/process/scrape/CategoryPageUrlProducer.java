@@ -2,9 +2,9 @@ package me.fru1t.fanfiction.process.scrape;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import me.fru1t.util.Producer;
+import me.fru1t.util.concurrent.ConcurrentProducer;
 
-public class CategoryPageUrlProducer extends Producer<String> {
+public class CategoryPageUrlProducer extends ConcurrentProducer<String> {
 	private static final String[] CATEGORIES =
 		{ "anime", "book", "cartoon", "comic", "game", "misc", "play", "movie", "tv" };
 	private static final String FORMAT_URL = "https://www.fanfiction.net/%s/";
@@ -21,6 +21,11 @@ public class CategoryPageUrlProducer extends Producer<String> {
 			return null;
 		}
 		return String.format(FORMAT_URL, CATEGORIES[categoryIndex++]);
+	}
+
+	@Override
+	public Boolean isBlocked() {
+		return false;
 	}
 
 }

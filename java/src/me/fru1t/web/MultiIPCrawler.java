@@ -14,6 +14,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
+import me.fru1t.fanfiction.Boot;
 import me.fru1t.util.Logger;
 import me.fru1t.util.SizedHashMap;
 import me.fru1t.util.ThreadUtils;
@@ -248,10 +249,10 @@ public class MultiIPCrawler {
 					// while loop.
 					while (true) {
 						// See if we need to wait between crawls
-						int waitTime = (int) (ipRestPeriodInMs
+						long waitTime = (ipRestPeriodInMs
 								- (startTime - ip.lastUsed)); // - Time elapsed
 						if (waitTime > 0) {
-							ThreadUtils.waitGauss(waitTime);
+							ThreadUtils.waitGauss((int) waitTime);
 						} else {
 							waitTime = 0;
 						}

@@ -5,10 +5,16 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 
+import me.fru1t.fanfiction.database.producers.FandomProducer;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
 import me.fru1t.fanfiction.process.ConvertProcess;
+import me.fru1t.fanfiction.process.ScrapeProcess;
+import me.fru1t.fanfiction.process.convert.CategoryToFandoms;
 import me.fru1t.fanfiction.process.convert.FandomToStories;
+import me.fru1t.fanfiction.process.scrape.CategoryPageUrlProducer;
+import me.fru1t.fanfiction.process.scrape.FandomPageUrlProducer;
+import me.fru1t.fanfiction.web.page.CategoryPage;
 import me.fru1t.util.DatabaseConnectionPool;
 import me.fru1t.util.Logger;
 import me.fru1t.web.MultiIPCrawler;
@@ -25,10 +31,13 @@ public class Boot {
 
 	// Crawler params
 	private static final int AVG_SLEEP_TIME_PER_IP = 3000;
+//	private static final String[] REMOTE_IPS = {
+//			"104.128.237.128",
+//			"104.128.233.73",
+//			"45.58.54.250"
+//	};
 	private static final String[] REMOTE_IPS = {
-			"104.128.237.128",
-			"104.128.233.73",
-			"45.58.54.250"
+			"128.208.219.12"
 	};
 
 	private static final int MIN_CONTENT_LENGTH = 1000;
@@ -37,7 +46,7 @@ public class Boot {
 	private static final String SQL_CONNECTION_STRING =
 			"jdbc:mysql://local.fru1t.me/fanfiction?user=fanfiction&password=mypwISsoSecure!";
 	private static final String LOCAL_SQL_CONNECTION_STRING =
-			"jdbc:mysql://localhost/fanfiction?user=fanfiction&password=mypwISsoSecure!";
+			"jdbc:mysql://localhost/fanfictiondrg201610?user=fanfictiondrg&password=fanfictiondrg2016@HCDE";
 
 	private static Logger logger;
 	private static MultiIPCrawler crawler;
@@ -64,10 +73,12 @@ public class Boot {
 //		(new ScrapeProcess(
 //				new FandomPageUrlProducer(new FandomProducer()),
 //				Session.SCRAPE_ALL_FANDOM_PAGES_16_6_1)).run();
-		(new ConvertProcess<Scrape>(
-				new ScrapeProducer(Session.SCRAPE_ALL_FANDOM_PAGES_16_6_1),
-				new FandomToStories(Session.CONVERT_ALL_FANDOM_PAGES_16_6_6),
-				Session.CONVERT_ALL_FANDOM_PAGES_16_6_6)).run();
+//		(new ConvertProcess<Scrape>(
+//				new ScrapeProducer(Session.SCRAPE_ALL_FANDOM_PAGES_16_6_1),
+//				new FandomToStories(Session.CONVERT_ALL_FANDOM_PAGES_16_6_6),
+//				Session.CONVERT_ALL_FANDOM_PAGES_16_6_6)).run();
+		
+		(new ScrapeProcess(new CategoryPageUrlProducer(), Session.SCRAPE_CATEGORY_PAGES_16_10_10)).run();
 	}
 
 	public static Logger getLogger() {
