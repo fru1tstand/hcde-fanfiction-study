@@ -23,6 +23,7 @@ public class Boot {
 	public static final boolean IS_RUNNING_LOCALLY = true;
 	public static final boolean DEBUG = false;
 
+	// changed boot 
 	// Log params
 	private static final String LOG_FILE_PREFIX = "fanfiction-";
 	private static final String LOG_FILE_SUFFIX = ".log";
