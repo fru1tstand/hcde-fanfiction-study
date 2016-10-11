@@ -5,16 +5,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 
-import me.fru1t.fanfiction.database.producers.FandomProducer;
-import me.fru1t.fanfiction.database.producers.ScrapeProducer;
-import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
-import me.fru1t.fanfiction.process.ConvertProcess;
 import me.fru1t.fanfiction.process.ScrapeProcess;
-import me.fru1t.fanfiction.process.convert.CategoryToFandoms;
-import me.fru1t.fanfiction.process.convert.FandomToStories;
 import me.fru1t.fanfiction.process.scrape.CategoryPageUrlProducer;
-import me.fru1t.fanfiction.process.scrape.FandomPageUrlProducer;
-import me.fru1t.fanfiction.web.page.CategoryPage;
 import me.fru1t.util.DatabaseConnectionPool;
 import me.fru1t.util.Logger;
 import me.fru1t.web.MultiIPCrawler;

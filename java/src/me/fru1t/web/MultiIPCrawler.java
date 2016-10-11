@@ -14,7 +14,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-import me.fru1t.fanfiction.Boot;
 import me.fru1t.util.Logger;
 import me.fru1t.util.SizedHashMap;
 import me.fru1t.util.ThreadUtils;

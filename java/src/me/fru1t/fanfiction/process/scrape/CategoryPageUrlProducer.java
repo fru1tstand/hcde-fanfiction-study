@@ -16,8 +16,8 @@ public class CategoryPageUrlProducer extends ConcurrentProducer<String> {
 	}
 
 	@Override
-	public @Nullable String take() {
-		if (categoryIndex > CATEGORIES.length) {
+	public synchronized @Nullable String take() {
+		if (categoryIndex >= CATEGORIES.length) {
 			return null;
 		}
 		return String.format(FORMAT_URL, CATEGORIES[categoryIndex++]);
