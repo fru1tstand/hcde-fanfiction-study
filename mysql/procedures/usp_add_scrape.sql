@@ -1,9 +1,6 @@
-USE `fanfiction`;
-DROP procedure IF EXISTS `usp_add_scrape`;
 
 DELIMITER $$
-USE `fanfiction`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `usp_add_scrape`(
+CREATE PROCEDURE `usp_add_scrape`(
 	in_session_name VARCHAR(128),
     in_scrape_date INT(10),
     in_url VARCHAR(2000),

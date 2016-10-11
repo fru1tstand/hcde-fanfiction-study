@@ -1,8 +1,5 @@
-USE `fanfiction`;
-DROP function IF EXISTS `fn_insfet_fandom`;
 
 DELIMITER $$
-USE `fanfiction`$$
 CREATE DEFINER=`root`@`localhost` FUNCTION `fn_insfet_fandom`(
 	in_category_name VARCHAR(128),
     in_fandom_name VARCHAR(128),

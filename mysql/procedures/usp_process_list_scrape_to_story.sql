@@ -1,9 +1,6 @@
-USE `fanfiction`;
-DROP procedure IF EXISTS `usp_process_list_scrape_to_story`;
 
 DELIMITER $$
-USE `fanfiction`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `usp_process_list_scrape_to_story`(
+CREATE PROCEDURE `usp_process_list_scrape_to_story`(
 	-- story data
 	in_category_name VARCHAR(128),
     in_fandom_name VARCHAR(128),

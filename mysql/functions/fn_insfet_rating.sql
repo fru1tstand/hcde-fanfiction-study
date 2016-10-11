@@ -1,8 +1,4 @@
-USE `fanfiction`;
-DROP function IF EXISTS `fn_insfet_rating`;
-
 DELIMITER $$
-USE `fanfiction`$$
 CREATE FUNCTION `fn_insfet_rating` (lu_name VARCHAR(128))
 RETURNS INTEGER
 BEGIN

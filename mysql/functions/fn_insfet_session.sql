@@ -1,8 +1,4 @@
-USE `fanfiction`;
-DROP function IF EXISTS `fn_insfet_session`;
-
 DELIMITER $$
-USE `fanfiction`$$
 CREATE FUNCTION `fn_insfet_session` (lu_name VARCHAR(128))
 RETURNS INTEGER
 BEGIN

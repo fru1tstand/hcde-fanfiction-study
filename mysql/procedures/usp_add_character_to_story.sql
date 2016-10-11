@@ -1,9 +1,5 @@
-USE `fanfiction`;
-DROP procedure IF EXISTS `usp_add_character_to_story`;
-
 DELIMITER $$
-USE `fanfiction`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `usp_add_character_to_story`(
+CREATE PROCEDURE `usp_add_character_to_story`(
 	in_ff_story_id INT,
     in_character_name VARCHAR(128)
 )

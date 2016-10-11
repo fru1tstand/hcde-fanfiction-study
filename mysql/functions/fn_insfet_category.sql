@@ -1,8 +1,4 @@
-USE `fanfiction`;
-DROP function IF EXISTS `fn_insfet_category`;
-
 DELIMITER $$
-USE `fanfiction`$$
 CREATE DEFINER=`root`@`localhost` FUNCTION `fn_insfet_category`(in_category_name VARCHAR(128)) RETURNS int(11)
 BEGIN
 	DECLARE v_category_id INT DEFAULT (SELECT `id` FROM `category` WHERE `category`.`name` = in_category_name);

@@ -1,9 +1,5 @@
-USE `fanfiction`;
-DROP function IF EXISTS `fn_insfet_user`;
-
 DELIMITER $$
-USE `fanfiction`$$
-CREATE DEFINER=`root`@`localhost` FUNCTION `fn_insfet_user`(
+CREATE FUNCTION `fn_insfet_user`(
 	in_ff_id INT,
     in_user_name VARCHAR(128)
 ) RETURNS int(11)

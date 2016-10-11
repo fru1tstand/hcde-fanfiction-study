@@ -1,8 +1,5 @@
-USE `fanfiction`;
-DROP function IF EXISTS `fn_insfet_language`;
 
 DELIMITER $$
-USE `fanfiction`$$
 CREATE FUNCTION `fn_insfet_language` (lu_name VARCHAR(128))
 RETURNS INTEGER
 BEGIN
