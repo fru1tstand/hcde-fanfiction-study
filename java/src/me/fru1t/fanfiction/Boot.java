@@ -5,8 +5,15 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 
+import me.fru1t.fanfiction.database.producers.FandomProducer;
+import me.fru1t.fanfiction.database.producers.ScrapeProducer;
+import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
+import me.fru1t.fanfiction.process.ConvertProcess;
 import me.fru1t.fanfiction.process.ScrapeProcess;
+import me.fru1t.fanfiction.process.convert.CategoryToFandoms;
+import me.fru1t.fanfiction.process.convert.FandomToStories;
 import me.fru1t.fanfiction.process.scrape.CategoryPageUrlProducer;
+import me.fru1t.fanfiction.process.scrape.FandomPageUrlProducer;
 import me.fru1t.util.DatabaseConnectionPool;
 import me.fru1t.util.Logger;
 import me.fru1t.web.MultiIPCrawler;
@@ -23,7 +30,7 @@ public class Boot {
 			new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
 
 	// Crawler params
-	private static final int AVG_SLEEP_TIME_PER_IP = 3000;
+	private static final int AVG_SLEEP_TIME_PER_IP = 500;
 //	private static final String[] REMOTE_IPS = {
 //			"104.128.237.128",
 //			"104.128.233.73",
@@ -71,7 +78,18 @@ public class Boot {
 //				new FandomToStories(Session.CONVERT_ALL_FANDOM_PAGES_16_6_6),
 //				Session.CONVERT_ALL_FANDOM_PAGES_16_6_6)).run();
 		
-		(new ScrapeProcess(new CategoryPageUrlProducer(), Session.SCRAPE_CATEGORY_PAGES_16_10_10)).run();
+//		(new ScrapeProcess(new CategoryPageUrlProducer(), Session.SCRAPE_CATEGORY_PAGES_16_10_10)).run();
+//		(new ConvertProcess<ScrapeProducer.Scrape>(
+//				new ScrapeProducer(Session.SCRAPE_CATEGORY_PAGES_16_10_10),
+//				new CategoryToFandoms(),
+//				Session.SCRAPE_CATEGORY_PAGES_16_10_10)).run();
+//		(new ScrapeProcess(
+//				new FandomPageUrlProducer(new FandomProducer()),
+//				Session.SCRAPE_ALL_FANDOM_PAGES_16_10_10)).run();
+		(new ConvertProcess<Scrape>(
+			new ScrapeProducer(Session.SCRAPE_ALL_FANDOM_PAGES_16_10_10),
+			new FandomToStories(Session.CONVERT_ALL_FANDOM_PAGES_16_10_10),
+			Session.CONVERT_ALL_FANDOM_PAGES_16_10_10)).run();
 	}
 
 	public static Logger getLogger() {
