@@ -12,7 +12,7 @@ import me.fru1t.web.Request;
  * Scrapes whatever urls are given from a producer into the database.
  */
 public class ScrapeProcess implements Runnable {
-	private static final int MAX_CONCURRENT_REQUESTS_OUT = 5;
+	private static final int MAX_CONCURRENT_REQUESTS_OUT = 1;
 	private static final int WATCHDOG_SLEEP_TIME_MS = 5000;
 
 	private ConcurrentProducer<String> urlProducer;
@@ -78,6 +78,7 @@ public class ScrapeProcess implements Runnable {
 		}
 
 		if (urlProducer.isBlocked()) {
+			Boot.getLogger().log("The URL Producer is blocked.");
 			return false;
 		}
 

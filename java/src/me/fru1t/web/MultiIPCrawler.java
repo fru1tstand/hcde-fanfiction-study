@@ -238,8 +238,7 @@ public class MultiIPCrawler {
 			public void run() {
 				long startTime = (new Date()).getTime();
 				StringBuilder status = new StringBuilder();
-				status.append("Crawling: " + request.getUrl()
-						+ "; IP: " + ip.name);
+				status.append("Crawling: " + request.getUrl() + "; IP: " + ip.name);
 
 				CloseableHttpClient client = null;
 				CloseableHttpResponse response = null;
