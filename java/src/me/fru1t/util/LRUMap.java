@@ -3,11 +3,22 @@ package me.fru1t.util;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SizedHashMap<K, V> extends LinkedHashMap<K, V> {
+/**
+ * A "least recently used" cache implemented as a map.
+ *
+ * @param <K>
+ * @param <V>
+ */
+public class LRUMap<K, V> extends LinkedHashMap<K, V> {
 	private static final long serialVersionUID = 3112031005060334210L;
 	private int maxSize;
 
-	public SizedHashMap(int maxSize) {
+	/**
+	 * Creates a new LRU cache with the given maximum size.
+	 * 
+	 * @param maxSize
+	 */
+	public LRUMap(int maxSize) {
 		this.maxSize = maxSize;
 	}
 

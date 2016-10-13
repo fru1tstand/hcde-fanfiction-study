@@ -13,6 +13,14 @@ public class Request {
 	private @Nullable Consumer<String> onFailure;
 	private Boolean shouldRetryOnFail;
 
+	/**
+	 * Creates a new request given an onSuccess consumer and failure. Defaults to retrying on
+	 * failure.
+	 * 
+	 * @param url
+	 * @param onSuccess
+	 * @param onFailure
+	 */
 	public Request(String url,
 			Consumer<String> onSuccess,
 			@Nullable Consumer<String> onFailure) {
@@ -22,7 +30,7 @@ public class Request {
 		this.shouldRetryOnFail = true;
 	}
 
-	public void setShouldRetryOnFail(Boolean shouldRetryOnFail) {
+	public void shouldRetryOnFail(Boolean shouldRetryOnFail) {
 		this.shouldRetryOnFail = shouldRetryOnFail;
 	}
 

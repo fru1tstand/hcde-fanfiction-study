@@ -2,10 +2,9 @@ package me.fru1t.web;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Collections;
 import java.util.Date;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.Map;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -14,12 +13,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
+import me.fru1t.util.LRUMap;
 import me.fru1t.util.Logger;
-import me.fru1t.util.SizedHashMap;
 import me.fru1t.util.ThreadUtils;
 
 /**
- * Concurrent crawler that utilizes mutliple IP Addresses
+ * Concurrent crawler that utilizes multiple IP Addresses
  */
 public class MultiIPCrawler {
 	/**
@@ -149,8 +148,7 @@ public class MultiIPCrawler {
 	private Logger logger;
 	private int ipRestPeriodInMs;
 	private int minContentLength;
-	final private Deque<Request> requests;
-	private HashMap<String, String> localCache;
+	private Map<String, String> localCache;
 
 	public MultiIPCrawler(Logger logger, int ipRestPeriodInMs, byte[][] ips) {
 		if (ips.length < 1) {
@@ -164,8 +162,7 @@ public class MultiIPCrawler {
 		this.ipRestPeriodInMs = ipRestPeriodInMs;
 		this.logger = logger;
 		this.minContentLength = -1;
-		this.requests = new ConcurrentLinkedDeque<>();
-		this.localCache = new SizedHashMap<String, String>(LOCAL_CACHE_SIZE);
+		this.localCache = Collections.synchronizedMap(new LRUMap<String, String>(LOCAL_CACHE_SIZE));
 	}
 
 	/**
@@ -182,73 +179,84 @@ public class MultiIPCrawler {
 	}
 
 	/**
-	 * Queues the given request to be fetched.
+	 * Starts a new AJAX request. Returns true if a free IP was found. Otherwise, returns false and
+	 * doesn't start the request if no IPs were free.
 	 *
 	 * @param request
 	 */
-	public void sendRequest(Request request) {
-		requests.addLast(request);
-		fulfillRequests();
+	public synchronized boolean sendRequest(Request request) {
+		// We like logging.
+		StringBuilder status = new StringBuilder();
+		status.append("Request for " + request.getUrl());
+
+		// Check if the request is in the cache.
+		synchronized (localCache) {
+			// This synchronize block makes certain that between the time we check if the cache
+			// contains the key, and the time we retrieve it, the object we're looking for doesn't
+			// disappear.
+			if (localCache.containsKey(request.getUrl())) {
+				status.append("; hit cache. Success!");
+				logger.log(status.toString());
+				request.onSuccess(localCache.get(request.getUrl()));
+				return true;
+			}
+		}
+
+		// Find the best free IP to use, or return if there are none.
+		IP freeIp = null;
+		for (IP ip : ips) {
+			if (!ip.inUse && (freeIp == null || freeIp.lastUsed > ip.lastUsed)) {
+				freeIp = ip;
+			}
+		}
+		if (freeIp == null) {
+			return false;
+		}
+
+		freeIp.inUse = true;
+		asyncRequest(request, freeIp, status);
+		return true;
+	}
+
+	public int countFreeIps() {
+		int i = 0;
+		for (IP ip : ips) {
+			if (!ip.inUse) {
+				i++;
+			}
+		}
+		return i;
 	}
 
 	/**
-	 * Queues the given request to be fetched before any other.
+	 * Sends a given request with an ip, using a given status.
 	 *
 	 * @param request
+	 * @param ip
+	 * @param status
 	 */
-	public void sendHighPriorityRequest(Request request) {
-		requests.addFirst(request);
-		fulfillRequests();
-	}
-
-	private synchronized void fulfillRequests() {
-		// Check for requests.
-		if (requests.isEmpty()) {
-			return;
-		}
-		final Request request = requests.pollFirst();
-
-		// Check if in cache
-		if (localCache.containsKey(request.getUrl())) {
-			logger.log("Cache hit for " + request.getUrl() + "; Success!");
-			request.onSuccess(localCache.get(request.getUrl()));
-			fulfillRequests();
-			return;
-		}
-
-		// Check for available IPs
-		IP tempIP = null;
-		long bestTime = Long.MAX_VALUE;
-		for (IP ip : ips) {
-			if (!ip.inUse && ip.lastUsed < bestTime) {
-				bestTime = ip.lastUsed;
-				tempIP = ip;
-			}
-		}
-		if (tempIP == null) {
-			requests.addFirst(request); // Give it back :(
-			return;
-		}
-
-		final IP ip = tempIP;
-		ip.inUse = true;
-
+	private void asyncRequest(Request request, IP ip, StringBuilder status) {
 		(new Thread(new Runnable() {
 			@Override
 			public void run() {
 				long startTime = (new Date()).getTime();
-				StringBuilder status = new StringBuilder();
-				status.append("Crawling: " + request.getUrl() + "; IP: " + ip.name);
+				status.append("; IP: " + ip.name);
 
 				CloseableHttpClient client = null;
 				CloseableHttpResponse response = null;
+				String responseString = null;
 				try {
 					// Do until it reaches all the way through the return or an error exits the
 					// while loop.
 					while (true) {
-						// See if we need to wait between crawls
-						long waitTime = (ipRestPeriodInMs
-								- (startTime - ip.lastUsed)); // - Time elapsed
+						if (Thread.currentThread().isInterrupted()) {
+							status.append("; !!!! The thread was interrupted.");
+							logger.log(status.toString());
+							break;
+						}
+
+						// See if we need to wait between crawls (rest time - rested time)
+						long waitTime = (ipRestPeriodInMs - (startTime - ip.lastUsed));
 						if (waitTime > 0) {
 							ThreadUtils.waitGauss((int) waitTime);
 						} else {
@@ -256,7 +264,7 @@ public class MultiIPCrawler {
 						}
 						status.append("; Waiting " + waitTime + "ms");
 
-						// Set IP for crawler
+						// Set up GET request with IP and headers
 						RequestConfig config = RequestConfig.custom()
 								.setLocalAddress(InetAddress.getByAddress(ip.ip))
 								.build();
@@ -264,48 +272,72 @@ public class MultiIPCrawler {
 						get.setConfig(config);
 						get.setHeader("user-agent", getRandomUserAgent());
 
-						// Get contents
+						// Execute crawler
 						long requestStartTime = (new Date()).getTime();
 						client = HttpClients.createDefault();
-						response = client.execute(get); // Closed later
-						String responseString = EntityUtils.toString(response.getEntity());
+						response = client.execute(get);
+
+						// Fetch response as it comes in as a stream
+						responseString = EntityUtils.toString(response.getEntity());
 						long requestEndTime = (new Date()).getTime();
 						status.append("; Length: " + responseString.length()
 								+ "; Request: " + (requestEndTime - requestStartTime) + "ms");
 
-						// Min content length check
-						if (minContentLength > 0
-								&& responseString.length() < minContentLength) {
+						// Min content length check. This check helps combat HTTP errors where the
+						// server will respond 200-OK, but will return garbage content
+						if (minContentLength > 0 && responseString.length() < minContentLength) {
 							status.append("; Failed minimum content length check of "
 									+ minContentLength + ", retrying");
 							continue; // retry
 						}
 
+						// Stats for nerds
 						long endTime = (new Date()).getTime();
+						status.append("; Total: " + (endTime - startTime) + "ms");
+
+						// IP Cleanup
 						ip.lastUsed = endTime;
-						status.append("; Success! Total: " + (endTime - startTime) + "ms");
-						localCache.put(request.getUrl(), responseString);
+						ip.inUse = false;
+
+						// Update cache
+						synchronized (localCache) {
+							// A synchro is needed as it prevents knocking off cached items while
+							// they're being used.
+							localCache.put(request.getUrl(), responseString);
+						}
+
+						// Final words
+						long cacheTime = (new Date()).getTime();
+						status.append(
+								"; Cache time: " + (cacheTime - endTime) + "ms; Scrape success!");
+						logger.log(status.toString());
+
+						// Finally, call success.
 						request.onSuccess(responseString);
 						return;
 					}
-				} catch (IOException | InterruptedException e) {
-					ip.lastUsed = (new Date()).getTime();
-					status.append("; FAILED! Calling onFailure");
+				} catch (Exception e) {
+					// Print out error now.
+					status.append("; Scrape failed with error: " + e.getMessage());
+					logger.log(status.toString());
+
+					// Handle failure
 					request.onFailure(e.getMessage());
 					if (request.shouldRetryOnFail()) {
-						status.append("; Requeueing at front.");
-						requests.addFirst(request);
+						StringBuilder newStatus = new StringBuilder();
+						newStatus.append("Retrying failed request for " + request.getUrl());
+
+						// Requeue request with the same request and ip.
+						asyncRequest(request, ip, newStatus);
 					}
 				} finally {
-					ip.inUse = false; // Free ip
-					logger.log(status.toString());
+					// Memory cleanup
 					try { if (client != null) client.close(); }
-					catch (IOException e) { logger.log(e, "MultiIPCrawler couldn't close client"); }
+					catch (IOException e) {
+						logger.log(e, "MultiIPCrawler couldn't close client"); }
 					try { if (response != null) response.close(); }
-					catch (IOException e) { logger.log(e, "MultiIpCrawler couldn't close response"); }
-
-					// There are some serious problems if it doesn't reach here.
-					fulfillRequests();
+					catch (IOException e) {
+						logger.log(e, "MultiIpCrawler couldn't close response"); }
 				}
 			}
 		})).start();

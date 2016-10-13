@@ -23,9 +23,10 @@ public class CategoryPageUrlProducer extends ConcurrentProducer<String> {
 		return String.format(FORMAT_URL, CATEGORIES[categoryIndex++]);
 	}
 
+
 	@Override
-	public Boolean isBlocked() {
-		return false;
+	public boolean isComplete() {
+		return categoryIndex >= CATEGORIES.length;
 	}
 
 }

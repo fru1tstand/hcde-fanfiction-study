@@ -12,14 +12,11 @@ import me.fru1t.web.Request;
  * Scrapes whatever urls are given from a producer into the database.
  */
 public class ScrapeProcess implements Runnable {
-	private static final int MAX_CONCURRENT_REQUESTS_OUT = 1;
-	private static final int WATCHDOG_SLEEP_TIME_MS = 5000;
+	private static final int WATCHDOG_SLEEP_TIME_MS = 500;
 
 	private ConcurrentProducer<String> urlProducer;
 	private Session session;
-	private boolean isFinished;
-	private int concurrentRequests;
-	private boolean isInterrupted;
+	private String queuedCrawlUrl;
 
 	/**
 	 * Creates a new scrape process given the urls in the form of a producer and the session name.
@@ -28,9 +25,7 @@ public class ScrapeProcess implements Runnable {
 	public ScrapeProcess(ConcurrentProducer<String> urlProducer, Session session) {
 		this.urlProducer = urlProducer;
 		this.session = session;
-		this.isFinished = false;
-		this.isInterrupted = false;
-		this.concurrentRequests = 0;
+		this.queuedCrawlUrl = null;
 	}
 
 	@Override
@@ -40,26 +35,15 @@ public class ScrapeProcess implements Runnable {
 		// Startup loop, saturate queue by calling until it returns false.
 		while (queueNextScrape());
 
-		// Watchdog in case of thread death.
-		while (!isFinished && !isInterrupted) {
-			if (Thread.currentThread().isInterrupted()) {
-				Boot.getLogger().log("ScrapeProcess with session name: " + session
-						+ " was interrupted and is now quitting.");
-				isInterrupted = true;
-				break;
-			}
-
-			if (concurrentRequests < MAX_CONCURRENT_REQUESTS_OUT) {
-				Boot.getLogger().log("[watchdog] Found the queue wasn't full: "
-						+ concurrentRequests + " queued of " + MAX_CONCURRENT_REQUESTS_OUT
-						+ " maximum. Filling...");
+		// Watchdog for when we reach the end of a fandom
+		while (!urlProducer.isComplete() && !Thread.currentThread().isInterrupted()) {
+			if (Boot.getCrawler().countFreeIps() > 0) {
 				while (queueNextScrape());
 			}
 
 			try {
 				ThreadUtils.waitGauss(WATCHDOG_SLEEP_TIME_MS);
 			} catch (InterruptedException e) {
-				isInterrupted = true;
 				Boot.getLogger().log("Watchdog was interrupted and is shutting down all children");
 				return;
 			}
@@ -69,39 +53,35 @@ public class ScrapeProcess implements Runnable {
 	}
 
 	private boolean queueNextScrape() {
-		if (isInterrupted) {
+		if (queuedCrawlUrl == null) {
+			queuedCrawlUrl = urlProducer.take();
+		}
+		if (queuedCrawlUrl == null) {
 			return false;
 		}
 
-		if (concurrentRequests >= MAX_CONCURRENT_REQUESTS_OUT) {
-			return false;
-		}
+		String tCrawlUrl = queuedCrawlUrl;
+		if (Boot.getCrawler().sendRequest(new Request(tCrawlUrl, new Consumer<String>() {
+				@Override
+				public void eat(String crawlContent) {
+					// If the crawler hits cache, this process is not async. Thus we need to check
+					// that queuedCrawlUrl == tCrawlUrl
+					if (queuedCrawlUrl == tCrawlUrl) {
+						queuedCrawlUrl = null;
+					}
 
-		if (urlProducer.isBlocked()) {
-			Boot.getLogger().log("The URL Producer is blocked.");
-			return false;
-		}
-
-		String crawlUrl = urlProducer.take();
-		if (crawlUrl == null) {
-			isFinished = true;
-			return false;
-		}
-
-		concurrentRequests++;
-		Boot.getCrawler().sendRequest(new Request(crawlUrl, new Consumer<String>() {
-			@Override
-			public void eat(String crawlContent) {
-				concurrentRequests--;
-				queueNextScrape();
-				try {
-					StoredProcedures.addScrape(session, crawlUrl, crawlContent);
-				} catch (InterruptedException e) {
-					Boot.getLogger().log(e, "While adding the scrape to the database the thread "
-							+ "was interrupted.");
+					queueNextScrape();
+					try {
+						StoredProcedures.addScrape(session, tCrawlUrl, crawlContent);
+					} catch (InterruptedException e) {
+						Boot.getLogger().log(e, "While adding the scrape to the database "
+								+ "the thread was interrupted.");
+					}
 				}
-			}
-		}));
-		return true;
+			}))) {
+			queuedCrawlUrl = null;
+			return true;
+		}
+		return false;
 	}
 }
