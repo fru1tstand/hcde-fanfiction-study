@@ -1,6 +1,5 @@
-
 DELIMITER $$
-CREATE DEFINER=`root`@`localhost` FUNCTION `fn_insfet_fandom`(
+CREATE FUNCTION `fn_insfet_fandom`(
 	in_category_name VARCHAR(128),
     in_fandom_name VARCHAR(128),
     in_fandom_url VARCHAR(2000)
@@ -20,4 +19,3 @@ BEGIN
 END$$
 
 DELIMITER ;
-

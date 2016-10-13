@@ -11,4 +11,3 @@ BEGIN
 END$$
 
 DELIMITER ;
-

@@ -1,4 +1,3 @@
-
 DELIMITER $$
 CREATE FUNCTION `fn_insfet_genre` (lu_name VARCHAR(128))
 RETURNS INTEGER
@@ -12,4 +11,3 @@ BEGIN
 END$$
 
 DELIMITER ;
-
