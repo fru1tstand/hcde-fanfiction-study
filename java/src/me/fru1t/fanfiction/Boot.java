@@ -1,9 +1,13 @@
 package me.fru1t.fanfiction;
 
+import java.io.Console;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
+import java.util.Scanner;
+
+import com.jcraft.jsch.JSch;
 
 import me.fru1t.fanfiction.database.producers.FandomProducer;
 import me.fru1t.fanfiction.process.ScrapeProcess;
@@ -24,7 +28,7 @@ public class Boot {
 			new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
 
 	// Crawler params
-	private static final int AVG_SLEEP_TIME_PER_IP = 1500;
+	private static final int AVG_SLEEP_TIME_PER_IP = 500;
 	private static final String[] REMOTE_IPS = {
 			"104.128.237.128",
 			"104.128.233.73",
@@ -111,8 +115,64 @@ public class Boot {
 	 */
 	public static DatabaseConnectionPool getDatabaseConnectionPool() {
 		if (dbcp == null) {
+			// Asks and sets up SSH tunneling for MySQL
+			promptSSH();
 			dbcp = new DatabaseConnectionPool(LOCAL_SQL_CONNECTION_STRING, getLogger());
 		}
 		return dbcp;
+	}
+
+	private static void promptSSH() {
+		// Ask if using SSH
+		Scanner consoleScanner = new Scanner(System.in);
+		System.out.print("Use SSH to connect to database [y/N]? ");
+
+		try {
+			if (consoleScanner.nextLine().toLowerCase().equals("y")) {
+				System.out.println();
+
+				// The console object helps hide the password.
+				// See: http://stackoverflow.com/questions/8138411/masking-password-input-from-the-console-java
+				Console console = System.console();
+				if (console == null) {
+					logger.log("I couldn't get a console instance most likely because I'm "
+							+ "running in  an IDE. WARNING: This means I will NOT hide your "
+							+ "password when you type it into the console.");
+				}
+
+				// Fetch SSH information
+				String host = null;
+				String username = null;
+				String password = null;
+
+				System.out.print("SSH Host: ");
+				host = consoleScanner.nextLine();
+
+				System.out.print("SSH Username: ");
+				username = consoleScanner.nextLine();
+
+				if (console == null) {
+					System.out.print("SSH Password [WARNING: NOT HIDDEN]: ");
+					password = consoleScanner.nextLine();
+				} else {
+					System.out.print("SSH Password: ");
+					password = String.valueOf(console.readPassword());
+				}
+
+					JSch jsch = new JSch();
+					com.jcraft.jsch.Session session = jsch.getSession(username, host, 22);
+					session.setPassword(password);
+					session.setConfig("StrictHostKeyChecking", "no");
+					session.connect();
+
+					// Sets up MySQL Port forwarding through the SSH tunnel
+					session.setPortForwardingL(3306, "localhost", 3306);
+
+			}
+		} catch (Exception e) {
+			logger.log(e);
+		} finally {
+			consoleScanner.close();
+		}
 	}
 }
