@@ -2,10 +2,8 @@ package me.fru1t.web;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.http.client.config.RequestConfig;
@@ -39,7 +37,6 @@ public class MultiIPCrawler {
 		}
 	}
 	private static final int MAX_THREAD_AGE_MS = 10000;
-	private static final long WATCHDOG_POLL_WAIT_TIME_MS = 1000;
 	private static final int LOCAL_CACHE_SIZE = 10;
 	private static final String[] USER_AGENTS = {
 			"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1",
@@ -153,8 +150,6 @@ public class MultiIPCrawler {
 	private int ipRestPeriodInMs;
 	private int minContentLength;
 	private Map<String, String> localCache;
-	private ArrayList<CrawlThread> crawlThreads;
-	private Thread watchdog;
 
 	public MultiIPCrawler(Logger logger, int ipRestPeriodInMs, byte[][] ips) {
 		if (ips.length < 1) {
@@ -169,8 +164,6 @@ public class MultiIPCrawler {
 		this.logger = logger;
 		this.minContentLength = -1;
 		this.localCache = Collections.synchronizedMap(new LRUMap<String, String>(LOCAL_CACHE_SIZE));
-		this.crawlThreads = new ArrayList<>();
-		this.watchdog = null;
 	}
 
 	/**
@@ -224,9 +217,110 @@ public class MultiIPCrawler {
 		}
 
 		freeIp.inUse = true;
-		crawlThreads.add(new CrawlThread(freeIp, request, status));
-		pokeWatchdog();
+		dispatchCrawlThread(freeIp, request, status);
 		return true;
+	}
+
+	private void dispatchCrawlThread(IP ip, Request request, StringBuilder status) {
+		(new Thread(new Runnable() {
+			@Override
+			public void run() {
+				long startTime = (new Date()).getTime();
+				status.append("; IP: " + ip.name);
+
+				CloseableHttpClient client = null;
+				CloseableHttpResponse response = null;
+				String responseString = null;
+				try {
+					// Do until it reaches all the way through the return or an error exits the
+					// while loop.
+					while (!Thread.currentThread().isInterrupted()) {
+						// See if we need to wait between crawls (rest time - rested time)
+						long waitTime = (ipRestPeriodInMs - (startTime - ip.lastUsed));
+						if (waitTime > 0) {
+							ThreadUtils.waitGauss((int) waitTime);
+						} else {
+							waitTime = 0;
+						}
+						status.append("; Waiting " + waitTime + "ms");
+
+						// Set up GET request with IP and headers
+						RequestConfig config = RequestConfig.custom()
+								.setLocalAddress(InetAddress.getByAddress(ip.ip))
+								.setConnectTimeout(MAX_THREAD_AGE_MS)
+								.setConnectionRequestTimeout(MAX_THREAD_AGE_MS)
+								.setSocketTimeout(MAX_THREAD_AGE_MS)
+								.build();
+						HttpGet get = new HttpGet(request.getUrl());
+						get.setConfig(config);
+						get.setHeader("user-agent", getRandomUserAgent());
+
+						// Execute crawler
+						long requestStartTime = (new Date()).getTime();
+						client = HttpClients.createDefault();
+						response = client.execute(get);
+
+						// Fetch response as it comes in as a stream
+						responseString = EntityUtils.toString(response.getEntity());
+						long requestEndTime = (new Date()).getTime();
+						status.append("; Response: " + responseString.length() + "b in "
+								+ (requestEndTime - requestStartTime) + "ms");
+
+						// Min content length check. This check helps combat HTTP errors where
+						// the server will respond 200-OK, but will return garbage content
+						if (minContentLength > 0
+								&& responseString.length() < minContentLength) {
+							status.append("; Failed minimum content length check of "
+									+ minContentLength + ", retrying");
+							continue; // retry
+						}
+
+						// Stats for nerds
+						long endTime = (new Date()).getTime();
+						status.append("; Total: " + (endTime - startTime) + "ms");
+
+						// IP Cleanup
+						ip.lastUsed = endTime;
+						ip.inUse = false;
+
+						// Update cache
+						synchronized (localCache) {
+							// A synchro is needed as it prevents knocking off cached items
+							// while they're being used.
+							localCache.put(request.getUrl(), responseString);
+						}
+
+						// Final words
+						long cacheTime = (new Date()).getTime();
+						status.append("; Cache time: " + (cacheTime - endTime)
+								+ "ms; Scrape success!");
+						logger.log(status.toString());
+						request.onSuccess(responseString);
+						return;
+					}
+				} catch (Exception e) {
+					// Print out error now.
+					status.append("; Scrape failed with error: " + e.getMessage());
+					logger.log(status.toString());
+
+					// Handle failure
+					request.onFailure(e.getMessage());
+					if (request.shouldRetryOnFail()) {
+						StringBuilder newStatus = new StringBuilder("Retrying crawl "
+								+ request.getUrl());
+						dispatchCrawlThread(ip, request, newStatus);
+					}
+				} finally {
+					// Memory cleanup
+					try { if (client != null) client.close(); }
+					catch (IOException e) {
+						logger.log(e, "MultiIPCrawler couldn't close client"); }
+					try { if (response != null) response.close(); }
+					catch (IOException e) {
+						logger.log(e, "MultiIpCrawler couldn't close response"); }
+				}
+			}
+		})).start();
 	}
 
 	/**
@@ -242,211 +336,6 @@ public class MultiIPCrawler {
 			}
 		}
 		return i;
-	}
-
-	/**
-	 * Wakes up the watchdog if it's sleeping. Otherwise, does nothing.
-	 *
-	 * The watchdog keeps all crawl threads in check by verifying they haven't gone past their
-	 * expiration date.
-	 */
-	private void pokeWatchdog() {
-		if (watchdog != null && watchdog.isAlive()) {
-			return;
-		}
-
-		watchdog = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				logger.log("MultiIPCrawler's watchdog is now active");
-				while (true) {
-					long currentTime = (new Date()).getTime();
-					Iterator<CrawlThread> it = crawlThreads.iterator();
-					while (it.hasNext()) {
-						// Check if complete
-						CrawlThread ct = it.next();
-						if (ct.isFinished) {
-							it.remove();
-						}
-
-						// Check if blocked and stalled
-						if (currentTime - ct.threadStartTime > MAX_THREAD_AGE_MS) {
-							StringBuilder status = new StringBuilder();
-							status.append("Watchdog caught a blocked thread for "
-									+ ct.request.getUrl() + ", and is redispatching it");
-							ct.dispatchCrawlThread(status);
-						}
-					}
-
-					try {
-						Thread.sleep(WATCHDOG_POLL_WAIT_TIME_MS);
-					} catch (InterruptedException e) {
-						logger.log("MultiIPCrawler's watchdog was interrupted");
-						return;
-					}
-				}
-			}
-		});
-		watchdog.start();
-	}
-
-	/**
-	 * Handles a crawl thread.
-	 */
-	private class CrawlThread {
-		// Thread-specific
-		public Thread thread;
-		public long threadStartTime;
-
-		public IP ip;
-		public Request request;
-		public Boolean isFinished;
-
-		public CrawlThread(IP ip, Request request, StringBuilder status) {
-			this.thread = null;
-			this.ip = ip;
-			this.request = request;
-			this.isFinished = false;
-			dispatchCrawlThread(status);
-		}
-
-		/**
-		 * Gracefully fail and restart the thread. Called when the existing thread encountered an
-		 * error and has already shut down.
-		 */
-		private void gracefulRestart() {
-			StringBuilder status = new StringBuilder();
-			status.append("Retrying failed request for " + request.getUrl());
-			thread = null;
-			dispatchCrawlThread(status);
-		}
-
-		/**
-		 * Creates a new thread that does the crawling and success/error handling.
-		 */
-		public void dispatchCrawlThread(final StringBuilder status) {
-			if (isFinished) {
-				return;
-			}
-
-			if (thread != null) {
-				status.append("; Interrupted previous thread");
-				thread.interrupt();
-			}
-
-			threadStartTime = (new Date()).getTime();
-			thread = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					long startTime = (new Date()).getTime();
-					status.append("; IP: " + ip.name);
-
-					CloseableHttpClient client = null;
-					CloseableHttpResponse response = null;
-					String responseString = null;
-					try {
-						// Do until it reaches all the way through the return or an error exits the
-						// while loop.
-						while (true) {
-							if (Thread.currentThread().isInterrupted()) {
-								status.append("; !!!! The thread was interrupted.");
-								logger.log(status.toString());
-								return;
-							}
-
-							// See if we need to wait between crawls (rest time - rested time)
-							long waitTime = (ipRestPeriodInMs - (startTime - ip.lastUsed));
-							if (waitTime > 0) {
-								ThreadUtils.waitGauss((int) waitTime);
-							} else {
-								waitTime = 0;
-							}
-							status.append("; Waiting " + waitTime + "ms");
-
-							// Set up GET request with IP and headers
-							RequestConfig config = RequestConfig.custom()
-									.setLocalAddress(InetAddress.getByAddress(ip.ip))
-									.build();
-							HttpGet get = new HttpGet(request.getUrl());
-							get.setConfig(config);
-							get.setHeader("user-agent", getRandomUserAgent());
-
-							// Execute crawler
-							long requestStartTime = (new Date()).getTime();
-							client = HttpClients.createDefault();
-							response = client.execute(get);
-
-							// Fetch response as it comes in as a stream
-							responseString = EntityUtils.toString(response.getEntity());
-							long requestEndTime = (new Date()).getTime();
-							status.append("; Response: " + responseString.length() + "b in "
-									+ (requestEndTime - requestStartTime) + "ms");
-
-							// Min content length check. This check helps combat HTTP errors where
-							// the server will respond 200-OK, but will return garbage content
-							if (minContentLength > 0
-									&& responseString.length() < minContentLength) {
-								status.append("; Failed minimum content length check of "
-										+ minContentLength + ", retrying");
-								continue; // retry
-							}
-
-							// Stats for nerds
-							long endTime = (new Date()).getTime();
-							status.append("; Total: " + (endTime - startTime) + "ms");
-
-							// IP Cleanup
-							ip.lastUsed = endTime;
-							ip.inUse = false;
-
-							// Update cache
-							synchronized (localCache) {
-								// A synchro is needed as it prevents knocking off cached items
-								// while they're being used.
-								localCache.put(request.getUrl(), responseString);
-							}
-
-							// Final words
-							long cacheTime = (new Date()).getTime();
-							status.append("; Cache time: " + (cacheTime - endTime)
-									+ "ms; Scrape success!");
-							logger.log(status.toString());
-
-							synchronized (isFinished) {
-								if (isFinished) {
-									logger.log("Woah. Two threads completed without being "
-											+ "interrupted. That's not supposed to happen...");
-									return;
-								}
-
-								isFinished = true;
-							}
-							request.onSuccess(responseString);
-							return;
-						}
-					} catch (Exception e) {
-						// Print out error now.
-						status.append("; Scrape failed with error: " + e.getMessage());
-						logger.log(status.toString());
-
-						// Handle failure
-						request.onFailure(e.getMessage());
-						if (request.shouldRetryOnFail()) {
-							gracefulRestart();
-						}
-					} finally {
-						// Memory cleanup
-						try { if (client != null) client.close(); }
-						catch (IOException e) {
-							logger.log(e, "MultiIPCrawler couldn't close client"); }
-						try { if (response != null) response.close(); }
-						catch (IOException e) {
-							logger.log(e, "MultiIpCrawler couldn't close response"); }
-					}
-				}
-			});
-			thread.start();
-		}
 	}
 
 	private static String getRandomUserAgent() {
