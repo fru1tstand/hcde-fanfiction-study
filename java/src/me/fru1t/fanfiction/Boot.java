@@ -28,7 +28,7 @@ public class Boot {
 			new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
 
 	// Crawler params
-	private static final int AVG_SLEEP_TIME_PER_IP = 500;
+	private static final int AVG_SLEEP_TIME_PER_IP = 1300;
 	private static final String[] REMOTE_IPS = {
 			"104.128.237.128",
 			"104.128.233.73",

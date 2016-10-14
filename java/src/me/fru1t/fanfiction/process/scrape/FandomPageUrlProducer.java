@@ -113,6 +113,8 @@ public class FandomPageUrlProducer extends ConcurrentProducer<String> {
 						} else {
 							// Otherwise, we're good to go
 							maxPages = fp.getMaxPages();
+							Boot.getLogger().log("Found " + maxPages + " pages for "
+									+ currentFandom.toString());
 							isWaitingForFirstPage = false;
 						}
 					}
