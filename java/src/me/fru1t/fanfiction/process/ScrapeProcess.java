@@ -16,7 +16,7 @@ public class ScrapeProcess implements Runnable {
 
 	private ConcurrentProducer<String> urlProducer;
 	private Session session;
-	private String queuedCrawlUrl;
+	private String[] queuedCrawlUrl;
 
 	/**
 	 * Creates a new scrape process given the urls in the form of a producer and the session name.
@@ -25,7 +25,8 @@ public class ScrapeProcess implements Runnable {
 	public ScrapeProcess(ConcurrentProducer<String> urlProducer, Session session) {
 		this.urlProducer = urlProducer;
 		this.session = session;
-		this.queuedCrawlUrl = null;
+		this.queuedCrawlUrl = new String[1];
+		this.queuedCrawlUrl[0] = null;
 	}
 
 	@Override
@@ -53,35 +54,38 @@ public class ScrapeProcess implements Runnable {
 	}
 
 	private boolean queueNextScrape() {
-		if (queuedCrawlUrl == null) {
-			queuedCrawlUrl = urlProducer.take();
-		}
-		if (queuedCrawlUrl == null) {
+		synchronized (queuedCrawlUrl) {
+			if (queuedCrawlUrl[0] == null) {
+				queuedCrawlUrl[0] = urlProducer.take();
+			}
+			if (queuedCrawlUrl[0] == null) {
+				return false;
+			}
+			String tCrawlUrl = queuedCrawlUrl[0];
+			if (Boot.getCrawler().sendRequest(new Request(tCrawlUrl, new Consumer<String>() {
+					@Override
+					public void eat(String crawlContent) {
+						// If we're super fast, this might happen.
+						synchronized (queuedCrawlUrl) {
+							if (queuedCrawlUrl[0] == tCrawlUrl) {
+								queuedCrawlUrl[0] = null;
+							}
+						}
+
+						queueNextScrape();
+						try {
+							StoredProcedures.addScrape(session, tCrawlUrl, crawlContent);
+						} catch (InterruptedException e) {
+							Boot.getLogger().log(e, "While adding the scrape to the database "
+									+ "the thread was interrupted.");
+						}
+					}
+				}))) {
+
+				queuedCrawlUrl[0] = null;
+				return true;
+			}
 			return false;
 		}
-
-		String tCrawlUrl = queuedCrawlUrl;
-		if (Boot.getCrawler().sendRequest(new Request(tCrawlUrl, new Consumer<String>() {
-				@Override
-				public void eat(String crawlContent) {
-					// If the crawler hits cache, this process is not async. Thus we need to check
-					// that queuedCrawlUrl == tCrawlUrl
-					if (queuedCrawlUrl == tCrawlUrl) {
-						queuedCrawlUrl = null;
-					}
-
-					queueNextScrape();
-					try {
-						StoredProcedures.addScrape(session, tCrawlUrl, crawlContent);
-					} catch (InterruptedException e) {
-						Boot.getLogger().log(e, "While adding the scrape to the database "
-								+ "the thread was interrupted.");
-					}
-				}
-			}))) {
-			queuedCrawlUrl = null;
-			return true;
-		}
-		return false;
 	}
 }

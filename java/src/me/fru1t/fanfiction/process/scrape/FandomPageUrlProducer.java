@@ -31,6 +31,8 @@ public class FandomPageUrlProducer extends ConcurrentProducer<String> {
 	// Matches for page parameter
 	private static final int EXTRA_PAGE_MIN_STORIES_THRESHOLD = 5000;
 
+	private static final long WAIT_BEFORE_RETRY_SCRAPE_MS = 1000;
+
 	private static boolean isComplete;
 	private static boolean isWaitingForFirstPage;
 
@@ -97,7 +99,11 @@ public class FandomPageUrlProducer extends ConcurrentProducer<String> {
 		}
 
 		// Async fetch fandom page 1 and get max pages.
-		Boot.getCrawler().sendRequest(new Request(
+		getNextFandom();
+	}
+
+	private void getNextFandom() {
+		if (!Boot.getCrawler().sendRequest(new Request(
 				getFandomUrl(currentFandom, 1),
 				new Consumer<String>() {
 					@Override
@@ -119,7 +125,14 @@ public class FandomPageUrlProducer extends ConcurrentProducer<String> {
 						}
 					}
 				}
-		));
+		))) {
+			getNextFandom();
+			try {
+				Thread.sleep(WAIT_BEFORE_RETRY_SCRAPE_MS);
+			} catch (InterruptedException e) {
+				Boot.getLogger().log(e);
+			}
+		}
 	}
 
 	private String getFandomUrl(Fandom fandom, int page) {
