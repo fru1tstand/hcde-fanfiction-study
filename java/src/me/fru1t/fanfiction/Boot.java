@@ -10,8 +10,10 @@ import java.util.Scanner;
 import com.jcraft.jsch.JSch;
 
 import me.fru1t.fanfiction.database.producers.FandomProducer;
+import me.fru1t.fanfiction.database.producers.ProfileProducer;
 import me.fru1t.fanfiction.process.ScrapeProcess;
 import me.fru1t.fanfiction.process.scrape.FandomPageUrlProducer;
+import me.fru1t.fanfiction.process.scrape.ProfilePageUrlProducer;
 import me.fru1t.util.DatabaseConnectionPool;
 import me.fru1t.util.Logger;
 import me.fru1t.web.MultiIPCrawler;
@@ -30,16 +32,17 @@ public class Boot {
 	// Crawler params
 	private static final int AVG_SLEEP_TIME_PER_IP = 1300;
 	private static final String[] REMOTE_IPS = {
-			"104.128.237.128",
-			"104.128.233.73",
-			"45.58.54.250"
+//			"104.128.237.128",
+//			"104.128.233.73",
+//			"45.58.54.250"
+			"128.208.219.12" // lab server
 	};
 
 	private static final int MIN_CONTENT_LENGTH = 1000;
 
 	// Database params
 	private static final String LOCAL_SQL_CONNECTION_STRING =
-			"jdbc:mysql://localhost/fanfictiondrg201610"
+			"jdbc:mysql://localhost/fanfictiondrg201605"
 			+ "?user=fanfictiondrg&password=fanfictiondrg2016@HCDE";
 
 //	private static final String LOCAL_SQL_CONNECTION_STRING =
@@ -67,13 +70,17 @@ public class Boot {
 //				new ScrapeProducer(Session.SCRAPE_CATEGORY_PAGES_16_10_10),
 //				new CategoryToFandoms(),
 //				Session.SCRAPE_CATEGORY_PAGES_16_10_10)).run();
-		(new ScrapeProcess(
-				new FandomPageUrlProducer(new FandomProducer()),
-				Session.SCRAPE_ALL_FANDOM_PAGES_16_10_10)).run();
+//		(new ScrapeProcess(
+//				new FandomPageUrlProducer(new FandomProducer()),
+//				Session.SCRAPE_ALL_FANDOM_PAGES_16_10_10)).run();
 //		(new ConvertProcess<Scrape>(
 //			new ScrapeProducer(Session.SCRAPE_ALL_FANDOM_PAGES_16_10_10),
 //			new FandomToStories(Session.CONVERT_ALL_FANDOM_PAGES_16_10_10),
 //			Session.CONVERT_ALL_FANDOM_PAGES_16_10_10)).run();
+		
+		(new ScrapeProcess(
+				new ProfilePageUrlProducer(new ProfileProducer()),
+				Session.SCRAPE_PROFILE_PAGES_16_10_15)).run();
 	}
 
 	public static Logger getLogger() {
