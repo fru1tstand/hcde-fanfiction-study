@@ -198,7 +198,15 @@ public class MultiIPCrawler {
 			if (localCache.containsKey(request.getUrl())) {
 				status.append("; hit cache. Success!");
 				logger.log(status.toString());
-				request.onSuccess(localCache.get(request.getUrl()));
+				String localCacheResult = localCache.get(request.getUrl());
+
+				// Onsuccess MUST be called asynchronously.
+				(new Thread(new Runnable() {
+					@Override
+					public void run() {
+						request.onSuccess(localCacheResult);
+					}
+				})).start();
 				return true;
 			}
 		}
@@ -299,6 +307,9 @@ public class MultiIPCrawler {
 						return;
 					}
 				} catch (Exception e) {
+					// Reset last used
+					ip.lastUsed = (new Date()).getTime();
+
 					// Print out error now.
 					status.append("; Scrape failed with error: " + e.getMessage());
 					logger.log(status.toString());

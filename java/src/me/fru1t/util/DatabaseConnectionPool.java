@@ -1,8 +1,14 @@
 package me.fru1t.util;
 
+import java.io.Console;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Scanner;
+
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 
 /**
  * DatabaseConnectionPool provides fail-safe methods of execution for queries to a MySQL database.
@@ -34,6 +40,12 @@ public class DatabaseConnectionPool {
 	private Connection connection;
 	private Logger logger;
 
+	private boolean useSSH;
+	private String sshHost;
+	private String sshUser;
+	private String sshPass;
+	private Session sshSession;
+
 	/**
 	 * Creates a new connection pool
 	 */
@@ -42,6 +54,13 @@ public class DatabaseConnectionPool {
 		this.dbConnectionString = dbConnectionString;
 		this.connection = null;
 		this.logger = logger;
+
+		this.sshHost = null;
+		this.sshUser = null;
+		this.sshPass = null;
+		this.useSSH = false;
+		this.sshSession = null;
+		promptSSH();
 	}
 
 	/**
@@ -64,6 +83,12 @@ public class DatabaseConnectionPool {
 	public synchronized Connection getConnection() throws InterruptedException {
 		while (connection == null) {
 			try {
+				if (useSSH) {
+					if (sshSession != null) {
+						sshSession.disconnect();
+					}
+					connectSSH();
+				}
 				connection = DriverManager.getConnection(dbConnectionString);
 			} catch (SQLException e) {
 				logger.log(e, "Couldn't connect to the database, retrying after delay...");
@@ -106,6 +131,61 @@ public class DatabaseConnectionPool {
 				}
 				ThreadUtils.waitGauss(msBeforeRetry);
 			}
+		}
+	}
+
+	private void promptSSH() {
+		// Ask if using SSH
+		Scanner consoleScanner = new Scanner(System.in);
+		System.out.print("Use SSH to connect to database [y/N]? ");
+
+		try {
+			if (consoleScanner.nextLine().toLowerCase().equals("y")) {
+				useSSH = true;
+				System.out.println();
+
+				// The console object helps hide the password.
+				// See: http://stackoverflow.com/questions/8138411/masking-password-input-from-the-console-java
+				Console console = System.console();
+				if (console == null) {
+					logger.log("I couldn't get a console instance most likely because I'm "
+							+ "running in  an IDE. WARNING: This means I will NOT hide your "
+							+ "password when you type it into the console.");
+				}
+
+				// Fetch SSH information
+				System.out.print("SSH Host: ");
+				sshHost = consoleScanner.nextLine();
+
+				System.out.print("SSH Username: ");
+				sshUser = consoleScanner.nextLine();
+
+				if (console == null) {
+					System.out.print("SSH Password [WARNING: NOT HIDDEN]: ");
+					sshPass = consoleScanner.nextLine();
+				} else {
+					System.out.print("SSH Password: ");
+					sshPass = String.valueOf(console.readPassword());
+				}
+				connectSSH();
+			}
+		} finally {
+			consoleScanner.close();
+		}
+	}
+
+	private void connectSSH() {
+		try {
+			JSch jsch = new JSch();
+			sshSession = jsch.getSession(sshUser, sshHost, 22);
+			sshSession.setPassword(sshPass);
+			sshSession.setConfig("StrictHostKeyChecking", "no");
+			sshSession.connect();
+
+			// Sets up MySQL Port forwarding through the SSH tunnel
+			sshSession.setPortForwardingL(3306, "localhost", 3306);
+		} catch (JSchException e) {
+			logger.log(e);
 		}
 	}
 }
