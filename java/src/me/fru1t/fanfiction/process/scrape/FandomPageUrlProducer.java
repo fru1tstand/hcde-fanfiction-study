@@ -90,7 +90,6 @@ public class FandomPageUrlProducer extends ConcurrentProducer<String> {
 		// Get the next fandom object
 		isWaitingForFirstPage = true;
 		currentFandom = fandomProducer.take();
-		currentPage = 1;
 
 		// No more fandoms from the database, so we're done.
 		if (currentFandom == null) {
@@ -99,10 +98,10 @@ public class FandomPageUrlProducer extends ConcurrentProducer<String> {
 		}
 
 		// Async fetch fandom page 1 and get max pages.
-		getNextFandom();
+		getFandomMaxPages();
 	}
 
-	private void getNextFandom() {
+	private void getFandomMaxPages() {
 		if (!Boot.getCrawler().sendRequest(new Request(
 				getFandomUrl(currentFandom, 1),
 				new Consumer<String>() {
@@ -119,6 +118,7 @@ public class FandomPageUrlProducer extends ConcurrentProducer<String> {
 						} else {
 							// Otherwise, we're good to go
 							maxPages = fp.getMaxPages();
+							currentPage = 1;
 							Boot.getLogger().log("Found " + maxPages + " pages for "
 									+ currentFandom.toString());
 							isWaitingForFirstPage = false;
@@ -126,17 +126,19 @@ public class FandomPageUrlProducer extends ConcurrentProducer<String> {
 					}
 				}
 		))) {
-			getNextFandom();
 			try {
 				Thread.sleep(WAIT_BEFORE_RETRY_SCRAPE_MS);
 			} catch (InterruptedException e) {
 				Boot.getLogger().log(e);
+				return;
 			}
+			getFandomMaxPages();
 		}
 	}
 
 	private String getFandomUrl(Fandom fandom, int page) {
-		return BASE_URL + fandom.url + ANY_RATING_ANY_LANGUAGE_SORTED_PUBLISH + PAGE_PARAM + page;
+		return ((fandom.url.charAt(0) == '/') ? BASE_URL : "") + fandom.url
+				+ ANY_RATING_ANY_LANGUAGE_SORTED_PUBLISH + PAGE_PARAM + page;
 	}
 
 	@Override
