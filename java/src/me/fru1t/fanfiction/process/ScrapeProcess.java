@@ -53,7 +53,7 @@ public class ScrapeProcess implements Runnable {
 		Boot.getLogger().log("Completed ScrapeProcess with session name: " + session);
 	}
 
-	private boolean queueNextScrape() {
+	private synchronized boolean queueNextScrape() {
 		synchronized (queuedCrawlUrl) {
 			if (queuedCrawlUrl[0] == null) {
 				queuedCrawlUrl[0] = urlProducer.take();

@@ -36,7 +36,7 @@ public class MultiIPCrawler {
 			this.inUse = false;
 		}
 	}
-	private static final int MAX_THREAD_AGE_MS = 10000;
+	private static final int MAX_THREAD_AGE_MS = 30000;
 	private static final int LOCAL_CACHE_SIZE = 10;
 	private static final String[] USER_AGENTS = {
 			"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1",

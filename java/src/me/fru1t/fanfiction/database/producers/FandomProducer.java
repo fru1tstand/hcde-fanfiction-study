@@ -26,8 +26,7 @@ public class FandomProducer extends DatabaseProducer<FandomProducer.Fandom, Inte
 			+ " `fandom`.`name` AS `name`,"
 			+ " `fandom`.`url` AS `url`"
 			+ " FROM `fandom`"
-			+ " INNER JOIN `category` ON `category`.`id` = `fandom`.`category_id`"
-			+ " WHERE `fandom`.`id` > 266";
+			+ " INNER JOIN `category` ON `category`.`id` = `fandom`.`category_id`";
 	private static final String ID_NAME = "`fandom`.`id`";
 	private static final int BUFFER_SIZE = 10000;
 
