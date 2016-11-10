@@ -155,7 +155,7 @@ public class FandomStoryListElement {
 			Matcher m = COMPONENT_KEY_VALUE_PATTERN.matcher(component);
 			if (!m.matches()) {
 				if (LOG_COMPONENT_IGNORES) {
-					Boot.getLogger().log("Ignoring component: " + component);
+					Boot.getLogger().log("Ignoring component: " + component, true);
 				}
 				return false;
 			}
@@ -183,7 +183,7 @@ public class FandomStoryListElement {
 				return false;
 			default:
 				if (LOG_COMPONENT_IGNORES) {
-					Boot.getLogger().log("Ignoring component: " + component);
+					Boot.getLogger().log("Ignoring component: " + component, true);
 				}
 				break;
 			}

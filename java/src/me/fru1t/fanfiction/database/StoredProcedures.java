@@ -1,9 +1,14 @@
 package me.fru1t.fanfiction.database;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -57,23 +62,117 @@ public class StoredProcedures {
 			"{CALL usp_add_genre_to_story(?, ?)}";
 
 	/**
-	 * 1 session_name VARCHAR(128)
-	 * 2 scrape_date INT(10)
-	 * 3 url VARCHAR(255)
-	 * 4 content MEDIUMTEXT
+	 * Adds scrape content to the database.
+	 * @throws InterruptedException
 	 */
-	private static final String USP_ADD_SCRAPE =
-			"{CALL usp_add_scrape(?,?,?,?)}";
+	public static void addScrapeBatch(Session session, HashMap<String, String> batchCrawlContent)
+			throws InterruptedException {
+
+		Boot.getDatabaseConnectionPool().executeStatement(new Statement() {
+			@Override
+			public void execute(Connection c) throws SQLException {
+				PreparedStatement stmt = c.prepareStatement(
+						"INSERT INTO `scrape_review` (`session_id`, `date`, `url`, `content`)"  
+								+ " VALUES (?, ?, ?, ?)");
+				try {
+					c.setAutoCommit(false);  
+					//c.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED); 
+
+					for (HashMap.Entry<String, String> row : batchCrawlContent.entrySet()) {
+						String url = row.getKey();
+						String content = row.getValue();
+
+						int currentTime = (int) ((new Date()).getTime() / 1000);
+						if (content == null) {
+							Boot.getLogger().log("Ignored raw scrape insert as the content was null", true);
+							return;
+						}
+
+						if (Boot.DEBUG) {
+							Boot.getLogger().debug("Fake storing content length: "
+									+ content.length() + "; url: " + url, StoredProcedures.class);
+							return;
+						}
+
+						stmt.setInt(1, session.getID()); // 1 session_name VARCHAR(128)
+						stmt.setInt(2, currentTime); // 2 scrape_date INT(10)
+						stmt.setString(3, url); // 3 url VARCHAR(255)
+						stmt.setString(4, content); // 4 content MEDIUMTEXT
+						stmt.addBatch();
+					}
+
+					stmt.executeBatch();
+					c.commit();
+
+				} catch ( SQLException se ){
+					String addScrapeBatchfilename = "url" + (new Date()).getTime() + ".txt";
+
+					Boot.getLogger().log(se, "AddScrapeBatch is having trouble! " 
+							+ "Outputting a list of urls that were supposed to be inserted to a file \""
+							+ addScrapeBatchfilename);
+
+					try {
+						BufferedWriter fileWriter = 
+								new BufferedWriter(new FileWriter(addScrapeBatchfilename, true));
+						for (String myurl : batchCrawlContent.keySet()) {
+							fileWriter.write(myurl + "\r\n");
+							fileWriter.flush();
+						}
+						fileWriter.close();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+						Boot.getLogger().log(e1, "Couldn't write to file \"" + addScrapeBatchfilename);
+					}
+				} finally {
+					stmt.close();
+				}
+			}
+		});
+	}
 
 	/**
 	 * Adds scrape content to the database.
 	 * @throws InterruptedException
 	 */
-	public static void addScrape(Session session, String url, @Nullable String content)
+	public static void addScrape(Session sess, String url, @Nullable String content)
 			throws InterruptedException {
 		int currentTime = (int) ((new Date()).getTime() / 1000);
 		if (content == null) {
-			Boot.getLogger().log("Ignored raw scrape insert as the content was null");
+			Boot.getLogger().log("Ignored raw scrape insert as the content was null", true);
+			return;
+		}
+
+		if (Boot.DEBUG) {
+			Boot.getLogger().debug("Fake storing content length: "
+					+ content.length() + "; url: " + url, StoredProcedures.class);
+			return;
+		}
+
+		Boot.getDatabaseConnectionPool().executeStatement(new Statement() {
+			@Override
+			public void execute(Connection c) throws SQLException {
+				PreparedStatement stmt = c.prepareStatement(
+						"INSERT INTO `scrape_playground` (`session_id`, `date`, `url`, `content`)"  
+								+ " VALUES (?, ?, ?, ?)");
+				try {
+					stmt.setInt(1, sess.getID()); // 1 session_id 
+					stmt.setInt(2, currentTime); // 2 scrape_date INT(10)
+					stmt.setString(3, url); // 3 url VARCHAR(255)
+					stmt.setString(4, content); // 4 content MEDIUMTEXT
+					stmt.execute();
+				} finally {
+					stmt.close();
+				}
+
+			}
+		});
+	}
+	/*public static void addScrape(Session session, String url, @Nullable String content)
+			throws InterruptedException {
+		int currentTime = (int) ((new Date()).getTime() / 1000);
+		if (content == null) {
+			Boot.getLogger().log("Ignored raw scrape insert as the content was null", true);
 			return;
 		}
 
@@ -88,7 +187,7 @@ public class StoredProcedures {
 			public void execute(Connection c) throws SQLException {
 				CallableStatement stmt = c.prepareCall(USP_ADD_SCRAPE);
 				try {
-					stmt.setString(1, session.name()); // 1 session_name VARCHAR(128)
+					stmt.setString(1, sessName.name()); // 1 session_name VARCHAR(128)
 					stmt.setInt(2, currentTime); // 2 scrape_date INT(10)
 					stmt.setString(3, url); // 3 url VARCHAR(255)
 					stmt.setString(4, content); // 4 content MEDIUMTEXT
@@ -99,7 +198,10 @@ public class StoredProcedures {
 
 			}
 		});
-	}
+	}*/
+
+	
+	
 
 	/**
 	 * Batch inserts the result of the processing of list scrapes.
@@ -140,7 +242,7 @@ public class StoredProcedures {
 						storyStmt.setInt(16, bre.processedMetadata.dateUpdated);// 16 date_updated INT(10),
 						storyStmt.setBoolean(17, bre.processedMetadata.isComplete); // 17 is_complete TINYINT,
 						storyStmt.setInt(18, scrapeId); // 18 scrape_id INT,
-						storyStmt.setString(19, convertSession.name()); // 19 session_name VARCHAR(128),
+						storyStmt.setString(19, convertSession.getName().name()); // 19 session_name VARCHAR(128),
 						storyStmt.setInt(20, dateProcessed); // 20 process_date INT(10),
 						storyStmt.setBoolean(21, bre.processedMetadata.didSuccessfullyParse); // 21 meta_did_successfully_parse TINYINT,
 						storyStmt.setBoolean(22, bre.didSuccessfullyParse); // 22 story_did_successfully_parse TINYINT,

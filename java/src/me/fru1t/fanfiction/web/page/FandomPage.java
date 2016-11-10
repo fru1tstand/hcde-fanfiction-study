@@ -77,7 +77,7 @@ public class FandomPage extends Page {
 				if (!pageNumberValueMatcher.matches()) {
 					Boot.getLogger().log("The link " + pageNumberLink.outerHtml()
 						+ " wound up in the page number links pile. Ignoring for now, but this may"
-						+ "be indicitive of a problem.");
+						+ "be indicitive of a problem.", true);
 					continue;
 				}
 				int pageNumberValue =

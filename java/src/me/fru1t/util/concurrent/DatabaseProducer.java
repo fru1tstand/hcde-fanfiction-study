@@ -13,6 +13,7 @@ import java.util.Queue;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import me.fru1t.fanfiction.Boot;
 import me.fru1t.util.DatabaseConnectionPool;
 import me.fru1t.util.DatabaseConnectionPool.Statement;
 import me.fru1t.util.Logger;
@@ -28,6 +29,14 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 	public static abstract class Row<I> {
 		public static final String COLUMN_ID = "id";
 		public I id;
+	}
+	
+	public static class SelectRowIDRange {
+		public int startId;
+		public int endId;
+		public SelectRowIDRange (int s, int e) {
+			startId = s; endId = e;
+		}
 	}
 
 	private static final String QUERY_ORDERBY = " ORDER BY %s ASC";
@@ -54,7 +63,10 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 	@Nullable private I firstScrapeId;
 	@Nullable private I lastScrapeId;
 	private int rowsProcessedSinceLastFetch;
-
+	private int totalRowsProcessed;
+	private SelectRowIDRange rowIDRange;
+	private String otherWhereClause;
+	
 	public DatabaseProducer(
 			String idName,
 			Class<T> rowClass,
@@ -76,6 +88,9 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 		this.lastFetchTime = 0;
 		this.currentFetchTime = 0;
 		this.rowsProcessedSinceLastFetch = 0;
+		this.totalRowsProcessed = 0;
+		this.rowIDRange = null;
+		this.otherWhereClause = null;
 	}
 
 	/**
@@ -88,6 +103,17 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 		this.currentId = id;
 		return this;
 	}
+	
+	/**
+	 * Set the range of row ids to be considered for producer.
+	 */
+	public void setRowIDRange(int start, int end) {
+		rowIDRange = new SelectRowIDRange(start, end);
+	}
+	
+	public void setOtherWhereClause(String str) {
+		otherWhereClause = str;
+	}
 
 	/**
 	 * Thread-safely returns the next row from the table, or null if none are left.
@@ -97,9 +123,17 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 	@Override
 	@Nullable
 	public final synchronized T take() {
+		if (totalRowsProcessed % 100 == 0 && !queue.isEmpty()) {
+			logger.log("Regular Report: Procssed " 
+					+ totalRowsProcessed 
+					+ " rows so far, currently on id "
+					+ queue.peek().id, true);
+		}
+		
 		// Queue still has stuff
 		if (!queue.isEmpty()) {
 			rowsProcessedSinceLastFetch++;
+			totalRowsProcessed++;
 			lastScrapeId = queue.peek().id;
 			return queue.poll();
 		}
@@ -120,7 +154,7 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 					+ ((lastScrapeId != null) ? lastScrapeId.toString() : "null")
 					+ "], in "
 					+ (currentFetchTime - lastFetchTime)
-					+ "ms");
+					+ "ms", true);
 		}
 		lastFetchTime = currentFetchTime;
 		rowsProcessedSinceLastFetch = 0;
@@ -128,6 +162,7 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 
 		if (!queue.isEmpty()) {
 			rowsProcessedSinceLastFetch++;
+			totalRowsProcessed++;
 			firstScrapeId = queue.peek().id;
 			return queue.poll();
 		}
@@ -202,10 +237,18 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 		if (!hasWhereClause) {
 			query.append(QUERY_WHERE_GUARANTEE);
 		}
+		
+		if (rowIDRange != null) {
+			query.append(" AND " + Row.COLUMN_ID + " BETWEEN " + rowIDRange.startId + " AND " + rowIDRange.endId);
+		}
 
 		// AND id > current
 		if (currentId != null) {
 			query.append(String.format(QUERY_CURRENT_ID, idName, currentId));
+		}
+		
+		if (otherWhereClause != null && !otherWhereClause.equals("")) {
+			query.append(" AND " + otherWhereClause);
 		}
 
 		// ...ORDER BY...

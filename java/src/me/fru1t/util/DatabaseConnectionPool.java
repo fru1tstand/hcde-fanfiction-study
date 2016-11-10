@@ -4,6 +4,7 @@ import java.io.Console;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 import java.util.Scanner;
 
 import com.jcraft.jsch.JSch;
@@ -60,7 +61,8 @@ public class DatabaseConnectionPool {
 		this.sshPass = null;
 		this.useSSH = false;
 		this.sshSession = null;
-		promptSSH();
+		justGetOnWithSSH();
+		//promptSSH();
 	}
 
 	/**
@@ -89,6 +91,7 @@ public class DatabaseConnectionPool {
 					}
 					connectSSH();
 				}
+			    
 				connection = DriverManager.getConnection(dbConnectionString);
 			} catch (SQLException e) {
 				logger.log(e, "Couldn't connect to the database, retrying after delay...");
@@ -134,6 +137,10 @@ public class DatabaseConnectionPool {
 		}
 	}
 
+	private void justGetOnWithSSH() {
+		connectSSH();
+	}
+
 	private void promptSSH() {
 		// Ask if using SSH
 		Scanner consoleScanner = new Scanner(System.in);
@@ -150,7 +157,7 @@ public class DatabaseConnectionPool {
 				if (console == null) {
 					logger.log("I couldn't get a console instance most likely because I'm "
 							+ "running in  an IDE. WARNING: This means I will NOT hide your "
-							+ "password when you type it into the console.");
+							+ "password when you type it into the console.", true);
 				}
 
 				// Fetch SSH information

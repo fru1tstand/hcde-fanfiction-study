@@ -65,7 +65,7 @@ public class CategoryToFandoms extends Consumer<Scrape> {
 			Boot.getLogger().log("CategoryToFandoms converter process was passed " + scrape.url
 					+ " which isn't a category page. I've ignored it and moved on, but this means"
 					+ "either a mistake was made when specifying the session to process, or two"
-					+ "session names are the same.");
+					+ "session names are the same.", true);
 			return;
 		}
 		String category = m.group(CATEGORY_NAME_GROUP);
@@ -88,7 +88,7 @@ public class CategoryToFandoms extends Consumer<Scrape> {
 			}
 			storiesCount += Double.parseDouble(countEl.text().replaceAll("[^0-9.]", "")) * multiplier;
 		}
-		Boot.getLogger().log(category + ": " + storiesCount);
+		Boot.getLogger().log(category + ": " + storiesCount, true);
 
 		// Store fandoms in database
 		try {

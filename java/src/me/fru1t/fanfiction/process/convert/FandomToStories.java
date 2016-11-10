@@ -46,7 +46,7 @@ public class FandomToStories extends Consumer<Scrape> {
 		// Check for scrape URL validity.
 		Matcher m = STORY_URL_PATTERN.matcher(scrape.url);
 		if (!m.matches()) {
-			Boot.getLogger().log("Invalid URL for Fandom, ignoring: " + scrape.url);
+			Boot.getLogger().log("Invalid URL for Fandom, ignoring: " + scrape.url, true);
 			return;
 		}
 		String fandomUrl = BASE_FFN_URL
@@ -66,7 +66,7 @@ public class FandomToStories extends Consumer<Scrape> {
 					+ "/" + m.group(FANDOM_GROUP)
 					+ "/" + m.group(FILTERS_GROUP)
 					+ "; Found: " + fandomPage.getStoryElements().size() + " stories"
-					+ "; Took: " + ((new Date()).getTime() - startTime) + "ms");
+					+ "; Took: " + ((new Date()).getTime() - startTime) + "ms", true);
 		} catch (Exception e) {
 			Boot.getLogger().log(e, "Skipped scrape with ID " + scrape.id + " due to:");
 		}

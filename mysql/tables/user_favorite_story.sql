@@ -1,4 +1,10 @@
-CREATE TABLE `user_favorite_story` (
+CREATE TABLE `user_favorite_story_relax` (
+  `ff_id` INT(11) NOT NULL,
+  `story_id` INT NOT NULL,
+  PRIMARY KEY (`ff_id`, `story_id`),
+  INDEX `fk_user_favorite_story_story_idx` (`story_id` ASC));
+    
+CREATE TABLE `user_favorite_story_strict` (
   `user_id` INT(11) NOT NULL,
   `story_id` INT NOT NULL,
   PRIMARY KEY (`user_id`, `story_id`),
@@ -13,3 +19,4 @@ CREATE TABLE `user_favorite_story` (
     REFERENCES `story` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE);
+

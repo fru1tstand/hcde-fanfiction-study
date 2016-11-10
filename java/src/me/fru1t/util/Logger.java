@@ -52,9 +52,9 @@ public class Logger {
 	 * @param message
 	 * @return
 	 */
-	public String log(String message) {
+	public String log(String message, boolean toConsole) {
 		// Log to console
-		System.out.println(getLogStringPrefix() + message);
+		if (toConsole) System.out.println(getLogStringPrefix() + message);
 
 		// Log to file
 		if (logToFile) {
@@ -82,7 +82,7 @@ public class Logger {
 		int check = (int) (Math.random() * Integer.MAX_VALUE);
 		StringWriter errors = new StringWriter();
 		e.printStackTrace(new PrintWriter(errors));
-		return log(errors.toString() + " [Error ID: " + check  + "]");
+		return log(errors.toString() + " [Error ID: " + check  + "]", true);
 	}
 
 	/**
@@ -98,7 +98,7 @@ public class Logger {
 		StringWriter errors = new StringWriter();
 		e.printStackTrace(new PrintWriter(errors));
 		return log("User message: " + userMessage + "\r\n"
-				+ errors.toString() + " [Error ID: " + check  + "]");
+				+ errors.toString() + " [Error ID: " + check  + "]", true);
 	}
 
 	/**
@@ -107,7 +107,7 @@ public class Logger {
 	 * @param debugMessage The debug message.
 	 */
 	public void debug(@Nullable String debugMessage) {
-		log("[DEBUG-Unknown] " + debugMessage);
+		log("[DEBUG-Unknown] " + debugMessage, true);
 	}
 
 	/**
@@ -117,7 +117,7 @@ public class Logger {
 	 * @param callingClass The class to display in the debug hint.
 	 */
 	public void debug(@Nullable String debugMessage, Class<?> callingClass) {
-		log("[DEBUG-" + callingClass.getSimpleName() + "] " + debugMessage);
+		log("[DEBUG-" + callingClass.getSimpleName() + "] " + debugMessage, true);
 	}
 
 	private String getLogStringPrefix() {

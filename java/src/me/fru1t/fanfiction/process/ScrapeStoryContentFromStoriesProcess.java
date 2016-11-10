@@ -13,7 +13,7 @@ public class ScrapeStoryContentFromStoriesProcess implements Runnable {
 
 	@Override
 	public void run() {
-		Boot.getLogger().log("Running ScrapeStoryContentFromStoriesProcess with Session Name " + SESSION_NAME);
+		Boot.getLogger().log("Running ScrapeStoryContentFromStoriesProcess with Session Name " + SESSION_NAME, true);
 
 //		try {
 //			StoryIdAndChaptersProducer producer = new StoryIdAndChaptersProducer();

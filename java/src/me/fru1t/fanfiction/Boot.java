@@ -3,11 +3,22 @@ package me.fru1t.fanfiction;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.stream.Stream;
 
-import me.fru1t.fanfiction.database.producers.ProfileProducer;
+import me.fru1t.fanfiction.Session.SessionName;
+import me.fru1t.fanfiction.database.producers.ScrapeProducer;
+import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
+import me.fru1t.fanfiction.database.producers.StoryProducer;
+import me.fru1t.fanfiction.process.BatchScrapeProcess;
+import me.fru1t.fanfiction.process.ConvertProcess;
 import me.fru1t.fanfiction.process.ScrapeProcess;
-import me.fru1t.fanfiction.process.scrape.ProfilePageUrlProducer;
+import me.fru1t.fanfiction.process.convert.UserToProfiles;
+import me.fru1t.fanfiction.process.scrape.ReviewPageUrlProducer;
+import me.fru1t.fanfiction.process.scrape.TxtFileBasedUrlProducer;
 import me.fru1t.util.DatabaseConnectionPool;
 import me.fru1t.util.Logger;
 import me.fru1t.web.MultiIPCrawler;
@@ -24,23 +35,19 @@ public class Boot {
 			new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
 
 	// Crawler params
-	private static final int AVG_SLEEP_TIME_PER_IP = 1300;
-	private static final String[] REMOTE_IPS = {
-			"104.128.237.128",
-			"104.128.233.73",
-			"45.58.54.250"
-			//"128.208.219.12" // lab server
-	};
-
+	private static final int AVG_SLEEP_TIME_PER_IP = 1000;
 	private static final int MIN_CONTENT_LENGTH = 1000;
+	private static String[] REMOTE_IPS = null;
 
 	// Database params
+	public static int startid = 1, endid = 1;
+	public static final String database = "fanfictiondrg201605";
+	
 	private static final String LOCAL_SQL_CONNECTION_STRING =
-			"jdbc:mysql://localhost/fanfictiondrg201610"
-			+ "?user=fanfictiondrg&password=fanfictiondrg2016@HCDE";
-
-//	private static final String LOCAL_SQL_CONNECTION_STRING =
-//			"jdbc:mysql://localhost/newschema?user=root";
+			"jdbc:mysql://localhost/" + database
+			+ "?rewriteBatchedStatements=true"
+			//+ "&useUnicode=true&characterEncoding=UTF-8" 
+			+ "&user=fanfictiondrg&password=fanfictiondrg2016@HCDE";
 
 	private static Logger logger;
 	private static MultiIPCrawler crawler;
@@ -58,19 +65,46 @@ public class Boot {
 		} else {
 			logger.logToFile(LOG_FILE_PREFIX, LOG_FILE_SUFFIX);
 		}
+		
+		if (args[0].equals("batchReview")) {
+			
+			REMOTE_IPS = IPs.getIPsetByName(args[1]);
+			startid = Integer.parseInt(args[2]);
+			endid = Integer.parseInt(args[3]);
+			
+			StoryProducer storyProducer = new StoryProducer();
+			storyProducer.setRowIDRange(startid, endid);
+			storyProducer.setOtherWhereClause("`story`.`reviews` > 0");
+			(new BatchScrapeProcess(
+					new ReviewPageUrlProducer(storyProducer), 
+					SessionName.SCRAPE_REVIEW_PAGES_16_11_09)).run();
+			
+		} else if (args[0].equals("fileReview")) {
+			
+			REMOTE_IPS = IPs.getIPsetByName(args[1]);
+			
+			// scrape the urls that failed on batch inserts
+			ArrayList<String> urls = new ArrayList<String>();
+			try (Stream<String> stream = Files.lines(Paths.get("./" + args[2]))) {
+		        stream.forEach(line -> urls.add(line));
+			}
+			(new ScrapeProcess(
+					new TxtFileBasedUrlProducer(urls),
+					SessionName.SCRAPE_REVIEW_PAGES_16_11_09)).run();
+			
+		} else if (args[0].equals("convertUser")) {
 
-		ProfileProducer profileProducer = new ProfileProducer();
-		profileProducer.startAt(2500); // ID 2543 gave an OOM exception. Backtracking to verify fix
-		(new ScrapeProcess(
-				new ProfilePageUrlProducer(profileProducer),
-				Session.SCRAPE_PROFILE_PAGES_16_10_18)).run();
-
-//		(new ConvertProcess<Scrape>(
-//			new ScrapeProducer(Session.SCRAPE_PROFILE_PAGES_16_10_15),
-//			new ProfileToUsers(),
-//			Session.CONVERT_PROFILE_PAGES_16_10_15)).run();
+			REMOTE_IPS = IPs.getIPsetByName(args[1]);
+			
+			(new ConvertProcess<Scrape>(
+					new ScrapeProducer(SessionName.SCRAPE_PROFILE_PAGES_16_10_18),
+					new UserToProfiles(),
+					SessionName.CONVERT_PROFILE_PAGES_16_11_10)).run();
+			
+		}
+		
 	}
-
+	
 	public static Logger getLogger() {
 		return logger;
 	}
