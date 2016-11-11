@@ -87,7 +87,7 @@ public class IPs {
 			"45.58.54.250"
 	};
 
-	public static final String[] labServer = {
+	public static final String[] localServer = {
 			"128.208.219.12" // lab server
 	};
 	
@@ -100,6 +100,8 @@ public class IPs {
 			return server3;
 		} else if (name.equals("4")) {
 			return server4;
+		} else if (name.equals("local")) {
+			return localServer;
 		}
 		
 		return null;

@@ -41,7 +41,7 @@ public class Boot {
 
 	// Database params
 	public static int startid = 1, endid = 1;
-	public static final String database = "fanfictiondrg201605";
+	public static final String database = "fanfictiondrg201610";
 	
 	private static final String LOCAL_SQL_CONNECTION_STRING =
 			"jdbc:mysql://localhost/" + database
@@ -95,9 +95,12 @@ public class Boot {
 		} else if (args[0].equals("convertUser")) {
 
 			REMOTE_IPS = IPs.getIPsetByName(args[1]);
+
+			startid = Integer.parseInt(args[2]);
+			endid = Integer.parseInt(args[3]);
 			
 			(new ConvertProcess<Scrape>(
-					new ScrapeProducer(SessionName.SCRAPE_PROFILE_PAGES_16_10_18),
+					new ScrapeProducer(startid, endid, new SessionName[]{SessionName.SCRAPE_PROFILE_PAGES_16_10_18}),
 					new UserToProfiles(),
 					SessionName.CONVERT_PROFILE_PAGES_16_11_10)).run();
 			

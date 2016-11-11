@@ -1,9 +1,17 @@
 CREATE TABLE `user_favorite_story_relax` (
-  `ff_id` INT(11) NOT NULL,
-  `story_id` INT NOT NULL,
-  PRIMARY KEY (`ff_id`, `story_id`),
-  INDEX `fk_user_favorite_story_story_idx` (`story_id` ASC));
-    
+  `user_id` INT(11) NOT NULL,
+  `ff_story_id` INT NOT NULL,
+  PRIMARY KEY (`user_id`, `ff_story_id`),
+  INDEX `fk_user_favorite_story_ff_story_idx` (`ff_story_id` ASC));
+
+ALTER TABLE `user_favorite_story_relax`
+ADD CONSTRAINT `fk_user_favorite_story_story`
+    FOREIGN KEY (`story_id`)
+    REFERENCES `story` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE;
+
+
 CREATE TABLE `user_favorite_story_strict` (
   `user_id` INT(11) NOT NULL,
   `story_id` INT NOT NULL,

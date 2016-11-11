@@ -36,7 +36,7 @@ public class Session {
 				    stmt.registerOutParameter (1, Types.INTEGER);
 				    stmt.setString(2, name.name());    
 				    stmt.execute();
-				   	id = stmt.getInt (1);
+				   	id = stmt.getInt(1);
 				} finally {
 				   	stmt.close();
 				}

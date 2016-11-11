@@ -1,4 +1,4 @@
-CREATE TABLE `user_profile_relex` (
+CREATE TABLE `user_profile_relax` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `ff_id` int(11) NOT NULL,
   `user_id` INT NOT NULL,

@@ -61,8 +61,8 @@ public class DatabaseConnectionPool {
 		this.sshPass = null;
 		this.useSSH = false;
 		this.sshSession = null;
-		justGetOnWithSSH();
-		//promptSSH();
+		//justGetOnWithSSH();
+		promptSSH();
 	}
 
 	/**
@@ -148,7 +148,7 @@ public class DatabaseConnectionPool {
 
 		try {
 			if (consoleScanner.nextLine().toLowerCase().equals("y")) {
-				useSSH = true;
+				/*useSSH = true;
 				System.out.println();
 
 				// The console object helps hide the password.
@@ -174,7 +174,8 @@ public class DatabaseConnectionPool {
 					System.out.print("SSH Password: ");
 					sshPass = String.valueOf(console.readPassword());
 				}
-				connectSSH();
+				connectSSH();*/
+				justGetOnWithSSH();
 			}
 		} finally {
 			consoleScanner.close();

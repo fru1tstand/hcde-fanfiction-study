@@ -54,8 +54,8 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 			+ "` FROM `scrape` "
 			+ "WHERE 1 = 1 ";
 
-	private static final String FMT_QUERY_LOWER_BOUND = "AND `scrape`.`id` > %d ";
-	private static final String FMT_QUERY_UPPER_BOUND = "AND `scrape`.`id` < %d ";
+	private static final String FMT_QUERY_LOWER_BOUND = "AND `scrape`.`id` >= %d ";
+	private static final String FMT_QUERY_UPPER_BOUND = "AND `scrape`.`id` <= %d ";
 
 	private static final String SESSION_QUERY_BASE_FMT =
 			"SELECT `id` FROM `session` WHERE `name` IN ('%s')";

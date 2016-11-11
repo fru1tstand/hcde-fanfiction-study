@@ -149,7 +149,6 @@ public class ProfileElement {
 		Elements bioParagraphs = profilePageDoc.select("div#bio p");
 		for (Element bioPara : bioParagraphs) {
 			String line = bioPara.text();
-			System.out.println("ddd: " + line);
 			for (String pattern : patterns) {
 				Pattern p = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
 				Matcher m = p.matcher(line);
