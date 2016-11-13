@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.stream.Stream;
 
 import me.fru1t.fanfiction.Session.SessionName;
+import me.fru1t.fanfiction.database.producers.ProfileProducer;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
 import me.fru1t.fanfiction.database.producers.StoryProducer;
@@ -19,6 +20,7 @@ import me.fru1t.fanfiction.process.ScrapeProcess;
 import me.fru1t.fanfiction.process.convert.UserToProfiles;
 import me.fru1t.fanfiction.process.scrape.ReviewPageUrlProducer;
 import me.fru1t.fanfiction.process.scrape.TxtFileBasedUrlProducer;
+import me.fru1t.fanfiction.process.scrape.UserPageUrlProducer;
 import me.fru1t.util.DatabaseConnectionPool;
 import me.fru1t.util.Logger;
 import me.fru1t.web.MultiIPCrawler;
@@ -66,7 +68,33 @@ public class Boot {
 			logger.logToFile(LOG_FILE_PREFIX, LOG_FILE_SUFFIX);
 		}
 		
-		if (args[0].equals("batchReview")) {
+		if (args[0].equals("scrapeUser")) {
+			
+			REMOTE_IPS = IPs.getIPsetByName(args[1]);
+			startid = Integer.parseInt(args[2]);
+			endid = Integer.parseInt(args[3]);
+			
+			ProfileProducer profileProducer = new ProfileProducer();
+			profileProducer.setRowIDRange(startid, endid);
+			(new BatchScrapeProcess(
+					new UserPageUrlProducer(profileProducer), 
+					SessionName.SCRAPE_PROFILE_PAGES_16_11_12)).run();
+			
+		}  else if (args[0].equals("convertUser")) {
+
+			REMOTE_IPS = IPs.getIPsetByName(args[1]);
+			startid = Integer.parseInt(args[2]);
+			endid = Integer.parseInt(args[3]);
+			
+			ScrapeProducer scrapeProducer = 
+					new ScrapeProducer(SessionName.SCRAPE_PROFILE_PAGES_16_10_18);
+			scrapeProducer.setRowIDRange(startid, endid);
+			(new ConvertProcess<Scrape>(
+					scrapeProducer,
+					new UserToProfiles(),
+					SessionName.CONVERT_PROFILE_PAGES_16_11_10)).run();
+			
+		} else if (args[0].equals("scrapeReview")) {
 			
 			REMOTE_IPS = IPs.getIPsetByName(args[1]);
 			startid = Integer.parseInt(args[2]);
@@ -78,6 +106,14 @@ public class Boot {
 			(new BatchScrapeProcess(
 					new ReviewPageUrlProducer(storyProducer), 
 					SessionName.SCRAPE_REVIEW_PAGES_16_11_09)).run();
+			
+		} else if (args[0].equals("convertReviewTempo")) {
+			
+			ScrapeProducer scrapeProducer = new ScrapeProducer(SessionName.STH);
+			(new ConvertProcess<Scrape>(
+					scrapeProducer,
+					new UserToProfiles(),
+					SessionName.STH)).run();
 			
 		} else if (args[0].equals("fileReview")) {
 			
@@ -91,18 +127,6 @@ public class Boot {
 			(new ScrapeProcess(
 					new TxtFileBasedUrlProducer(urls),
 					SessionName.SCRAPE_REVIEW_PAGES_16_11_09)).run();
-			
-		} else if (args[0].equals("convertUser")) {
-
-			REMOTE_IPS = IPs.getIPsetByName(args[1]);
-
-			startid = Integer.parseInt(args[2]);
-			endid = Integer.parseInt(args[3]);
-			
-			(new ConvertProcess<Scrape>(
-					new ScrapeProducer(startid, endid, new SessionName[]{SessionName.SCRAPE_PROFILE_PAGES_16_10_18}),
-					new UserToProfiles(),
-					SessionName.CONVERT_PROFILE_PAGES_16_11_10)).run();
 			
 		}
 		

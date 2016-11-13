@@ -53,21 +53,15 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 			+ "`, `content` AS `" + Scrape.COLUMN_CONTENT
 			+ "` FROM `scrape` "
 			+ "WHERE 1 = 1 ";
-
-	private static final String FMT_QUERY_LOWER_BOUND = "AND `scrape`.`id` >= %d ";
-	private static final String FMT_QUERY_UPPER_BOUND = "AND `scrape`.`id` <= %d ";
-
+	
 	private static final String SESSION_QUERY_BASE_FMT =
 			"SELECT `id` FROM `session` WHERE `name` IN ('%s')";
 	private static final String SESSION_RESTRICT_FMT = "AND (%s) ";
 	private static final String SESSION_RESTRICT_PART_FMT = "`session_id` = %d";
 
-	private static final int DEFAULT_BOUND_VALUE = -1;
 	@Nullable
 	private static final SessionName[] DEFAULT_SCRAPE_SESSIONS = {};
 
-	private int lowerIdBound;
-	private int upperIdBound;
 	private String[] sessionNameStrings;
 	private String sessionIdSql;
 
@@ -87,15 +81,10 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 	 * empty array to include all.
 	 * @throws InterruptedException
 	 */
-	public ScrapeProducer(
-			int lowerIdBound,
-			int upperIdBound,
-			SessionName[] sessNames) throws InterruptedException {
+	public ScrapeProducer(@Nullable SessionName... sessNames) throws InterruptedException {
 		super(ID_NAME, Scrape.class, Boot.getDatabaseConnectionPool(),
 				BUFFER_SIZE, Boot.getLogger());
-		this.lowerIdBound = (lowerIdBound < 0) ? -1 : lowerIdBound;
-		this.upperIdBound = (upperIdBound < 0) ? -1 : upperIdBound;
-
+		
 		// Sanitize session names
 		this.sessionNameStrings = new String[sessNames.length];
 		this.sessionIdSql = "";
@@ -126,22 +115,13 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 		this.sessionIdSql = String.format(SESSION_RESTRICT_FMT, String.join(" OR ", sessionParts));
 	}
 
-	/**
-	 * Creates a new provider that only returns scrapes that belong to the given session names.
-	 *
-	 * @param sessionNames
-	 * @throws InterruptedException
-	 */
-	public ScrapeProducer(@Nullable SessionName... sessNames) throws InterruptedException {
-		this(DEFAULT_BOUND_VALUE, DEFAULT_BOUND_VALUE, sessNames);
-	}
 
 	/**
 	 * Creates a new provider that targets all scrapes from the database.
 	 * @throws InterruptedException
 	 */
 	public ScrapeProducer() throws InterruptedException {
-		this(DEFAULT_BOUND_VALUE, DEFAULT_BOUND_VALUE, DEFAULT_SCRAPE_SESSIONS);
+		this(DEFAULT_SCRAPE_SESSIONS);
 	}
 
 	@Override
@@ -151,14 +131,7 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 
 		// ...WHERE...
 		query += this.sessionIdSql;
-
-		if (upperIdBound != DEFAULT_BOUND_VALUE) {
-			query += String.format(FMT_QUERY_UPPER_BOUND, upperIdBound);
-		}
-		if (lowerIdBound != DEFAULT_BOUND_VALUE) {
-			query += String.format(FMT_QUERY_LOWER_BOUND, lowerIdBound);
-		}
-
+		
 		return query;
 	}
 

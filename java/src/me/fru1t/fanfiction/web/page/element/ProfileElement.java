@@ -164,10 +164,11 @@ public class ProfileElement {
 		this.myFavAuthors = new HashSet<>();
 		for (Element elem : profilePageDoc.select("div#fa table dl")) {
 			String u_html = elem.select("a").attr("href"); // e.g. '/u/2289300/Paimpont'
-			Matcher m = Pattern.compile("^/u/(?<favUserId>[0-9]+)/(?<favUserName>.*)$").matcher(u_html);
+			Matcher m = Pattern.compile("^/u/(?<favUserId>[0-9]+)/(.*)$").matcher(u_html);
 			if (m.find()) {
 				int fav_user_id = Integer.parseInt(m.group("favUserId"));
-				this.myFavAuthors.add(new FavAuthor(fav_user_id, m.group("favUserName")));
+				String fav_user_name = elem.select("a").text();
+				this.myFavAuthors.add(new FavAuthor(fav_user_id, fav_user_name));
 			}
 		}
 	}

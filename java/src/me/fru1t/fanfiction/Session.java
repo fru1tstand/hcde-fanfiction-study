@@ -17,6 +17,8 @@ public class Session {
 		SCRAPE_PROFILE_PAGES_16_10_18, 
 		SCRAPE_REVIEW_PAGES_16_11_09,
 		CONVERT_PROFILE_PAGES_16_11_10,
+		SCRAPE_PROFILE_PAGES_16_11_12, 
+		STH,
 	}
 	
 	private int id;

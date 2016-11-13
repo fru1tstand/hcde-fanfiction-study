@@ -1,7 +1,7 @@
 DELIMITER $$
 CREATE PROCEDURE `usp_add_user_profile_relax`(
     IN in_ff_id int(11),
-    OUT inOut_user_id int(11),
+    OUT out_user_id int(11),
     IN in_user_name varchar(128),
     IN in_country_name VARCHAR(128),
 	IN in_join_date int(10),
@@ -22,6 +22,6 @@ BEGIN
 			 VALUES (in_ff_id, v_user_id, in_user_name,
 					 in_country_name, v_join_date, v_update_date,
 					 in_bio, v_age, in_gender);
-	SELECT v_user_id;
+	SET out_user_id = v_user_id;
 END$$
 DELIMITER ;

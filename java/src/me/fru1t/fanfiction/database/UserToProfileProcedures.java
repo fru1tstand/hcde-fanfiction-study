@@ -24,14 +24,14 @@ public class UserToProfileProcedures {
 	 */
 	private static final String USP_ADD_USER_PROFILE_RELAX =
 			"{CALL usp_add_user_profile_relax(?,?,?,?,?,?,?,?,?)}";
-		
+	
 	/**
 	 *  1 `ff_id` INT(11) NOT NULL,
 	 *  2 `favorite_ff_id` INT(11) NOT NULL,
 	 *  3 `favorite_name` varchar(128) NOT NULL,
 	 */
 	private static final String INSERT_QUERY_USER_FAV_AUTHOR_RELAX = 
-			"INSERT IGNORE INTO `user_favorite_author_relax` (`user_id`, `favorite_ff_id`, `favorite_name`)"  
+			"INSERT IGNORE INTO `user_favorite_author_relax` (`ff_id`, `favorite_ff_id`, `favorite_name`)"  
 			+ " VALUES (?, ?, ?)";
 	
 	/**
@@ -39,7 +39,7 @@ public class UserToProfileProcedures {
 	 *  2 `story_id` INT NOT NULL,
 	 */
 	private static final String INSERT_QUERY_USER_FAV_STORY_RELAX = 
-			"INSERT IGNORE INTO `user_favorite_story_relax` (`user_id`, `ff_story_id`)"  
+			"INSERT IGNORE INTO `user_favorite_story_relax` (`ff_id`, `ff_story_id`)"  
 			+ " VALUES (?, ?)";
 	
 	public static void processUserScrapeToProfile(
@@ -66,14 +66,14 @@ public class UserToProfileProcedures {
 					int user_id = profileStmt.getInt(2);
 
 					for (FavAuthor fa : pe.myFavAuthors) {
-						favAuthorStmt.setInt(1, user_id);
+						favAuthorStmt.setInt(1, pe.my_ff_id);
 						favAuthorStmt.setInt(2, fa.ff_id); // favorite_user_id
 						favAuthorStmt.setString(3, fa.name); 
 						favAuthorStmt.addBatch();
 					}
 					
 					for (Integer fav_story_id : pe.myFavStories) {
-						favStoryStmt.setInt(1, user_id); // my_ff_id
+						favStoryStmt.setInt(1, pe.my_ff_id); // my_ff_id
 						favStoryStmt.setInt(2, fav_story_id); // story_id
 						favStoryStmt.addBatch();
 					}

@@ -239,7 +239,11 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 		}
 		
 		if (rowIDRange != null) {
-			query.append(" AND " + Row.COLUMN_ID + " BETWEEN " + rowIDRange.startId + " AND " + rowIDRange.endId);
+			if (rowIDRange.startId > 0)
+				query.append(" AND " + Row.COLUMN_ID + " >= " + rowIDRange.startId);
+			
+			if (rowIDRange.endId > 0) 
+				query.append(" AND " + Row.COLUMN_ID + " <= " + rowIDRange.endId);
 		}
 
 		// AND id > current

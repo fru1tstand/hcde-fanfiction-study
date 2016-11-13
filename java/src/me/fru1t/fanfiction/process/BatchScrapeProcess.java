@@ -28,7 +28,8 @@ public class BatchScrapeProcess implements Runnable {
 	 * @param urlProducer
 	 * @throws InterruptedException 
 	 */
-	public BatchScrapeProcess(ConcurrentProducer<String> urlProducer, SessionName session) throws InterruptedException {
+	public BatchScrapeProcess(ConcurrentProducer<String> urlProducer, 
+			SessionName session) throws InterruptedException {
 		this.urlProducer = urlProducer;
 		this.session = new Session(session);
 		this.queuedCrawlUrl = new String[1];
