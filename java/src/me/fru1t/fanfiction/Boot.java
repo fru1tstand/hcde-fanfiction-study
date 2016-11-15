@@ -15,6 +15,7 @@ import me.fru1t.fanfiction.database.producers.ScrapeProducer;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
 import me.fru1t.fanfiction.database.producers.StoryProducer;
 import me.fru1t.fanfiction.process.BatchScrapeProcess;
+import me.fru1t.fanfiction.process.BatchUserConvertProcess;
 import me.fru1t.fanfiction.process.ConvertProcess;
 import me.fru1t.fanfiction.process.ScrapeProcess;
 import me.fru1t.fanfiction.process.convert.UserToProfiles;
@@ -42,6 +43,7 @@ public class Boot {
 	private static String[] REMOTE_IPS = null;
 
 	// Database params
+	public static int LAST_DATE_PUBLISHED = 1476594560;
 	public static int startid = 1, endid = 1;
 	public static final String database = "fanfictiondrg201610";
 	
@@ -80,7 +82,7 @@ public class Boot {
 					new UserPageUrlProducer(profileProducer), 
 					SessionName.SCRAPE_PROFILE_PAGES_16_11_12)).run();
 			
-		}  else if (args[0].equals("convertUser")) {
+		}  else if (args[0].equals("batchConvertUser")) {
 
 			REMOTE_IPS = IPs.getIPsetByName(args[1]);
 			startid = Integer.parseInt(args[2]);
@@ -89,9 +91,8 @@ public class Boot {
 			ScrapeProducer scrapeProducer = 
 					new ScrapeProducer(SessionName.SCRAPE_PROFILE_PAGES_16_10_18);
 			scrapeProducer.setRowIDRange(startid, endid);
-			(new ConvertProcess<Scrape>(
+			(new BatchUserConvertProcess<Scrape>(
 					scrapeProducer,
-					new UserToProfiles(),
 					SessionName.CONVERT_PROFILE_PAGES_16_11_10)).run();
 			
 		} else if (args[0].equals("scrapeReview")) {

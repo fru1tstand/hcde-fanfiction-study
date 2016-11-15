@@ -27,6 +27,8 @@ public class ProfileElement {
 	private static String gender_words = "(female|male|boy|girl|woman|man)";
 	private static String GENDER_PATTERN_GROUP = "(?<userGender>" + gender_words + ")";
 	
+	private int scrapeid; // used for debugging
+	
 	public int my_ff_id; // NOT NULL
 	public String user_name;
 	public String country_name;
@@ -36,6 +38,13 @@ public class ProfileElement {
 	public int age;
 	public String gender; // going to be either "female" or "male";
 
+	public int getScrapeId() {
+		return this.scrapeid;
+	}
+	public void setScrapeid(int sid) {
+		this.scrapeid = sid;
+	}
+	
 	public static class FavAuthor {
 		public int ff_id;
 		public String name;
@@ -60,16 +69,18 @@ public class ProfileElement {
 	public Set<FavAuthor> myFavAuthors;
 	public Set<Integer> myFavStories;
 	
-	public ProfileElement(Document profilePageDoc, int my_ff_id, String user_name) throws Exception {
-		
+	public ProfileElement(Document profilePageDoc, int my_ff_id) {
 		this.my_ff_id = my_ff_id;
-		this.user_name = user_name;
 		this.country_name = null;
 		this.join_date = -1;
 		this.update_date = -1;
 		this.bio = null;
 		this.age = -1;
 		this.gender = null;
+		this.myFavAuthors = new HashSet<>();
+		this.myFavStories = new HashSet<>();
+		
+		if (this.checkErrorPage(profilePageDoc)) return;
 		
 		// may not be public, in this case empty string returned
 		//this.country_name = profilePageDoc.select("div#content_wrapper_inner table table td").eq(1).select("img").attr("title");
@@ -83,21 +94,31 @@ public class ProfileElement {
 		this.getFavStories(profilePageDoc);
 	}
 	
+	public ProfileElement(Document profilePageDoc, int my_ff_id, String user_name) {
+		this(profilePageDoc, my_ff_id);
+		this.user_name = user_name;
+	}
+	
+	private boolean checkErrorPage(Document profilePageDoc) {
+		String msg = profilePageDoc.select("div.panel_normal span.gui_normal").text();		
+		Pattern ERROR_PATTERN = Pattern.compile("^FanFiction.Net Message Type .*");
+		return ERROR_PATTERN.matcher(msg).matches();
+	}
+	
 	/**
 	 * Joined date will always appear, but update date is optional.
 	 * @param profilePageDoc
 	 * @throws Exception
 	 */
-	private void getJoinDateAndUpdateDate(Document profilePageDoc) throws Exception {
-		Elements dateElements = profilePageDoc.select("div#content_wrapper_inner table table td[colspan=2] span[data-xutime]");
+	private void getJoinDateAndUpdateDate(Document profilePageDoc) {
+		Elements dateElements = 
+				profilePageDoc.select("div#content_wrapper_inner table table td[colspan=2] span[data-xutime]");
 		int dateElementSize = dateElements.size();
 		if (dateElementSize == 2) {
 			this.join_date = sanitizeInteger(dateElements.first().attr("data-xutime"));
 			this.update_date = sanitizeInteger(dateElements.get(1).attr("data-xutime"));
 		} else if (dateElementSize == 1) {
 			this.join_date = sanitizeInteger(dateElements.first().attr("data-xutime"));
-		} else {
-			throw new Exception(dateElements.size() + " date elements were found when only expecting 1 or 2.");
 		}
 	}
 	
@@ -161,7 +182,6 @@ public class ProfileElement {
 	}
 
 	private void getFavAuthors(Document profilePageDoc) {
-		this.myFavAuthors = new HashSet<>();
 		for (Element elem : profilePageDoc.select("div#fa table dl")) {
 			String u_html = elem.select("a").attr("href"); // e.g. '/u/2289300/Paimpont'
 			Matcher m = Pattern.compile("^/u/(?<favUserId>[0-9]+)/(.*)$").matcher(u_html);
@@ -174,7 +194,6 @@ public class ProfileElement {
 	}
 	
 	private void getFavStories(Document profilePageDoc) {
-		this.myFavStories = new HashSet<>();
 		for (Element elem : profilePageDoc.select("div#fs_inside div.favstories")) {
 			int fav_story_id = Integer.parseInt(elem.attr("data-storyid"));
 			this.myFavStories.add(fav_story_id);

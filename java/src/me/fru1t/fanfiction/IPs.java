@@ -81,7 +81,7 @@ public class IPs {
 			"149.56.46.225"	
 	};
 
-	public static final String[] KodleeServer = {
+	public static final String[] fruitServer = {
 			"104.128.237.128",
 			"104.128.233.73",
 			"45.58.54.250"
@@ -102,6 +102,8 @@ public class IPs {
 			return server4;
 		} else if (name.equals("local")) {
 			return localServer;
+		} else if (name.equals("fruit")) {
+			return fruitServer;
 		}
 		
 		return null;

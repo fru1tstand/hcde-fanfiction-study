@@ -1,5 +1,19 @@
+CREATE TABLE `user_profile_batch` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `ff_id` int(11) NOT NULL,
+  `country_name` VARCHAR(128) NULL,
+  `join_date` INT(10) NULL,
+  `update_date` INT(10) NULL,
+  `bio` MEDIUMTEXT NULL,
+  `age` TINYINT NULL,
+  `gender` CHAR(6) NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `fk_user_profile_unique_ff_idx` (`ff_id` ASC)
+);
+
 CREATE TABLE `user_profile_relax` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
   `ff_id` int(11) NOT NULL,
   `user_name` VARCHAR(128) NOT NULL,
   `country_name` VARCHAR(128) NULL,
@@ -9,7 +23,12 @@ CREATE TABLE `user_profile_relax` (
   `age` TINYINT NULL,
   `gender` CHAR(6) NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `unique_user_profile_user_ff_idx` (`ff_id` ASC)
+  UNIQUE INDEX `fk_user_profile_user_unique_idx` (`user_id` ASC),
+  CONSTRAINT `fk_user_profile_user_unique_idx`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `user` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
 );
 
 CREATE TABLE `user_profile_strict` (

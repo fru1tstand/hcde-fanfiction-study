@@ -13,7 +13,6 @@ import java.util.Queue;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import me.fru1t.fanfiction.Boot;
 import me.fru1t.util.DatabaseConnectionPool;
 import me.fru1t.util.DatabaseConnectionPool.Statement;
 import me.fru1t.util.Logger;
@@ -273,4 +272,9 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 	 * @return An SQL query.
 	 */
 	abstract protected String getUnboundedQuery();
+
+	public boolean isComplete() {
+		// TODO Auto-generated method stub
+		return isComplete;
+	}
 }

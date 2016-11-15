@@ -13,6 +13,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
+import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
+import me.fru1t.util.Consumer;
 import me.fru1t.util.LRUMap;
 import me.fru1t.util.Logger;
 import me.fru1t.util.ThreadUtils;
@@ -179,6 +181,75 @@ public class MultiIPCrawler {
 		return this;
 	}
 
+	public synchronized boolean insertDBitem(Scrape scrape, Consumer<Scrape> converter) {
+		// We like logging.
+		StringBuilder status = new StringBuilder();
+		status.append("Processing scrape row with id: " + scrape.id + " and url \\" + scrape.url);
+		
+		// Find the best free IP to use, or return if there are none.
+		IP freeIp = null;
+		for (IP ip : ips) {
+			if (!ip.inUse && (freeIp == null || freeIp.lastUsed > ip.lastUsed)) {
+				freeIp = ip;
+			}
+		}
+		if (freeIp == null) {
+			status.append("; No free IPs found. Cancelling call.");
+			logger.log(status.toString(), true);
+			return false;
+		}
+		
+		freeIp.inUse = true;
+		dispatchDBQueryThread(freeIp, scrape, converter, status);
+		
+		return true;
+	}
+	
+	private void dispatchDBQueryThread(IP ip, Scrape scrape, Consumer<Scrape> converter, StringBuilder status) {
+		(new Thread(new Runnable() {
+			@Override
+			public void run() {
+				long startTime = (new Date()).getTime();
+				status.append("; IP: " + ip.name);
+
+				try {
+					// Do until it reaches all the way through the return or an error exits the
+					// while loop.
+					while (!Thread.currentThread().isInterrupted()) {
+						// See if we need to wait between crawls (rest time - rested time)
+						long waitTime = (ipRestPeriodInMs - (startTime - ip.lastUsed));
+						if (waitTime > 0) {
+							ThreadUtils.waitGauss((int) waitTime);
+						} else {
+							waitTime = 0;
+						}
+						status.append("; Waiting " + waitTime + "ms");
+
+						// Execute DB query
+						long requestStartTime = (new Date()).getTime();
+						converter.eat(scrape);
+						long requestEndTime = (new Date()).getTime();
+						status.append("; Response: " + (requestEndTime - requestStartTime) + "ms");
+						
+						// Stats for nerds
+						long endTime = (new Date()).getTime();
+						status.append("; Total: " + (endTime - startTime) + "ms");
+
+						// IP Cleanup
+						ip.lastUsed = endTime;
+						ip.inUse = false;
+
+						logger.log(status.toString(), false);
+						return;
+					}
+				} catch (Exception e) {
+				}
+			}
+		})).start();
+	}
+	
+	
+	
 	/**
 	 * Starts a new AJAX request. Returns true if a free IP was found. Otherwise, returns false and
 	 * doesn't start the request if no IPs were free.

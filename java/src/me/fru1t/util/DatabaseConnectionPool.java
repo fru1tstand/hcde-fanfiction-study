@@ -4,7 +4,6 @@ import java.io.Console;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
 import java.util.Scanner;
 
 import com.jcraft.jsch.JSch;
@@ -138,6 +137,12 @@ public class DatabaseConnectionPool {
 	}
 
 	private void justGetOnWithSSH() {
+		sshHost = "hdslab.hcde.washington.edu";
+		sshUser = "jihyunl";
+		// But let's ask for password at least...
+		Console console = System.console();
+		System.out.print("SSH Password: ");
+		sshPass = String.valueOf(console.readPassword());
 		connectSSH();
 	}
 
