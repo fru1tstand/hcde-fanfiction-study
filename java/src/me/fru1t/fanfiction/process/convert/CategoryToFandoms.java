@@ -78,7 +78,9 @@ public class CategoryToFandoms extends Consumer<Scrape> {
 		Document categoryPageDoc = Jsoup.parse(scrape.content);
 		Elements fandomEls = categoryPageDoc.select(FANDOM_LINK_SELECTOR);
 		for (Element fandomEl : fandomEls) {
-			fandoms.add(new Fandom(fandomEl.attr("title").replace("\\", ""), fandomEl.attr(FANDOM_LINK_ATTR)));
+			String fandom_name = fandomEl.attr("title").replace("\\", "");
+			if (!fandom_name.isEmpty())
+				fandoms.add(new Fandom(fandom_name, fandomEl.attr(FANDOM_LINK_ATTR)));
 		}
 
 		// Get category story count info

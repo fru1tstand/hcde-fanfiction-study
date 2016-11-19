@@ -162,10 +162,10 @@ public class Boot {
 			
 			session_of_this_run = new Session(String.format("%s_ON_%s", command, scrape_session_name));
 			
-			if (parts[1].equals("CATEGORY")) {
+			if (parts[1].equals("CATEGORY")) { // EXTRACT fandom from category
 				// get all fandoms for each category
 				(new ConvertProcess<Scrape>(scrapeProducer, new CategoryToFandoms())).run();
-			} else if (parts[1].equals("FANDOM")) {
+			} else if (parts[1].equals("FANDOM")) { // EXTRACT story list from each fandom page
 				// process the scraped story lists, and insert the story meta-data
 				(new ConvertProcess<Scrape>(scrapeProducer, new FandomToStories())).run();
 			} else if (parts[1].equals("USER")) 

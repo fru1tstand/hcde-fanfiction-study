@@ -5,7 +5,7 @@ CREATE TABLE `scrape_metadata` (
    `date` int(10) NOT NULL,
    `url` varchar(2000) NOT NULL,
    `content` mediumtext,
-   # `helping_id` int(11) DEFAULT NULL,  
+   `helping_id` int(11) DEFAULT NULL,  
    PRIMARY KEY (`id`),
    KEY `fk_scrape_metadata_session_idx` (`session_id`),
    CONSTRAINT `fk_scrape_metadata_session` 
