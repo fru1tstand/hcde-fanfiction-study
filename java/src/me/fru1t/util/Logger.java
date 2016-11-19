@@ -10,6 +10,8 @@ import java.util.Date;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import me.fru1t.fanfiction.Boot;
+
 public class Logger {
 
 	private SimpleDateFormat messagePrefix;
@@ -126,5 +128,27 @@ public class Logger {
 		}
 
 		return "";
+	}
+	
+	public static <E> void writeToFile(Exception e, String funcName, String prefix, Iterable<E> list) {
+		String filename = prefix + (new Date()).getTime() + ".txt";
+
+		Boot.getLogger().log(e, funcName + " is having trouble! " 
+				+ "Outputting a list of urls that were supposed to be inserted to a file \""
+				+ filename);
+
+		try {
+			BufferedWriter fileWriter = 
+					new BufferedWriter(new FileWriter(filename, true));
+			for (E myurl : list) {
+				fileWriter.write(myurl + "\r\n");
+				fileWriter.flush();
+			}
+			fileWriter.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			Boot.getLogger().log(e1, "Error with Couldn't write to file \"" + filename);
+		}
 	}
 }

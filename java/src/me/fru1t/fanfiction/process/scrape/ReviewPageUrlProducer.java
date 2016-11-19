@@ -54,11 +54,8 @@ public class ReviewPageUrlProducer extends ConcurrentProducer<String> {
 			}
 		} while (currentStory.reviews < 1);
 		
-		maxChapters = 0; currentChapter = 0;
-		if (currentStory.chapters > 0) {
-			maxChapters =  currentStory.chapters;
-			currentChapter = 1;
-		}
+		maxChapters =  currentStory.chapters;
+		currentChapter = maxChapters == 0 ? 0 : 1;
 		
 		return getReviewUrl(currentStory.ff_story_id, currentChapter++, 1);
 	}

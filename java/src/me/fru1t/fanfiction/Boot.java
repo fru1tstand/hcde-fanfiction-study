@@ -9,17 +9,22 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
-import me.fru1t.fanfiction.Session.SessionName;
+import me.fru1t.fanfiction.database.producers.FandomProducer;
 import me.fru1t.fanfiction.database.producers.ProfileProducer;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
 import me.fru1t.fanfiction.database.producers.StoryProducer;
+import me.fru1t.fanfiction.process.BatchReviewConvertProcess;
 import me.fru1t.fanfiction.process.BatchScrapeProcess;
 import me.fru1t.fanfiction.process.BatchUserConvertProcess;
 import me.fru1t.fanfiction.process.ConvertProcess;
 import me.fru1t.fanfiction.process.ScrapeProcess;
-import me.fru1t.fanfiction.process.convert.UserToProfiles;
+import me.fru1t.fanfiction.process.convert.CategoryToFandoms;
+import me.fru1t.fanfiction.process.convert.FandomToStories;
+import me.fru1t.fanfiction.process.scrape.CategoryPageUrlProducer;
+import me.fru1t.fanfiction.process.scrape.FandomPageUrlProducer;
 import me.fru1t.fanfiction.process.scrape.ReviewPageUrlProducer;
+import me.fru1t.fanfiction.process.scrape.StoryPageUrlProducer;
 import me.fru1t.fanfiction.process.scrape.TxtFileBasedUrlProducer;
 import me.fru1t.fanfiction.process.scrape.UserPageUrlProducer;
 import me.fru1t.util.DatabaseConnectionPool;
@@ -41,12 +46,15 @@ public class Boot {
 	private static final int AVG_SLEEP_TIME_PER_IP = 1000;
 	private static final int MIN_CONTENT_LENGTH = 1000;
 	private static String[] REMOTE_IPS = null;
-
-	// Database params
-	public static int LAST_DATE_PUBLISHED = 1476594560;
-	public static int startid = 1, endid = 1;
-	public static final String database = "fanfictiondrg201610";
 	
+	// input params
+	private static String server_name = null;
+	private static String command = null;
+	private static String scrape_tablename = null;
+	private static Session session_of_this_run = null;
+	
+	// Database params
+	private static final String database = "fanfictiondrg201605";
 	private static final String LOCAL_SQL_CONNECTION_STRING =
 			"jdbc:mysql://localhost/" + database
 			+ "?rewriteBatchedStatements=true"
@@ -57,84 +65,153 @@ public class Boot {
 	private static MultiIPCrawler crawler;
 	private static DatabaseConnectionPool dbcp;
 
+	/**
+	 * Three types of commands possible : 
+	 * 1) java -jar *.jar [server_name] FILE_SCRAPE [scrape_tablename] [filename]
+	 * 2) java -jar *.jar [server_name] SCRAPE_[STH] [scrape_tablename] [start_id] [end_id]
+	 * 3) java -jar *.jar [server_name] CONVERT_[STH] [scrape_tablename] [scrape_session_name]
+	 * 
+	 * To avoid Heap Memory Error, specify `-Xms2048m -Xmx2048m` params before `-jar`
+	 * 
+	 * @param args
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
 	public static void main(String[] args) throws IOException, InterruptedException {
+		if (args[0].equals("options")) {
+			System.out.println("1) java -jar *.jar [server_name] FILE_SCRAPE [scrape_tablename] [filename]");
+			System.out.println("2) java -jar *.jar [server_name] SCRAPE_[STH] [scrape_tablename] [start_id] [end_id]");
+			System.out.println("3) java -jar *.jar [server_name] CONVERT_[STH] [scrape_tablename] [scrape_session_name]");
+			return;
+		}
+		
 		crawler = null;
 		dbcp = null;
 		logger = new Logger();
 		logger.logMessagePrefix(LOG_MESSAGE_PREFIX);
 
-		if (DEBUG) {
-			System.out.println("File logging disabled due to debug mode. "
+		if (DEBUG) System.out.println("File logging disabled due to debug mode. "
 					+ "To change this setting, edit Boot.java");
-		} else {
-			logger.logToFile(LOG_FILE_PREFIX, LOG_FILE_SUFFIX);
-		}
-		
-		if (args[0].equals("scrapeUser")) {
-			
-			REMOTE_IPS = IPs.getIPsetByName(args[1]);
-			startid = Integer.parseInt(args[2]);
-			endid = Integer.parseInt(args[3]);
-			
-			ProfileProducer profileProducer = new ProfileProducer();
-			profileProducer.setRowIDRange(startid, endid);
-			(new BatchScrapeProcess(
-					new UserPageUrlProducer(profileProducer), 
-					SessionName.SCRAPE_PROFILE_PAGES_16_11_12)).run();
-			
-		}  else if (args[0].equals("batchConvertUser")) {
+		else logger.logToFile(LOG_FILE_PREFIX, LOG_FILE_SUFFIX);
 
-			REMOTE_IPS = IPs.getIPsetByName(args[1]);
-			startid = Integer.parseInt(args[2]);
-			endid = Integer.parseInt(args[3]);
+//		(new ScrapeProcess(new CategoryPageUrlProducer(), Session.SCRAPE_CATEGORY_PAGES_16_10_10)).run();
+//		(new ConvertProcess<ScrapeProducer.Scrape>(
+//				new ScrapeProducer(Session.SCRAPE_CATEGORY_PAGES_16_10_10),
+//				new CategoryToFandoms(),
+//				Session.SCRAPE_CATEGORY_PAGES_16_10_10)).run();
+//		(new ScrapeProcess(
+//				new FandomPageUrlProducer(new FandomProducer()),
+//				Session.SCRAPE_ALL_FANDOM_PAGES_16_10_10)).run();
+//		(new ConvertProcess<Scrape>(
+//			new ScrapeProducer(Session.SCRAPE_ALL_FANDOM_PAGES_16_10_10),
+//			new FandomToStories(Session.CONVERT_ALL_FANDOM_PAGES_16_10_10),
+//			Session.CONVERT_ALL_FANDOM_PAGES_16_10_10)).run();
+		
+		// these params must be specified for all incidents
+		server_name = args[0]; REMOTE_IPS = IPs.getIPsetByName(server_name);
+		command = args[1];
+		scrape_tablename = args[2];
+		
+		if (command.equals("FILE_SCRAPE")) {
+			String filename = args[3];
+			session_of_this_run = new Session(String.format("%s_ON_%s", command, filename));
+			handleScrapeByFile(filename);
+			return;
+		}
+
+		String[] parts = command.split("_");
+		if (parts[0].equals("SCRAPE")) {
+			int start_id = Integer.parseInt(args[3]);
+			int end_id = Integer.parseInt(args[4]);
 			
-			ScrapeProducer scrapeProducer = 
-					new ScrapeProducer(SessionName.SCRAPE_PROFILE_PAGES_16_10_18);
-			scrapeProducer.setRowIDRange(startid, endid);
-			(new BatchUserConvertProcess<Scrape>(
-					scrapeProducer,
-					SessionName.CONVERT_PROFILE_PAGES_16_11_10)).run();
+			session_of_this_run = new Session(
+				   String.format("%s_%s_%s", command, 
+											(start_id < 1000 ? start_id : start_id/1000 + "K"), 
+											(end_id < 1000 ? end_id : end_id/1000 + "K")));
 			
-		} else if (args[0].equals("scrapeReview")) {
-			
-			REMOTE_IPS = IPs.getIPsetByName(args[1]);
-			startid = Integer.parseInt(args[2]);
-			endid = Integer.parseInt(args[3]);
-			
-			StoryProducer storyProducer = new StoryProducer();
-			storyProducer.setRowIDRange(startid, endid);
-			storyProducer.setOtherWhereClause("`story`.`reviews` > 0");
-			(new BatchScrapeProcess(
-					new ReviewPageUrlProducer(storyProducer), 
-					SessionName.SCRAPE_REVIEW_PAGES_16_11_09)).run();
-			
-		} else if (args[0].equals("convertReviewTempo")) {
-			
-			ScrapeProducer scrapeProducer = new ScrapeProducer(SessionName.STH);
-			(new ConvertProcess<Scrape>(
-					scrapeProducer,
-					new UserToProfiles(),
-					SessionName.STH)).run();
-			
-		} else if (args[0].equals("fileReview")) {
-			
-			REMOTE_IPS = IPs.getIPsetByName(args[1]);
-			
-			// scrape the urls that failed on batch inserts
-			ArrayList<String> urls = new ArrayList<String>();
-			try (Stream<String> stream = Files.lines(Paths.get("./" + args[2]))) {
-		        stream.forEach(line -> urls.add(line));
+			if (parts[1].equals("CATEGORY")) {
+				// start_id and end_id are meaningless b/c categories are hard-coded.
+				(new ScrapeProcess(new CategoryPageUrlProducer())).run();
+			} else if (parts[1].equals("FANDOM")) {
+				// scrape all lists of story on each fandom page.
+				// e.g. https://www.fanfiction.net/book/Harry-Potter/?&srt=1&r=103&p=2
+				FandomProducer fandomProducer = new FandomProducer(start_id, end_id);
+				(new BatchScrapeProcess(new FandomPageUrlProducer(fandomProducer))).run();
+			} else if (parts[1].equals("USER")) {
+				// e.g. https://www.fanfiction.net/u/12345
+				ProfileProducer profileProducer = new ProfileProducer(start_id, end_id);
+				(new BatchScrapeProcess(new UserPageUrlProducer(profileProducer))).run();
+			} else if (parts[1].equals("REVIEW")) {
+				// e.g. https://www.fanfiction.net/r/1425634/1/1/
+				StoryProducer storyProducer = new StoryProducer(start_id, end_id);
+				storyProducer.setOtherWhereClause("`story`.`reviews` > 0");
+				(new BatchScrapeProcess(new ReviewPageUrlProducer(storyProducer))).run();
+			} else if (parts[1].equals("STORY")) {
+				// e.g. https://www.fanficiton.net/s/1425634
+				StoryProducer storyProducer = new StoryProducer(start_id, end_id);
+				(new BatchScrapeProcess(new StoryPageUrlProducer(storyProducer))).run();
 			}
-			(new ScrapeProcess(
-					new TxtFileBasedUrlProducer(urls),
-					SessionName.SCRAPE_REVIEW_PAGES_16_11_09)).run();
 			
+			return;
 		}
 		
+		if (parts[0].equals("CONVERT")) {
+			// get the scrapes with a session_id that matches scrape_session_name in `session` table
+			String scrape_session_name = args[3];
+			ScrapeProducer scrapeProducer = new ScrapeProducer(scrape_session_name);
+			
+			session_of_this_run = new Session(String.format("%s_ON_%s", command, scrape_session_name));
+			
+			if (parts[1].equals("CATEGORY")) {
+				// get all fandoms for each category
+				(new ConvertProcess<Scrape>(scrapeProducer, new CategoryToFandoms())).run();
+			} else if (parts[1].equals("FANDOM")) {
+				// process the scraped story lists, and insert the story meta-data
+				(new ConvertProcess<Scrape>(scrapeProducer, new FandomToStories())).run();
+			} else if (parts[1].equals("USER")) 
+				(new BatchUserConvertProcess<Scrape>(scrapeProducer)).run();
+			else if (parts[1].equals("REVIEW")) {
+				// as I process review page, I will simultaneously update `reviewers` on `user` table 
+				(new BatchReviewConvertProcess<Scrape>(scrapeProducer)).run();
+			} else if (parts[1].equals("STORY"))
+				System.out.println("Yet to be coded...");
+			
+			return;
+		}
+	}
+	
+	private static void handleScrapeByFile(String filename) throws InterruptedException, IOException {
+		// scrape the urls that failed on batch inserts
+		ArrayList<String> urls = new ArrayList<String>();
+		try (Stream<String> stream = Files.lines(Paths.get("./" + filename))) {
+	        stream.forEach(line -> urls.add(line));
+		}
+		
+		(new ScrapeProcess(new TxtFileBasedUrlProducer(urls))).run();
 	}
 	
 	public static Logger getLogger() {
 		return logger;
+	}
+	
+	public static String getServerName() {
+		return server_name;
+	}
+	
+	public static String getCommand() {
+		return command;
+	}
+	
+	public static String getScrapeTablename() {
+		return scrape_tablename;
+	}
+	
+	public static Session getSessionOfThisRun() {
+		return session_of_this_run;
+	}
+	
+	public static String getDatabase() {
+		return database;
 	}
 
 	/**
@@ -159,8 +236,7 @@ public class Boot {
 				throw new RuntimeException(e);
 			}
 			crawler = new MultiIPCrawler(logger, AVG_SLEEP_TIME_PER_IP, ips);
-			crawler
-				.setMinContentLength(MIN_CONTENT_LENGTH);
+			crawler.setMinContentLength(MIN_CONTENT_LENGTH);
 		}
 		return crawler;
 	}

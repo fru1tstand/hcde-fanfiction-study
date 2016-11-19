@@ -1,8 +1,6 @@
 package me.fru1t.fanfiction.process;
 
 import me.fru1t.fanfiction.Boot;
-import me.fru1t.fanfiction.Session;
-import me.fru1t.fanfiction.Session.SessionName;
 import me.fru1t.fanfiction.database.StoredProcedures;
 import me.fru1t.util.Consumer;
 import me.fru1t.util.ThreadUtils;
@@ -16,7 +14,6 @@ public class ScrapeProcess implements Runnable {
 	private static final int WATCHDOG_SLEEP_TIME_MS = 500;
 
 	private ConcurrentProducer<String> urlProducer;
-	private Session session;
 	private String[] queuedCrawlUrl;
 
 	/**
@@ -24,18 +21,19 @@ public class ScrapeProcess implements Runnable {
 	 * @param urlProducer
 	 * @throws InterruptedException 
 	 */
-	public ScrapeProcess(ConcurrentProducer<String> urlProducer, SessionName sessName) throws InterruptedException {
+	public ScrapeProcess(ConcurrentProducer<String> urlProducer) {
 		this.urlProducer = urlProducer;
-		this.session = new Session(sessName);
 		this.queuedCrawlUrl = new String[1];
 		this.queuedCrawlUrl[0] = null;
 	}
 
 	@Override
 	public void run() {
-		Boot.getLogger().log("Running ScrapeProcess with session name: " + session.getName() 
-							+ "\n\t with ID number " + session.getID() 
-							+ "\n\t on DB " +  Boot.database, true);
+        Boot.getLogger().log("Running ScrapeProcess with : "
+        		+ "\n\t\t server_name  		: " + Boot.getServerName() 
+        		+ "\n\t\t command      		: " + Boot.getCommand()
+        		+ "\n\t\t scrape_tablename 	: " + Boot.getScrapeTablename()
+        		+ "\n\t\t session_name 		: " + Boot.getSessionOfThisRun().getName(), true);
 
 		// Startup loop, saturate queue by calling until it returns false.
 		while (queueNextScrape());
@@ -54,7 +52,8 @@ public class ScrapeProcess implements Runnable {
 			}
 		}
 
-		Boot.getLogger().log("Completed ScrapeProcess with session name: " + session.getName(), true);
+		Boot.getLogger().log("Completed ScrapeProcess with session name: " 
+								+ Boot.getSessionOfThisRun().getName(), true);
 	}
 
 	private synchronized boolean queueNextScrape() {
@@ -79,7 +78,7 @@ public class ScrapeProcess implements Runnable {
 						queueNextScrape();
 						try {
 							Boot.getLogger().log("Scraping: " + tCrawlUrl, true);
-							StoredProcedures.addScrape(session, tCrawlUrl, crawlContent);
+							StoredProcedures.addScrape(tCrawlUrl, crawlContent);
 						} catch (InterruptedException e) {
 							Boot.getLogger().log(e, "While adding the scrape to the database "
 									+ "the thread was interrupted. \n" 

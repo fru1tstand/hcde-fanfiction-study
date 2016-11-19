@@ -8,6 +8,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -17,92 +18,6 @@ import me.fru1t.fanfiction.web.page.element.ProfileElement.FavAuthor;
 import me.fru1t.util.DatabaseConnectionPool.Statement;
 
 public class UserToProfileProcedures {
-	/**
-	 * 1 in_ff_id int(11), not null
-	 * 2 in_user_name varchar(128), not null
-     * 3 in_country_name VARCHAR(128),
-     * 4 in_join_date int(10),
-     * 5 in_update_date int(10),
-     * 6 in_bio mediumtext,
-     * 7 in_age tinyint(4),
-     * 8 in_gender char(6)
-	 */
-	private static final String USP_ADD_USER_PROFILE_RELAX =
-			"{CALL usp_add_user_profile_relax(?,?,?,?,?,?,?,?,?)}";
-	
-	/**
-	 *  1 `ff_id` INT(11) NOT NULL,
-	 *  2 `favorite_ff_id` INT(11) NOT NULL,
-	 *  3 `favorite_name` varchar(128) NOT NULL,
-	 */
-	private static final String INSERT_QUERY_USER_FAV_AUTHOR_RELAX = 
-			"INSERT IGNORE INTO `user_favorite_author_relax` (`ff_id`, `favorite_ff_id`, `favorite_name`)"  
-			+ " VALUES (?, ?, ?)";
-	
-	/**
-	 *  1 `ff_id` INT(11) NOT NULL,
-	 *  2 `story_id` INT NOT NULL,
-	 */
-	private static final String INSERT_QUERY_USER_FAV_STORY_RELAX = 
-			"INSERT IGNORE INTO `user_favorite_story_relax` (`ff_id`, `ff_story_id`)"  
-			+ " VALUES (?, ?)";
-	
-	
-	public static void processUserScrapeToProfile(
-			ProfileElement pe
-			) throws InterruptedException {
-		Boot.getDatabaseConnectionPool().executeStatement(new Statement() {
-			@Override
-			public void execute(Connection c) throws SQLException {
-				CallableStatement profileStmt = c.prepareCall(USP_ADD_USER_PROFILE_RELAX);
-				PreparedStatement favAuthorStmt = c.prepareStatement(INSERT_QUERY_USER_FAV_AUTHOR_RELAX);
-				PreparedStatement favStoryStmt = c.prepareStatement(INSERT_QUERY_USER_FAV_STORY_RELAX);
-
-				try {
-					profileStmt.setInt(1, pe.my_ff_id); // in_ff_id
-					profileStmt.registerOutParameter(2, java.sql.Types.INTEGER); // out_user_id
-					profileStmt.setString(3, pe.user_name); // user_name
-					profileStmt.setString(4, pe.country_name); // country_name
-					profileStmt.setInt(5, pe.join_date); // join_date
-					profileStmt.setInt(6, pe.update_date); // update_date
-					profileStmt.setString(7, pe.bio); // bio
-					profileStmt.setInt(8, pe.age); // age
-					profileStmt.setString(9, pe.gender); // gender
-					profileStmt.execute();
-					int user_id = profileStmt.getInt(2);
-
-					for (FavAuthor fa : pe.myFavAuthors) {
-						favAuthorStmt.setInt(1, user_id);
-						favAuthorStmt.setInt(2, fa.ff_id); // favorite_user_id
-						favAuthorStmt.setString(3, fa.name); 
-						favAuthorStmt.addBatch();
-					}
-
-					for (Integer fav_story_id : pe.myFavStories) {
-						favStoryStmt.setInt(1, user_id);
-						favStoryStmt.setInt(2, fav_story_id); // story_id
-						favStoryStmt.addBatch();
-					}
-
-					favAuthorStmt.executeBatch();
-					favStoryStmt.executeBatch();
-
-				} catch (BatchUpdateException e) {
-					Boot.getLogger().log(e, "Failed to insert user with ff_id: " + pe.my_ff_id);
-				} finally {
-					profileStmt.close();
-					favAuthorStmt.close();
-					favStoryStmt.close();
-				}
-			}
-		});
-	}
-
-	
-	
-	/** ----------------------------------------------------------------------------------- **/
-	
-	
 	
 	private static final String INSERT_QUERY_USER_PROFILE_BATCH = 
 			"INSERT IGNORE INTO `user_profile_batch` (`ff_id`, `country_name`, `join_date`, "
@@ -126,7 +41,7 @@ public class UserToProfileProcedures {
 			"INSERT IGNORE INTO `user_favorite_story_batch` (`ff_id`, `ff_story_id`)"  
 			+ " VALUES (?, ?)";
 	
-	public static void processUserScrapeToProfileBatch( 
+	public static void addUserProfileBatch ( 
 			ArrayList<ProfileElement> peList ) throws InterruptedException {
 		Boot.getDatabaseConnectionPool().executeStatement(new Statement() {
 			@Override
@@ -151,12 +66,12 @@ public class UserToProfileProcedures {
 						if (pe.join_date > 0)
 							profileStmt.setInt(3, pe.join_date); // join_date
 						else
-							profileStmt.setNull(3, java.sql.Types.INTEGER); 
+							profileStmt.setNull(3, Types.INTEGER); 
 						
 						if (pe.update_date > 0)
 							profileStmt.setInt(4, pe.update_date); // update_date
 						else
-							profileStmt.setNull(4, java.sql.Types.INTEGER);
+							profileStmt.setNull(4, Types.INTEGER);
 						
 						if (pe.bio != null && !pe.bio.isEmpty())
 							profileStmt.setString(5, pe.bio); // bio
@@ -166,7 +81,7 @@ public class UserToProfileProcedures {
 						if (pe.age > 0)
 							profileStmt.setInt(6, pe.age); // age
 						else
-							profileStmt.setNull(6, java.sql.Types.INTEGER);
+							profileStmt.setNull(6, Types.INTEGER);
 						
 						if (pe.gender != null && !pe.gender.isEmpty())
 							profileStmt.setString(7, pe.gender); // gender
@@ -220,6 +135,95 @@ public class UserToProfileProcedures {
 			}
 		});
 	}
+	
+
+	
+	/**
+	 * 1 in_ff_id int(11), not null
+	 * 2 in_user_name varchar(128), not null
+     * 3 in_country_name VARCHAR(128),
+     * 4 in_join_date int(10),
+     * 5 in_update_date int(10),
+     * 6 in_bio mediumtext,
+     * 7 in_age tinyint(4),
+     * 8 in_gender char(6)
+	 */
+	@Deprecated
+	private static final String USP_ADD_USER_PROFILE_RELAX =
+			"{CALL usp_add_user_profile_relax(?,?,?,?,?,?,?,?,?)}";
+	
+	/**
+	 *  1 `ff_id` INT(11) NOT NULL,
+	 *  2 `favorite_ff_id` INT(11) NOT NULL,
+	 *  3 `favorite_name` varchar(128) NOT NULL,
+	 */
+	@Deprecated
+	private static final String INSERT_QUERY_USER_FAV_AUTHOR_RELAX = 
+			"INSERT IGNORE INTO `user_favorite_author_relax` (`ff_id`, `favorite_ff_id`, `favorite_name`)"  
+			+ " VALUES (?, ?, ?)";
+	
+	/**
+	 *  1 `ff_id` INT(11) NOT NULL,
+	 *  2 `story_id` INT NOT NULL,
+	 */
+	@Deprecated
+	private static final String INSERT_QUERY_USER_FAV_STORY_RELAX = 
+			"INSERT IGNORE INTO `user_favorite_story_relax` (`ff_id`, `ff_story_id`)"  
+			+ " VALUES (?, ?)";
+	
+	@Deprecated
+	public static void processUserScrapeToProfile(
+			ProfileElement pe
+			) throws InterruptedException {
+		Boot.getDatabaseConnectionPool().executeStatement(new Statement() {
+			@Override
+			public void execute(Connection c) throws SQLException {
+				CallableStatement profileStmt = c.prepareCall(USP_ADD_USER_PROFILE_RELAX);
+				PreparedStatement favAuthorStmt = c.prepareStatement(INSERT_QUERY_USER_FAV_AUTHOR_RELAX);
+				PreparedStatement favStoryStmt = c.prepareStatement(INSERT_QUERY_USER_FAV_STORY_RELAX);
+
+				try {
+					profileStmt.setInt(1, pe.my_ff_id); // in_ff_id
+					profileStmt.registerOutParameter(2, java.sql.Types.INTEGER); // out_user_id
+					profileStmt.setString(3, pe.user_name); // user_name
+					profileStmt.setString(4, pe.country_name); // country_name
+					profileStmt.setInt(5, pe.join_date); // join_date
+					profileStmt.setInt(6, pe.update_date); // update_date
+					profileStmt.setString(7, pe.bio); // bio
+					profileStmt.setInt(8, pe.age); // age
+					profileStmt.setString(9, pe.gender); // gender
+					profileStmt.execute();
+					int user_id = profileStmt.getInt(2);
+
+					for (FavAuthor fa : pe.myFavAuthors) {
+						favAuthorStmt.setInt(1, user_id);
+						favAuthorStmt.setInt(2, fa.ff_id); // favorite_user_id
+						favAuthorStmt.setString(3, fa.name); 
+						favAuthorStmt.addBatch();
+					}
+
+					for (Integer fav_story_id : pe.myFavStories) {
+						favStoryStmt.setInt(1, user_id);
+						favStoryStmt.setInt(2, fav_story_id); // story_id
+						favStoryStmt.addBatch();
+					}
+
+					favAuthorStmt.executeBatch();
+					favStoryStmt.executeBatch();
+
+				} catch (BatchUpdateException e) {
+					Boot.getLogger().log(e, "Failed to insert user with ff_id: " + pe.my_ff_id);
+				} finally {
+					profileStmt.close();
+					favAuthorStmt.close();
+					favStoryStmt.close();
+				}
+			}
+		});
+	}
+
+	
+	
 	
 
 }

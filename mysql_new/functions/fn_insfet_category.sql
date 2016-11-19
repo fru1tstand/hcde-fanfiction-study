@@ -1,5 +1,8 @@
+# CONVERT_CATEGORY
+
 DELIMITER $$
-CREATE FUNCTION `fn_insfet_category`(in_category_name VARCHAR(128)) RETURNS int(11)
+CREATE FUNCTION `fn_insfet_category`(in_category_name VARCHAR(128))
+RETURNS int(11)
 BEGIN
 	DECLARE v_category_id INT DEFAULT (SELECT `id` FROM `category` WHERE `category`.`name` = in_category_name);
     IF (v_category_id IS NULL) THEN

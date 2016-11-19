@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import org.eclipse.jdt.annotation.Nullable;
 
 import me.fru1t.fanfiction.Boot;
-import me.fru1t.fanfiction.Session.SessionName;
 import me.fru1t.util.concurrent.DatabaseProducer;
 
 /**
@@ -42,8 +41,8 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 		public String content;
 	}
 
-	private static final int BUFFER_SIZE = 50;
-	private static final String ID_NAME = "`scrape`.`id`";
+	private static final int BUFFER_SIZE = 100;
+	private static final String ID_NAME = "`%s`.`id`";
 	private static final String QUERY_BASE =
 			"SELECT"
 			+ " `id` AS `" + Scrape.COLUMN_ID
@@ -51,7 +50,7 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 			+ "`, `date` AS `" + Scrape.COLUMN_DATE
 			+ "`, `url` AS `" + Scrape.COLUMN_URL
 			+ "`, `content` AS `" + Scrape.COLUMN_CONTENT
-			+ "` FROM `scrape` "
+			+ "` FROM `%s` "
 			+ "WHERE 1 = 1 ";
 	
 	private static final String SESSION_QUERY_BASE_FMT =
@@ -60,11 +59,12 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 	private static final String SESSION_RESTRICT_PART_FMT = "`session_id` = %d";
 
 	@Nullable
-	private static final SessionName[] DEFAULT_SCRAPE_SESSIONS = {};
+	private static final String[] DEFAULT_SCRAPE_SESSIONS = {};
 
+	private String scraping_session_names;
 	private String[] sessionNameStrings;
 	private String sessionIdSql;
-
+	
 	/**
 	 * Creates a new provider that only returns scrapes between the given range and belong to
 	 * the given session names.
@@ -81,20 +81,22 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 	 * empty array to include all.
 	 * @throws InterruptedException
 	 */
-	public ScrapeProducer(@Nullable SessionName... sessNames) throws InterruptedException {
-		super(ID_NAME, Scrape.class, Boot.getDatabaseConnectionPool(),
+	public ScrapeProducer(@Nullable String... sessNames) throws InterruptedException {
+		super(String.format(ID_NAME, Boot.getScrapeTablename()), Scrape.class, Boot.getDatabaseConnectionPool(),
 				BUFFER_SIZE, Boot.getLogger());
 		
 		// Sanitize session names
 		this.sessionNameStrings = new String[sessNames.length];
 		this.sessionIdSql = "";
 		for (int i = 0; i < sessNames.length; i++) {
-			String s = sessNames[i].name();
+			String s = sessNames[i];
 			if (s != null) {
 				this.sessionNameStrings[i] = s.replaceAll("'", "\\'");
 			}
 		}
 
+		this.scraping_session_names = String.join(",", sessionNameStrings);
+		
 		// Fetch sessionids
 		String[] sessionParts = new String[sessNames.length];
 		try {
@@ -113,21 +115,23 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 			throw new RuntimeException(e);
 		}
 		this.sessionIdSql = String.format(SESSION_RESTRICT_FMT, String.join(" OR ", sessionParts));
+		
+		Boot.getLogger().log("ScraoeProducer on session names " + this.scraping_session_names + " is made.", true);
 	}
 
 
 	/**
 	 * Creates a new provider that targets all scrapes from the database.
 	 * @throws InterruptedException
-	 */
+	 
 	public ScrapeProducer() throws InterruptedException {
 		this(DEFAULT_SCRAPE_SESSIONS);
-	}
+	}*/
 
 	@Override
 	protected String getUnboundedQuery() {
 		// SELECT...FROM...JOIN
-		String query = QUERY_BASE;
+		String query = String.format(QUERY_BASE, Boot.getScrapeTablename());
 
 		// ...WHERE...
 		query += this.sessionIdSql;
@@ -135,5 +139,8 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 		return query;
 	}
 
+	public String getScrapingSessionNames() {
+		return scraping_session_names;
+	}
 
 }

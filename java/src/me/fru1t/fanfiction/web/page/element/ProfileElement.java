@@ -10,7 +10,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class ProfileElement {
+import me.fru1t.util.FFElement;
+
+public class ProfileElement extends FFElement {
 	private static String age_arabic = "([0-9]{1,2})";
 	private static String age_words = "(ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|"
 									+ "twenty one|twenty two|twenty three|twenty four|twenty five|twenty six|twenty seven|twenty eight|twenty nine|twenty|"
@@ -27,7 +29,6 @@ public class ProfileElement {
 	private static String gender_words = "(female|male|boy|girl|woman|man)";
 	private static String GENDER_PATTERN_GROUP = "(?<userGender>" + gender_words + ")";
 	
-	private int scrapeid; // used for debugging
 	
 	public int my_ff_id; // NOT NULL
 	public String user_name;
@@ -38,13 +39,6 @@ public class ProfileElement {
 	public int age;
 	public String gender; // going to be either "female" or "male";
 
-	public int getScrapeId() {
-		return this.scrapeid;
-	}
-	public void setScrapeid(int sid) {
-		this.scrapeid = sid;
-	}
-	
 	public static class FavAuthor {
 		public int ff_id;
 		public String name;

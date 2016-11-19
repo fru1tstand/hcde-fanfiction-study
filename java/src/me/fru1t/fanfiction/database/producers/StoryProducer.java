@@ -22,6 +22,15 @@ public class StoryProducer extends DatabaseProducer<StoryProducer.Story, Integer
 	
 	public StoryProducer() {
 		super(ID_NAME, Story.class, Boot.getDatabaseConnectionPool(), BUFFER_SIZE, Boot.getLogger());
+		
+		Boot.getLogger().log("StoryProducer with no ids range is made.", true);
+	}
+	
+	public StoryProducer(int startid, int endid) {
+		super(ID_NAME, Story.class, Boot.getDatabaseConnectionPool(), BUFFER_SIZE, Boot.getLogger());
+		this.setRowIDRange(startid, endid);
+		
+		Boot.getLogger().log("StoryProducer with ids range " + startid + " to " + endid + " is made.", true);
 	}
 
 	@Override

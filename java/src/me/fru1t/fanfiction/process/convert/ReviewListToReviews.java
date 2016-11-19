@@ -11,12 +11,13 @@ import me.fru1t.fanfiction.database.ReviewProcedures;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
 import me.fru1t.util.Consumer;
 import me.fru1t.fanfiction.web.page.ReviewListPage;
-import me.fru1t.fanfiction.web.page.ReviewListPage.ReviewElement;
+import me.fru1t.fanfiction.web.page.element.ReviewElement;
 
 /**
  * This class defines a consumer which eats profile pages,
  * extract user information (e.g. age) and store it within the database.
  */
+@Deprecated
 public class ReviewListToReviews extends Consumer<Scrape> {
 	
 	/**
@@ -51,8 +52,8 @@ public class ReviewListToReviews extends Consumer<Scrape> {
 				int ffStoryId = Integer.parseInt(m.group("ffStoryId"));
 				int chapter = Integer.parseInt(m.group("chapter"));
 				
-				List<ReviewElement> list = (new ReviewListPage(reviewListPageDoc)).getReviewElements();
-				ReviewProcedures.processAddReviewBatch(scrape.url, ffStoryId, chapter, list);
+				List<ReviewElement> list = (new ReviewListPage(ffStoryId, chapter, reviewListPageDoc, -1)).getReviewElements();
+				ReviewProcedures.addReviewAndReviewerBatch(list);
 			} else {
 				throw new Exception("Could not extract ffStoryId and/or chapter in url: " + scrape.url);
 			}

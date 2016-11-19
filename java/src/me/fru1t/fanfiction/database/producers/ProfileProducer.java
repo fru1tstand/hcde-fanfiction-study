@@ -17,9 +17,19 @@ public class ProfileProducer extends DatabaseProducer<ProfileProducer.Profile, I
 	private static final String ID_NAME = "`user`.`id`";
 	private static final int BUFFER_SIZE = 10000;
 	
-	public ProfileProducer() throws InterruptedException {
+	public ProfileProducer() {
 		super(ID_NAME, Profile.class, Boot.getDatabaseConnectionPool(),
 				BUFFER_SIZE, Boot.getLogger());
+		
+		Boot.getLogger().log("ProfileProducer with now ids range is made.", true);
+	}
+	
+	public ProfileProducer(int startid, int endid) {
+		super(ID_NAME, Profile.class, Boot.getDatabaseConnectionPool(),
+				BUFFER_SIZE, Boot.getLogger());
+		this.setRowIDRange(startid, endid);
+		
+		Boot.getLogger().log("ProfileProducer with ids range " + startid + " to " + endid + " is made.", true);
 	}
 
 	@Override

@@ -1,8 +1,10 @@
 package me.fru1t.fanfiction.process.convert;
 
 import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,6 +13,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
 
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
@@ -50,13 +53,13 @@ public class CategoryToFandoms extends Consumer<Scrape> {
 	private static final String FANDOM_LINK_ATTR = "href";
 
 	/**
-		1 in_category_name VARCHAR(128),
-    	2 in_fandom_name VARCHAR(128),
-    	3 in_fandom_url VARCHAR(2000)
+	 * 	1 `category_id` int(11) NOT NULL,
+		2 `name` varchar(128) NOT NULL,
+		3 `url` varchar(2000) NOT NULL,
 	 */
-	private static final String DATABASE_INSERT_CALL = "SELECT fn_insfet_fandom(?,?,?)";
-
-
+	private static final String QUERY_INSERT_FANDOM = 
+			"INSERT IGNORE INTO `fandom` (`category_id`, `name`, `url`) VALUES (?, ?, ?)";
+	
 	@Override
 	public void eat(Scrape scrape) {
 		// Verify scrape is a category page and fetch category
@@ -75,7 +78,7 @@ public class CategoryToFandoms extends Consumer<Scrape> {
 		Document categoryPageDoc = Jsoup.parse(scrape.content);
 		Elements fandomEls = categoryPageDoc.select(FANDOM_LINK_SELECTOR);
 		for (Element fandomEl : fandomEls) {
-			fandoms.add(new Fandom(fandomEl.text(), fandomEl.attr(FANDOM_LINK_ATTR)));
+			fandoms.add(new Fandom(fandomEl.attr("title").replace("\\", ""), fandomEl.attr(FANDOM_LINK_ATTR)));
 		}
 
 		// Get category story count info
@@ -92,19 +95,34 @@ public class CategoryToFandoms extends Consumer<Scrape> {
 
 		// Store fandoms in database
 		try {
-			for (Fandom fandom : fandoms) {
-				Boot.getDatabaseConnectionPool().executeStatement(new Statement() {
-					@Override
-					public void execute(Connection c) throws SQLException {
-						CallableStatement stmt = c.prepareCall(DATABASE_INSERT_CALL);
-						stmt.setString(1, category); // 1 in_category_name VARCHAR(128),
-				    	stmt.setString(2, fandom.name); // 2 in_fandom_name VARCHAR(128),
-				    	stmt.setString(3, fandom.url); // 3 in_fandom_url VARCHAR(2000)
-				    	stmt.addBatch();
-						stmt.executeQuery();
+			
+			Boot.getDatabaseConnectionPool().executeStatement(new Statement() {
+				@Override
+				public void execute(Connection c) throws SQLException {
+					CallableStatement categoryStmt = c.prepareCall ("{? = call fn_insfet_category(?)}");
+				   	PreparedStatement fandomStmt = c.prepareStatement(QUERY_INSERT_FANDOM);
+				   	
+					try {
+						categoryStmt.registerOutParameter (1, Types.INTEGER);
+						categoryStmt.setString(2, category);    
+						categoryStmt.execute();
+					   	int category_id = categoryStmt.getInt(1);
+					   	
+					   	for (Fandom fandom : fandoms) {
+					   		fandomStmt.setInt(1, category_id);
+					   		fandomStmt.setString(2, fandom.name);
+					   		fandomStmt.setString(3, fandom.url);
+					   		fandomStmt.addBatch();
+					   	}
+					   	
+					   	fandomStmt.executeBatch();
+					} finally {
+					   	if (categoryStmt != null) categoryStmt.close();
+					   	if (fandomStmt != null) fandomStmt.close();
 					}
-				});
-			}
+				}
+			});
+			
 		} catch (InterruptedException e) {
 			Boot.getLogger().log(e, "Interrupt occured when trying to store fandoms into the database.");
 		}

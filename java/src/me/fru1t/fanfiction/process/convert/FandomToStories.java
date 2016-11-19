@@ -5,7 +5,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import me.fru1t.fanfiction.Boot;
-import me.fru1t.fanfiction.Session;
 import me.fru1t.fanfiction.database.StoredProcedures;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
 import me.fru1t.fanfiction.web.page.FandomPage;
@@ -15,7 +14,10 @@ import me.fru1t.util.Consumer;
  * This class defines a consumer which eats fandom pages and stores their contained stories within
  * the database.
  */
+
 public class FandomToStories extends Consumer<Scrape> {
+
+	
 	// Matches fandom URLs with or without filters.
 	private static final Pattern STORY_URL_PATTERN =
 			Pattern.compile("^https://www.fanfiction.net/([^/]+)/([^/]+)/(.*)$");
@@ -31,13 +33,6 @@ public class FandomToStories extends Consumer<Scrape> {
 
 	// The group number for the filter content within the story_url_pattern.
 	private static final int FILTERS_GROUP = 3;
-
-
-	private Session convertSession;
-
-	public FandomToStories(Session convertSession) {
-		this.convertSession = convertSession;
-	}
 
 	@Override
 	public void eat(Scrape scrape) {
@@ -57,7 +52,7 @@ public class FandomToStories extends Consumer<Scrape> {
 			FandomPage fandomPage = new FandomPage(scrape.content);
 			StoredProcedures.processListScrapeToStory(
 					scrape.id,
-					convertSession,
+					Boot.getSessionOfThisRun(),
 					m.group(CATEGORY_GROUP),
 					fandomUrl,
 					fandomPage.getStoryElements());

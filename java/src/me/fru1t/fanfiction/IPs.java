@@ -92,13 +92,13 @@ public class IPs {
 	};
 	
 	public static String[] getIPsetByName(String name) {
-		if (name.equals("1")) {
+		if (name.equals("server1")) {
 			return server1;
-		} else if (name.equals("2")) {
+		} else if (name.equals("server2")) {
 			return server2;
-		} else if (name.equals("3")) {
+		} else if (name.equals("server3")) {
 			return server3;
-		} else if (name.equals("4")) {
+		} else if (name.equals("server4")) {
 			return server4;
 		} else if (name.equals("local")) {
 			return localServer;

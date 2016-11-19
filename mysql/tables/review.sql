@@ -1,4 +1,4 @@
-CREATE TABLE `review_relax` (
+CREATE TABLE `review` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `user_ff_id` INT(11) NULL,
   `user_name` varchar(128) NOT NULL,

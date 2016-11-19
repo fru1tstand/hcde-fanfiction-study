@@ -8,23 +8,21 @@ import java.sql.Types;
 import me.fru1t.util.DatabaseConnectionPool.Statement;
 
 public class Session {
-	public enum SessionName {
-		CONVERT_ALL_FANDOM_PAGES_16_6_6,
-		SCRAPE_ALL_FANDOM_PAGES_16_6_1,
+	/*public enum SessionName {
 		SCRAPE_CATEGORY_PAGES_16_10_10, 
 		SCRAPE_ALL_FANDOM_PAGES_16_10_10, 
 		CONVERT_ALL_FANDOM_PAGES_16_10_10, 
 		SCRAPE_PROFILE_PAGES_16_10_18, 
-		SCRAPE_REVIEW_PAGES_16_11_09,
 		CONVERT_PROFILE_PAGES_16_11_10,
-		SCRAPE_PROFILE_PAGES_16_11_12, 
-		STH,
-	}
+		SCRAPE_REVIEW_PAGES_16_11_09,
+		CONVERT_REVIEW_PAGES_16_11_15,
+		SCRAPE_STORY_PAGES_16_11_15,
+	}*/
 	
 	private int id;
-	private SessionName name;
+	private String name;
 	
-	public Session(SessionName name) throws InterruptedException {
+	public Session(String name) throws InterruptedException {
 		this.name = name;
 		
 		// look at the database, check if a session with the specified name 
@@ -36,7 +34,7 @@ public class Session {
 				
 				try {
 				    stmt.registerOutParameter (1, Types.INTEGER);
-				    stmt.setString(2, name.name());    
+				    stmt.setString(2, name);    
 				    stmt.execute();
 				   	id = stmt.getInt(1);
 				} finally {
@@ -50,7 +48,7 @@ public class Session {
 		return this.id;
 	}
 	
-	public SessionName getName() {
+	public String getName() {
 		return this.name;
 	}
 }

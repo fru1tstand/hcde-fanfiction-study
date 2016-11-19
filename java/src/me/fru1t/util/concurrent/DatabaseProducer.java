@@ -13,6 +13,7 @@ import java.util.Queue;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import me.fru1t.fanfiction.Boot;
 import me.fru1t.util.DatabaseConnectionPool;
 import me.fru1t.util.DatabaseConnectionPool.Statement;
 import me.fru1t.util.Logger;
@@ -239,10 +240,10 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 		
 		if (rowIDRange != null) {
 			if (rowIDRange.startId > 0)
-				query.append(" AND " + Row.COLUMN_ID + " >= " + rowIDRange.startId);
+				query.append(" AND " + idName + " >= " + rowIDRange.startId);
 			
 			if (rowIDRange.endId > 0) 
-				query.append(" AND " + Row.COLUMN_ID + " <= " + rowIDRange.endId);
+				query.append(" AND " + idName + " <= " + rowIDRange.endId);
 		}
 
 		// AND id > current
@@ -260,6 +261,7 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 		// ...LIMIT...
 		query.append(String.format(QUERY_LIMIT, bufferSize));
 
+		Boot.getLogger().log("DatabaseProducer getQuery : " + query.toString(), true);
 		return query.toString();
 	}
 

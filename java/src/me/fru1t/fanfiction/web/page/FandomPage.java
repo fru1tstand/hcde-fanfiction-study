@@ -14,6 +14,7 @@ import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.web.page.element.FandomStoryListElement;
 import me.fru1t.web.Page;
 
+
 public class FandomPage extends Page {
 	private static final String RESULT_ELEMENTS_SELECTOR =
 			"#content_wrapper_inner .z-list.zhover.zpointer";

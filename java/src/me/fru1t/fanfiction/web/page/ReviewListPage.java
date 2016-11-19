@@ -1,7 +1,6 @@
 package me.fru1t.fanfiction.web.page;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,45 +8,58 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class ReviewListPage {
+import me.fru1t.fanfiction.web.page.element.ReviewElement;
 
+public class ReviewListPage {
+	private ArrayList<ReviewElement> reviewElements;
+	private int contentLen;
 	
-	public static class ReviewElement {
-		public int reviewer_ff_id;
-		public String reviewer_name;
-		public int review_date;
-		public String content;
-		public ReviewElement(int id, String name, int date, String content) {
-			this.reviewer_ff_id = id;
-			this.reviewer_name = name;
-			this.review_date = date;
-			this.content = content;
-		}
-	}
-	
-	private List<ReviewElement> reviewElements;
-	
-	public ReviewListPage(Document reviewListPageDoc) {
+	public ReviewListPage(int ffStoryId, int chapter, Document reviewListPageDoc, int sid) {
 		reviewElements = new ArrayList<>();
+		contentLen = 0;
+		
 		Elements reviewCells = reviewListPageDoc
 				.select("div#content_wrapper_inner table td[style=\"padding-top:10px;padding-bottom:10px\"]");
-
+		
+		
 		for (Element cell : reviewCells) { 
+			if (cell.text().equals("No Reviews found.")) continue;
+			
+			int ff_id = -1; String name = null;
+			int date = -1; String content = null;
+
 			String href = cell.select("a").last().attr("href");
+			
+			String dateStr = cell.select("span").attr("data-xutime");
+			if (dateStr != null && !dateStr.isEmpty()) date = sanitizeInteger(dateStr);
+			content = cell.select("div[style=\"margin-top:5px\"]").text();
+			contentLen += (content == null) ? 0 : content.length()*2;
+				
 			Matcher m = Pattern.compile("^/u/(?<ffId>[0-9]+)/(.*)$").matcher(href);
 			if (m.matches()) {
-				int ff_id = sanitizeInteger(m.group("ffId"));
-				String name = cell.select("a").last().text();
-				int date = sanitizeInteger(cell.select("span").attr("data-xutime"));
-				String content = cell.select("div[style=\"margin-top:5px\"]").text();
-				
-				reviewElements.add(new ReviewElement(ff_id, name, date, content));
+				ff_id = sanitizeInteger(m.group("ffId"));
+				name = cell.select("a").last().text();
+			} else { // anonymous user
+				for (Element tagElem : cell.select("*")) tagElem.remove();
+				name = cell.text();
 			}
+			
+			if (name.length() > 64) { // too long to fit into the DB; define this user as Guest
+				name = "Guest";
+			}
+			
+			ReviewElement relem = new ReviewElement(ffStoryId, chapter, ff_id, name, date, content);
+			relem.setScrapeId(sid);
+			reviewElements.add(relem);
 		}
 	}
 
-	public List<ReviewElement> getReviewElements() {
+	public ArrayList<ReviewElement> getReviewElements() {
 		return this.reviewElements;
+	}
+	
+	public int getContentLen() {
+		return this.contentLen;
 	}
 	
 	/**

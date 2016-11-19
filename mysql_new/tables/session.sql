@@ -1,7 +1,8 @@
-CREATE TABLE `category` (
+# SCRAPE_CATEGORY
+CREATE TABLE `session` (
    `id` int(11) NOT NULL AUTO_INCREMENT,
    `name` varchar(128) NOT NULL,
    PRIMARY KEY (`id`),
-   UNIQUE KEY `name_UNIQUE` (`name`),
+   UNIQUE KEY `session_name_UNIQUE` (`name`),
    KEY `ix_name` (`name`)
- ) ENGINE=InnoDB
+) ENGINE=InnoDB
