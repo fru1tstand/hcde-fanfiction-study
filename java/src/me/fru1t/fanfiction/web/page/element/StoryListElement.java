@@ -12,8 +12,7 @@ import org.jsoup.select.Elements;
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.util.Preconditions;
 
-
-public class FandomStoryListElement {
+public class StoryListElement {
 	public static class Metadata {
 		private static final boolean LOG_COMPONENT_IGNORES = true;
 		
@@ -53,7 +52,6 @@ public class FandomStoryListElement {
 		// Date processing
 		private static final String DATES_SELECTOR = "span";
 
-
 		// Components
 		public Element element;
 		public String rating;
@@ -69,10 +67,8 @@ public class FandomStoryListElement {
 		public List<String> characters;
 		public boolean isComplete;
 		
-		public boolean didSuccessfullyParse;
 		
 		public Metadata(Element metadata) throws Exception {
-			this.didSuccessfullyParse = false;
 			this.element = metadata;
 			this.rating = "";
 			this.language = "";
@@ -142,7 +138,6 @@ public class FandomStoryListElement {
 							+ " after date components were found when only expecting 2 or 3.");
 				}
 			}
-			this.didSuccessfullyParse = true;
 		}
 
 		private void processCharacters(String charactersComponent) {
@@ -215,7 +210,6 @@ public class FandomStoryListElement {
 	
 	// Direct element values
 	public Element element;
-	public String fandom;
 	public String bookTitle;
 	public String bookUrl;
 	public String coverImageUrl;
@@ -235,57 +229,69 @@ public class FandomStoryListElement {
 		return "Meta: " + metadata;
 	}
 
-	public boolean didSuccessfullyParse;
 	
-	public FandomStoryListElement(String fandom, Element result) {
-		this.fandom = fandom;
-		this.didSuccessfullyParse = false;
+	public StoryListElement(Element result) throws Exception {
 		this.element = result;
-		this.bookTitle = "";
-		this.bookUrl = "";
-		this.coverImageUrl = "";
-		this.coverImageOriginalUrl = "";
-		this.user_name = "";
-		this.authorUrl = "";
-		this.synopsis = "";
-		this.metadata = "";
-		this.ffUserId = -1;
-		this.ffBookId = -1;
 		
-		try {
-			// Direct Element values
+		this.ffBookId = -1;
+		this.bookTitle = null;
+		this.bookUrl = null;
+		
+		this.ffUserId = -1;
+		this.user_name = null;
+		this.authorUrl = null;
+		
+		this.synopsis = null;
+		this.metadata = null;
+
+		this.coverImageUrl = null;
+		this.coverImageOriginalUrl = null;
+		
+
+		// Direct Element values
+		if (result.select(TITLE_SELECTOR).size() > 0) {
 			Element title = result.select(TITLE_SELECTOR).get(0);
 			this.bookTitle = title.ownText();
 			this.bookUrl = title.attr("href");
-			
+			Matcher bookIdMatcher = BOOK_ID_LINK_PATTERN.matcher(bookUrl);
+			bookIdMatcher.matches();
+			this.ffBookId = Integer.parseInt(bookIdMatcher.group(1));
+		}
+		
+		if (result.select(COVER_IMAGE_SELECTOR).size() > 0) {
 			Element coverImage = result.select(COVER_IMAGE_SELECTOR).get(0);
 			this.coverImageUrl = coverImage.attr("src");
 			this.coverImageOriginalUrl = coverImage.attr("data-original");
-			
+		}
+
+		// Some stories have no author link indicated, and 
+		// in such case, story link is not locatable as well 
+		// e.g. https://www.fanfiction.net/misc/Misc-Plays-Musicals/?&srt=2&r=10&p=648's 
+		// https://www.fanfiction.net/s/407743/1/The-Hukilau
+		if (result.select(AUTHOR_SELECTOR).size() > 0) {
 			Element author = result.select(AUTHOR_SELECTOR).get(0);
 			this.user_name = author.ownText();
 			this.authorUrl = author.attr("href");
-			
-			this.synopsis = result.select(SYNOPSIS_SELECTOR).get(0).ownText();
-			
-			// Processed values
 			Matcher authorIdMatcher = AUTHOR_ID_LINK_PATTERN.matcher(authorUrl);
-			Matcher bookIdMatcher = BOOK_ID_LINK_PATTERN.matcher(bookUrl);
 			authorIdMatcher.matches();
-			bookIdMatcher.matches();
 			this.ffUserId = Integer.parseInt(authorIdMatcher.group(1));
-			this.ffBookId = Integer.parseInt(bookIdMatcher.group(1));
-			
-			// Metadata
+		}
+
+		if (result.select(SYNOPSIS_SELECTOR).size() > 0) {
+			this.synopsis = result.select(SYNOPSIS_SELECTOR).get(0).ownText();
+		}
+
+		// Metadata
+		if (result.select(METADATA_SELECTOR).size() > 0) {
 			Element metadata = result.select(METADATA_SELECTOR).get(0);
 			this.metadata = metadata.text();
 			this.processedMetadata = new Metadata(metadata);
-			
-			this.didSuccessfullyParse = true;
-		} catch (IndexOutOfBoundsException e) {
+		}
+
+		/* } catch (IndexOutOfBoundsException e) {
 			Boot.getLogger().log(e, "A required element wasn't found on the page.");
 		} catch (Exception e) {
 			Boot.getLogger().log(e, "An unknown exception occured");
-		}
+		}*/
 	}
 }

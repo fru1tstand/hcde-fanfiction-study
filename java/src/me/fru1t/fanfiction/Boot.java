@@ -43,7 +43,7 @@ public class Boot {
 			new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
 
 	// Crawler params
-	private static final int AVG_SLEEP_TIME_PER_IP = 1000;
+	private static final int AVG_SLEEP_TIME_PER_IP = 2000;
 	private static final int MIN_CONTENT_LENGTH = 1000;
 	private static String[] REMOTE_IPS = null;
 	
@@ -156,17 +156,31 @@ public class Boot {
 		}
 		
 		if (parts[0].equals("CONVERT")) {
-			// get the scrapes with a session_id that matches scrape_session_name in `session` table
-			String scrape_session_name = args[3];
-			ScrapeProducer scrapeProducer = new ScrapeProducer(scrape_session_name);
-			
-			session_of_this_run = new Session(String.format("%s_ON_%s", command, scrape_session_name));
+			ScrapeProducer scrapeProducer = null;
+			if (args[4] != null) { 
+				// we are given start_id and end_id of scrape_table,
+				// get the scrapes withing this id range.
+				int start_id = Integer.parseInt(args[3]);
+				int end_id = Integer.parseInt(args[4]);
+				session_of_this_run = new Session(
+						   String.format("%s_ON_ID_%s_%s", command, 
+													(start_id < 1000 ? start_id : start_id/1000 + "K"), 
+													(end_id < 1000 ? end_id : end_id/1000 + "K")));
+				
+				scrapeProducer = new ScrapeProducer(start_id, end_id);
+			} else {
+				// get the scrapes with a session_id that matches scrape_session_name in `session` table
+				String scrape_session_name = args[3];
+				session_of_this_run = new Session(String.format("%s_ON_%s", command, scrape_session_name));
+				scrapeProducer = new ScrapeProducer(scrape_session_name);
+			}
 			
 			if (parts[1].equals("CATEGORY")) { // EXTRACT fandom from category
 				// get all fandoms for each category
 				(new ConvertProcess<Scrape>(scrapeProducer, new CategoryToFandoms())).run();
 			} else if (parts[1].equals("FANDOM")) { // EXTRACT story list from each fandom page
 				// process the scraped story lists, and insert the story meta-data
+				System.out.println("\n\t\t[ [ [ [ [ WARNING: make sure all urls in `fandom` table are unique. ] ] ] ] ]\n");
 				(new ConvertProcess<Scrape>(scrapeProducer, new FandomToStories())).run();
 			} else if (parts[1].equals("USER")) 
 				(new BatchUserConvertProcess<Scrape>(scrapeProducer)).run();

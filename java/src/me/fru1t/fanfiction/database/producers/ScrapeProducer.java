@@ -116,9 +116,16 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 		}
 		this.sessionIdSql = String.format(SESSION_RESTRICT_FMT, String.join(" OR ", sessionParts));
 		
-		Boot.getLogger().log("ScraoeProducer on session names " + this.scraping_session_names + " is made.", true);
+		Boot.getLogger().log("ScrapeProducer on session names " + this.scraping_session_names + " is made.", true);
 	}
 
+	public ScrapeProducer(int startId, int endId) {
+		super(String.format(ID_NAME, Boot.getScrapeTablename()), Scrape.class, Boot.getDatabaseConnectionPool(),
+				BUFFER_SIZE, Boot.getLogger());
+		
+		this.setRowIDRange(startId, endId);
+		Boot.getLogger().log("ScrapeProducer with ID range " + startId + " to " + endId + " is made.", true);
+	}
 
 	/**
 	 * Creates a new provider that targets all scrapes from the database.
@@ -134,7 +141,8 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 		String query = String.format(QUERY_BASE, Boot.getScrapeTablename());
 
 		// ...WHERE...
-		query += this.sessionIdSql;
+		if (this.sessionIdSql != null)
+			query += this.sessionIdSql;
 		
 		return query;
 	}

@@ -61,19 +61,16 @@ public class StoredProcedures {
 	private static final String USP_ADD_GENRE_TO_STORY =
 			"{CALL usp_add_genre_to_story(?, ?)}";
 	
-	/**
-	 * Example case of helping_id
-	 * helping_id removes the needs to looks at user_id when we only have 
-	 */
+	
 	private static final String QUERY_ADD_SCRAPE = 
-			"INSERT INTO `%s` (`session_id`, `date`, `url`, `content`)"  
-					+ " VALUES (?, ?, ?, ?)";
+				"INSERT INTO `%s` (`session_id`, `date`, `url`, `content`)"  
+						+ " VALUES (?, ?, ?, ?)";
 
 	/**
 	 * Adds scrape content to the database.
 	 * @throws InterruptedException
 	 */
-	public static void addScrapeBatch(HashMap<String, String> batchCrawlContent) 
+	 public static void addScrapeBatch(HashMap<String, String> batchCrawlContent) 
 			throws InterruptedException {
 
 		Boot.getDatabaseConnectionPool().executeStatement(new Statement() {
@@ -129,7 +126,6 @@ public class StoredProcedures {
 						}
 						fileWriter.close();
 					} catch (IOException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 						Boot.getLogger().log(e1, "Couldn't write to file \"" + addScrapeBatchfilename);
 					}
@@ -184,6 +180,7 @@ public class StoredProcedures {
 	 * Batch inserts the result of the processing of list scrapes.
 	 * @throws InterruptedException
 	 */
+	
 	public static void processListScrapeToStory(
 			int scrapeId,
 			Session convertSession,

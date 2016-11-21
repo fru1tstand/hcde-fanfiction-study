@@ -15,8 +15,8 @@ CREATE TABLE `story` (
    `reviews` int(11) DEFAULT '0',
    `favorites` int(11) DEFAULT '0',
    `followers` int(11) DEFAULT '0',
-   `date_published` int(10) DEFAULT NULL,
-   `date_updated` int(10) DEFAULT NULL,
+   `date_published` int(10) DEFAULT '-1',
+   `date_updated` int(10) DEFAULT '-1',
    `is_complete` tinyint(1) DEFAULT '0',
    
    PRIMARY KEY (`id`),
