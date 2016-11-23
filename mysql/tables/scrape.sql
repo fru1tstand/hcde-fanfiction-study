@@ -6,5 +6,9 @@ CREATE TABLE `scrape` (
    `content` mediumtext,
    PRIMARY KEY (`id`),
    KEY `fk_scrape_session_idx` (`session_id`),
-   CONSTRAINT `fk_scrape_session` FOREIGN KEY (`session_id`) REFERENCES `session` (`id`) ON UPDATE CASCADE
- ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+   CONSTRAINT `fk_scrape_session` 
+   FOREIGN KEY (`session_id`) 
+   REFERENCES `session` (`id`) ON UPDATE CASCADE
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ 
+ 

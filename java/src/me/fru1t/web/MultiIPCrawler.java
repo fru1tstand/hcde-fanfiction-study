@@ -24,7 +24,7 @@ public class MultiIPCrawler {
 	/**
 	 * Represents an IP address.
 	 */
-	private static class IP {
+	private static class  IP{
 		public byte[] ip;
 		public boolean inUse;
 		public long lastUsed;
@@ -178,7 +178,7 @@ public class MultiIPCrawler {
 		this.minContentLength = minContentLength;
 		return this;
 	}
-
+	
 	/**
 	 * Starts a new AJAX request. Returns true if a free IP was found. Otherwise, returns false and
 	 * doesn't start the request if no IPs were free.
@@ -197,7 +197,7 @@ public class MultiIPCrawler {
 			// disappear.
 			if (localCache.containsKey(request.getUrl())) {
 				status.append("; hit cache. Success!");
-				logger.log(status.toString());
+				//logger.log(status.toString(), false);
 				String localCacheResult = localCache.get(request.getUrl());
 
 				// Onsuccess MUST be called asynchronously.
@@ -220,7 +220,7 @@ public class MultiIPCrawler {
 		}
 		if (freeIp == null) {
 			status.append("; No free IPs found. Cancelling call.");
-			logger.log(status.toString());
+			logger.log(status.toString(), true);
 			return false;
 		}
 
@@ -302,7 +302,7 @@ public class MultiIPCrawler {
 						long cacheTime = (new Date()).getTime();
 						status.append("; Cache time: " + (cacheTime - endTime)
 								+ "ms; Scrape success!");
-						logger.log(status.toString());
+						//logger.log(status.toString(), false);
 						request.onSuccess(responseString);
 						return;
 					}
@@ -312,7 +312,7 @@ public class MultiIPCrawler {
 
 					// Print out error now.
 					status.append("; Scrape failed with error: " + e.getMessage());
-					logger.log(status.toString());
+					logger.log(status.toString(), true);
 
 					// Handle failure
 					request.onFailure(e.getMessage());

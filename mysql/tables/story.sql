@@ -1,3 +1,4 @@
+
 CREATE TABLE `story` (
    `id` int(11) NOT NULL AUTO_INCREMENT,
    `fandom_id` int(11) NOT NULL,
@@ -24,4 +25,5 @@ CREATE TABLE `story` (
    CONSTRAINT `fk_story_language` FOREIGN KEY (`language_id`) REFERENCES `language` (`id`) ON UPDATE CASCADE,
    CONSTRAINT `fk_story_rating` FOREIGN KEY (`rating_id`) REFERENCES `rating` (`id`) ON UPDATE CASCADE,
    CONSTRAINT `fk_story_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON UPDATE CASCADE
- ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ 

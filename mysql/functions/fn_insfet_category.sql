@@ -8,5 +8,4 @@ BEGIN
     END IF;
     RETURN v_category_id;
 END$$
-
 DELIMITER ;

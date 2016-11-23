@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import org.eclipse.jdt.annotation.Nullable;
 
 import me.fru1t.fanfiction.Boot;
-import me.fru1t.fanfiction.Session;
 import me.fru1t.util.concurrent.DatabaseProducer;
 
 /**
@@ -42,8 +41,8 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 		public String content;
 	}
 
-	private static final int BUFFER_SIZE = 50;
-	private static final String ID_NAME = "`scrape`.`id`";
+	private static final int BUFFER_SIZE = 100;
+	private static final String ID_NAME = "`%s`.`id`";
 	private static final String QUERY_BASE =
 			"SELECT"
 			+ " `id` AS `" + Scrape.COLUMN_ID
@@ -51,26 +50,21 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 			+ "`, `date` AS `" + Scrape.COLUMN_DATE
 			+ "`, `url` AS `" + Scrape.COLUMN_URL
 			+ "`, `content` AS `" + Scrape.COLUMN_CONTENT
-			+ "` FROM `scrape` "
+			+ "` FROM `%s` "
 			+ "WHERE 1 = 1 ";
-
-	private static final String FMT_QUERY_LOWER_BOUND = "AND `scrape`.`id` > %d ";
-	private static final String FMT_QUERY_UPPER_BOUND = "AND `scrape`.`id` < %d ";
-
+	
 	private static final String SESSION_QUERY_BASE_FMT =
 			"SELECT `id` FROM `session` WHERE `name` IN ('%s')";
 	private static final String SESSION_RESTRICT_FMT = "AND (%s) ";
 	private static final String SESSION_RESTRICT_PART_FMT = "`session_id` = %d";
 
-	private static final int DEFAULT_BOUND_VALUE = -1;
 	@Nullable
-	private static final Session[] DEFAULT_SCRAPE_SESSIONS = {};
+	private static final String[] DEFAULT_SCRAPE_SESSIONS = {};
 
-	private int lowerIdBound;
-	private int upperIdBound;
-	private String[] sessionNames;
+	private String scraping_session_names;
+	private String[] sessionNameStrings;
 	private String sessionIdSql;
-
+	
 	/**
 	 * Creates a new provider that only returns scrapes between the given range and belong to
 	 * the given session names.
@@ -87,31 +81,28 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 	 * empty array to include all.
 	 * @throws InterruptedException
 	 */
-	public ScrapeProducer(
-			int lowerIdBound,
-			int upperIdBound,
-			Session[] sessionNames) throws InterruptedException {
-		super(ID_NAME, Scrape.class, Boot.getDatabaseConnectionPool(),
+	public ScrapeProducer(@Nullable String... sessNames) throws InterruptedException {
+		super(String.format(ID_NAME, Boot.getScrapeTablename()), Scrape.class, Boot.getDatabaseConnectionPool(),
 				BUFFER_SIZE, Boot.getLogger());
-		this.lowerIdBound = (lowerIdBound < 0) ? -1 : lowerIdBound;
-		this.upperIdBound = (upperIdBound < 0) ? -1 : upperIdBound;
-
+		
 		// Sanitize session names
-		this.sessionNames = new String[sessionNames.length];
+		this.sessionNameStrings = new String[sessNames.length];
 		this.sessionIdSql = "";
-		for (int i = 0; i < sessionNames.length; i++) {
-			String s = sessionNames[i].name();
+		for (int i = 0; i < sessNames.length; i++) {
+			String s = sessNames[i];
 			if (s != null) {
-				this.sessionNames[i] = s.replaceAll("'", "\\'");
+				this.sessionNameStrings[i] = s.replaceAll("'", "\\'");
 			}
 		}
 
+		this.scraping_session_names = String.join(",", sessionNameStrings);
+		
 		// Fetch sessionids
-		String[] sessionParts = new String[sessionNames.length];
+		String[] sessionParts = new String[sessNames.length];
 		try {
 			Connection c = Boot.getDatabaseConnectionPool().getConnection();
 			String getSessionIdsQuery =
-					String.format(SESSION_QUERY_BASE_FMT, String.join("','", this.sessionNames));
+					String.format(SESSION_QUERY_BASE_FMT, String.join("','", this.sessionNameStrings));
 			PreparedStatement stmt = c.prepareStatement(getSessionIdsQuery);
 			ResultSet result = stmt.executeQuery();
 			int i = 0;
@@ -124,43 +115,40 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 			throw new RuntimeException(e);
 		}
 		this.sessionIdSql = String.format(SESSION_RESTRICT_FMT, String.join(" OR ", sessionParts));
+		
+		Boot.getLogger().log("ScrapeProducer on session names " + this.scraping_session_names + " is made.", true);
 	}
 
-	/**
-	 * Creates a new provider that only returns scrapes that belong to the given session names.
-	 *
-	 * @param sessionNames
-	 * @throws InterruptedException
-	 */
-	public ScrapeProducer(@Nullable Session... sessionNames) throws InterruptedException {
-		this(DEFAULT_BOUND_VALUE, DEFAULT_BOUND_VALUE, sessionNames);
+	public ScrapeProducer(int startId, int endId) {
+		super(String.format(ID_NAME, Boot.getScrapeTablename()), Scrape.class, Boot.getDatabaseConnectionPool(),
+				BUFFER_SIZE, Boot.getLogger());
+		
+		this.setRowIDRange(startId, endId);
+		Boot.getLogger().log("ScrapeProducer with ID range " + startId + " to " + endId + " is made.", true);
 	}
 
 	/**
 	 * Creates a new provider that targets all scrapes from the database.
 	 * @throws InterruptedException
-	 */
+	 
 	public ScrapeProducer() throws InterruptedException {
-		this(DEFAULT_BOUND_VALUE, DEFAULT_BOUND_VALUE, DEFAULT_SCRAPE_SESSIONS);
-	}
+		this(DEFAULT_SCRAPE_SESSIONS);
+	}*/
 
 	@Override
 	protected String getUnboundedQuery() {
 		// SELECT...FROM...JOIN
-		String query = QUERY_BASE;
+		String query = String.format(QUERY_BASE, Boot.getScrapeTablename());
 
 		// ...WHERE...
-		query += this.sessionIdSql;
-
-		if (upperIdBound != DEFAULT_BOUND_VALUE) {
-			query += String.format(FMT_QUERY_UPPER_BOUND, upperIdBound);
-		}
-		if (lowerIdBound != DEFAULT_BOUND_VALUE) {
-			query += String.format(FMT_QUERY_LOWER_BOUND, lowerIdBound);
-		}
-
+		if (this.sessionIdSql != null)
+			query += this.sessionIdSql;
+		
 		return query;
 	}
 
+	public String getScrapingSessionNames() {
+		return scraping_session_names;
+	}
 
 }

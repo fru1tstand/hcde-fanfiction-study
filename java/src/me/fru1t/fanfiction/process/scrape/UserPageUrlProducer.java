@@ -6,7 +6,7 @@ import me.fru1t.fanfiction.database.producers.ProfileProducer.Profile;
 import me.fru1t.util.Producer;
 import me.fru1t.util.concurrent.ConcurrentProducer;
 
-public class ProfilePageUrlProducer extends ConcurrentProducer<String> {
+public class UserPageUrlProducer extends ConcurrentProducer<String> {
 
 	/**
 	 * example url: 
@@ -16,12 +16,12 @@ public class ProfilePageUrlProducer extends ConcurrentProducer<String> {
 	 * but since users can change their username, only going to use the id number
 	 * 
 	 */
-	private static final String PROFILE_BASE_URL = "https://www.fanfiction.net/u/%d";
+	private static final String USER_BASE_URL = "https://www.fanfiction.net/u/%d";
 	private static boolean isComplete;
 	private Producer<Profile> profileProducer;
 	private Profile currentProfile;
 	
-	public ProfilePageUrlProducer(Producer<Profile> profileProducer) {
+	public UserPageUrlProducer(Producer<Profile> profileProducer) {
 		this.profileProducer = profileProducer;
 		this.currentProfile = null;
 		isComplete = false;
@@ -54,6 +54,6 @@ public class ProfilePageUrlProducer extends ConcurrentProducer<String> {
 	
 	
 	private String getProfileUrl(Profile profile) {
-		return String.format(PROFILE_BASE_URL, profile.ff_id);
+		return String.format(USER_BASE_URL, profile.ff_id);
 	}
 }

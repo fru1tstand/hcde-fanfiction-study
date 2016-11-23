@@ -4,4 +4,4 @@ CREATE TABLE `category` (
    PRIMARY KEY (`id`),
    UNIQUE KEY `name_UNIQUE` (`name`),
    KEY `ix_name` (`name`)
- ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+ ) ENGINE=InnoDB

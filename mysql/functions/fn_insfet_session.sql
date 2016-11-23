@@ -9,5 +9,4 @@ BEGIN
     END IF;
     RETURN ret_id;
 END$$
-
 DELIMITER ;

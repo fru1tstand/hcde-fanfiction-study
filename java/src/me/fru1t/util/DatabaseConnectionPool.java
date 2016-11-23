@@ -60,6 +60,7 @@ public class DatabaseConnectionPool {
 		this.sshPass = null;
 		this.useSSH = false;
 		this.sshSession = null;
+		//justGetOnWithSSH();
 		promptSSH();
 	}
 
@@ -89,6 +90,7 @@ public class DatabaseConnectionPool {
 					}
 					connectSSH();
 				}
+			    
 				connection = DriverManager.getConnection(dbConnectionString);
 			} catch (SQLException e) {
 				logger.log(e, "Couldn't connect to the database, retrying after delay...");
@@ -134,6 +136,16 @@ public class DatabaseConnectionPool {
 		}
 	}
 
+	private void justGetOnWithSSH() {
+		sshHost = "hdslab.hcde.washington.edu";
+		sshUser = "jihyunl";
+		// But let's ask for password at least...
+		Console console = System.console();
+		System.out.print("SSH Password: ");
+		sshPass = String.valueOf(console.readPassword());
+		connectSSH();
+	}
+
 	private void promptSSH() {
 		// Ask if using SSH
 		Scanner consoleScanner = new Scanner(System.in);
@@ -141,7 +153,7 @@ public class DatabaseConnectionPool {
 
 		try {
 			if (consoleScanner.nextLine().toLowerCase().equals("y")) {
-				useSSH = true;
+				/*useSSH = true;
 				System.out.println();
 
 				// The console object helps hide the password.
@@ -150,7 +162,7 @@ public class DatabaseConnectionPool {
 				if (console == null) {
 					logger.log("I couldn't get a console instance most likely because I'm "
 							+ "running in  an IDE. WARNING: This means I will NOT hide your "
-							+ "password when you type it into the console.");
+							+ "password when you type it into the console.", true);
 				}
 
 				// Fetch SSH information
@@ -167,7 +179,8 @@ public class DatabaseConnectionPool {
 					System.out.print("SSH Password: ");
 					sshPass = String.valueOf(console.readPassword());
 				}
-				connectSSH();
+				connectSSH();*/
+				justGetOnWithSSH();
 			}
 		} finally {
 			consoleScanner.close();

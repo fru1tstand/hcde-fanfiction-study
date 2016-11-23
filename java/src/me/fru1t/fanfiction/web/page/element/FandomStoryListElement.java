@@ -12,6 +12,7 @@ import org.jsoup.select.Elements;
 import me.fru1t.fanfiction.Boot;
 import me.fru1t.util.Preconditions;
 
+
 public class FandomStoryListElement {
 	public static class Metadata {
 		private static final boolean LOG_COMPONENT_IGNORES = true;
@@ -155,7 +156,7 @@ public class FandomStoryListElement {
 			Matcher m = COMPONENT_KEY_VALUE_PATTERN.matcher(component);
 			if (!m.matches()) {
 				if (LOG_COMPONENT_IGNORES) {
-					Boot.getLogger().log("Ignoring component: " + component);
+					Boot.getLogger().log("Ignoring component: " + component, true);
 				}
 				return false;
 			}
@@ -183,7 +184,7 @@ public class FandomStoryListElement {
 				return false;
 			default:
 				if (LOG_COMPONENT_IGNORES) {
-					Boot.getLogger().log("Ignoring component: " + component);
+					Boot.getLogger().log("Ignoring component: " + component, true);
 				}
 				break;
 			}

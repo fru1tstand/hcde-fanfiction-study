@@ -26,12 +26,15 @@ public class ReviewPageUrlProducer extends ConcurrentProducer<String> {
 	public ReviewPageUrlProducer(Producer<Story> storyProducer) {
 		this.storyProducer = storyProducer;
 		this.currentStory = null;
+		this.currentChapter = Integer.MAX_VALUE;
+		this.maxChapters = Integer.MIN_VALUE;
 		isComplete = false;
 	}
 
 	@Override
-	public synchronized @Nullable String take() {
-		if (isComplete || currentStory.reviews == 0) {
+	@Nullable
+	public synchronized String take() {
+		if (isComplete) {
 			return null;
 		}
 		
@@ -42,16 +45,19 @@ public class ReviewPageUrlProducer extends ConcurrentProducer<String> {
 		
 		// Check if we still have stories to get reviews from:
 		// Get the next story object
-		currentStory = storyProducer.take();
-		currentChapter = 1;
-
-		// No more stories from the database, so we're done.
-		if (currentStory == null) {
-			isComplete = true;
-		}
+		do {
+			currentStory = storyProducer.take();
+			// No more stories from the database, so we're done.
+			if (currentStory == null) {
+				isComplete = true;
+				return null;
+			}
+		} while (currentStory.reviews < 1);
 		
-		// else we are finished with scraping reviews
-		return null;
+		maxChapters =  currentStory.chapters;
+		currentChapter = maxChapters == 0 ? 0 : 1;
+		
+		return getReviewUrl(currentStory.ff_story_id, currentChapter++, 1);
 	}
 
 	private @Nullable String getReviewUrl(int ff_story_id, int chapter, int page_number) {

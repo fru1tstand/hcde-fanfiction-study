@@ -14,6 +14,7 @@ import me.fru1t.fanfiction.Boot;
 import me.fru1t.fanfiction.web.page.element.FandomStoryListElement;
 import me.fru1t.web.Page;
 
+
 public class FandomPage extends Page {
 	private static final String RESULT_ELEMENTS_SELECTOR =
 			"#content_wrapper_inner .z-list.zhover.zpointer";
@@ -77,7 +78,7 @@ public class FandomPage extends Page {
 				if (!pageNumberValueMatcher.matches()) {
 					Boot.getLogger().log("The link " + pageNumberLink.outerHtml()
 						+ " wound up in the page number links pile. Ignoring for now, but this may"
-						+ "be indicitive of a problem.");
+						+ "be indicitive of a problem.", true);
 					continue;
 				}
 				int pageNumberValue =

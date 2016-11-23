@@ -27,12 +27,20 @@ public class FandomProducer extends DatabaseProducer<FandomProducer.Fandom, Inte
 			+ " `fandom`.`url` AS `url`"
 			+ " FROM `fandom`"
 			+ " INNER JOIN `category` ON `category`.`id` = `fandom`.`category_id`";
+	
 	private static final String ID_NAME = "`fandom`.`id`";
 	private static final int BUFFER_SIZE = 10000;
 
-	public FandomProducer() throws InterruptedException {
-		super(ID_NAME, Fandom.class, Boot.getDatabaseConnectionPool(),
-				BUFFER_SIZE, Boot.getLogger());
+	public FandomProducer() {
+		super(ID_NAME, Fandom.class, Boot.getDatabaseConnectionPool(), BUFFER_SIZE, Boot.getLogger());
+		Boot.getLogger().log("FandomProducer with now ids range is made.", true);
+	}
+	
+	public FandomProducer(int startid, int endid) {
+		super(ID_NAME, Fandom.class, Boot.getDatabaseConnectionPool(), BUFFER_SIZE, Boot.getLogger());
+		this.setRowIDRange(startid, endid);
+		
+		Boot.getLogger().log("FandomProducer with ids range " + startid + " to " + endid + " is made.", true);
 	}
 
 	@Override

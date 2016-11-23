@@ -10,6 +10,8 @@ import java.util.Date;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import me.fru1t.fanfiction.Boot;
+
 public class Logger {
 
 	private SimpleDateFormat messagePrefix;
@@ -52,9 +54,9 @@ public class Logger {
 	 * @param message
 	 * @return
 	 */
-	public String log(String message) {
+	public String log(String message, boolean toConsole) {
 		// Log to console
-		System.out.println(getLogStringPrefix() + message);
+		if (toConsole) System.out.println(getLogStringPrefix() + message);
 
 		// Log to file
 		if (logToFile) {
@@ -82,7 +84,7 @@ public class Logger {
 		int check = (int) (Math.random() * Integer.MAX_VALUE);
 		StringWriter errors = new StringWriter();
 		e.printStackTrace(new PrintWriter(errors));
-		return log(errors.toString() + " [Error ID: " + check  + "]");
+		return log(errors.toString() + " [Error ID: " + check  + "]", true);
 	}
 
 	/**
@@ -98,7 +100,7 @@ public class Logger {
 		StringWriter errors = new StringWriter();
 		e.printStackTrace(new PrintWriter(errors));
 		return log("User message: " + userMessage + "\r\n"
-				+ errors.toString() + " [Error ID: " + check  + "]");
+				+ errors.toString() + " [Error ID: " + check  + "]", true);
 	}
 
 	/**
@@ -107,7 +109,7 @@ public class Logger {
 	 * @param debugMessage The debug message.
 	 */
 	public void debug(@Nullable String debugMessage) {
-		log("[DEBUG-Unknown] " + debugMessage);
+		log("[DEBUG-Unknown] " + debugMessage, true);
 	}
 
 	/**
@@ -117,7 +119,7 @@ public class Logger {
 	 * @param callingClass The class to display in the debug hint.
 	 */
 	public void debug(@Nullable String debugMessage, Class<?> callingClass) {
-		log("[DEBUG-" + callingClass.getSimpleName() + "] " + debugMessage);
+		log("[DEBUG-" + callingClass.getSimpleName() + "] " + debugMessage, true);
 	}
 
 	private String getLogStringPrefix() {
@@ -126,5 +128,27 @@ public class Logger {
 		}
 
 		return "";
+	}
+	
+	public static <E> void writeToFile(Exception e, String funcName, String prefix, Iterable<E> list) {
+		String filename = prefix + (new Date()).getTime() + ".txt";
+
+		Boot.getLogger().log(e, funcName + " is having trouble! " 
+				+ "Outputting a list of urls that were supposed to be inserted to a file \""
+				+ filename);
+
+		try {
+			BufferedWriter fileWriter = 
+					new BufferedWriter(new FileWriter(filename, true));
+			for (E myurl : list) {
+				fileWriter.write(myurl + "\r\n");
+				fileWriter.flush();
+			}
+			fileWriter.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			Boot.getLogger().log(e1, "Error with Couldn't write to file \"" + filename);
+		}
 	}
 }

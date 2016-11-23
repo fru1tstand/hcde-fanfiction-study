@@ -1,9 +1,14 @@
 package me.fru1t.fanfiction.database;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -55,25 +60,91 @@ public class StoredProcedures {
 	 */
 	private static final String USP_ADD_GENRE_TO_STORY =
 			"{CALL usp_add_genre_to_story(?, ?)}";
-
-	/**
-	 * 1 session_name VARCHAR(128)
-	 * 2 scrape_date INT(10)
-	 * 3 url VARCHAR(255)
-	 * 4 content MEDIUMTEXT
-	 */
-	private static final String USP_ADD_SCRAPE =
-			"{CALL usp_add_scrape(?,?,?,?)}";
+	
+	
+	private static final String QUERY_ADD_SCRAPE = 
+				"INSERT INTO `%s` (`session_id`, `date`, `url`, `content`)"  
+						+ " VALUES (?, ?, ?, ?)";
 
 	/**
 	 * Adds scrape content to the database.
 	 * @throws InterruptedException
 	 */
-	public static void addScrape(Session session, String url, @Nullable String content)
+	 public static void addScrapeBatch(HashMap<String, String> batchCrawlContent) 
+			throws InterruptedException {
+
+		Boot.getDatabaseConnectionPool().executeStatement(new Statement() {
+			@Override
+			public void execute(Connection c) throws SQLException {
+				PreparedStatement stmt = c.prepareStatement(
+						String.format(QUERY_ADD_SCRAPE, Boot.getScrapeTablename()));
+
+				try {
+					c.setAutoCommit(false);  
+					//c.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED); 
+
+					for (HashMap.Entry<String, String> row : batchCrawlContent.entrySet()) {
+						String url = row.getKey();
+						String content = row.getValue();
+
+						int currentTime = (int) ((new Date()).getTime() / 1000);
+						if (content == null) {
+							Boot.getLogger().log("Ignored raw scrape insert as the content was null", true);
+							return;
+						}
+
+						if (Boot.DEBUG) {
+							Boot.getLogger().debug("Fake storing content length: "
+									+ content.length() + "; url: " + url, StoredProcedures.class);
+							return;
+						}
+
+						stmt.setInt(1, Boot.getSessionOfThisRun().getID()); // 1 session_name VARCHAR(128)
+						stmt.setInt(2, currentTime); // 2 scrape_date INT(10)
+						stmt.setString(3, url); // 3 url VARCHAR(255)
+						stmt.setString(4, content); // 4 content MEDIUMTEXT
+						
+						stmt.addBatch();
+					}
+
+					stmt.executeBatch();
+					c.commit();
+
+				} catch ( Exception se ){
+					String addScrapeBatchfilename = "url" + (new Date()).getTime() + ".txt";
+
+					Boot.getLogger().log(se, "AddScrapeBatch is having trouble! " 
+							+ "Outputting a list of urls that were supposed to be inserted to a file \""
+							+ addScrapeBatchfilename);
+
+					try {
+						BufferedWriter fileWriter = 
+								new BufferedWriter(new FileWriter(addScrapeBatchfilename, true));
+						for (String myurl : batchCrawlContent.keySet()) {
+							fileWriter.write(myurl + "\r\n");
+							fileWriter.flush();
+						}
+						fileWriter.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+						Boot.getLogger().log(e1, "Couldn't write to file \"" + addScrapeBatchfilename);
+					}
+				} finally {
+					stmt.close();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Adds scrape content to the database. (at an individual level)
+	 * @throws InterruptedException
+	 */
+	public static void addScrape(String url, @Nullable String content)
 			throws InterruptedException {
 		int currentTime = (int) ((new Date()).getTime() / 1000);
 		if (content == null) {
-			Boot.getLogger().log("Ignored raw scrape insert as the content was null");
+			Boot.getLogger().log("Ignored raw scrape insert as the content was null", true);
 			return;
 		}
 
@@ -86,9 +157,11 @@ public class StoredProcedures {
 		Boot.getDatabaseConnectionPool().executeStatement(new Statement() {
 			@Override
 			public void execute(Connection c) throws SQLException {
-				CallableStatement stmt = c.prepareCall(USP_ADD_SCRAPE);
+				PreparedStatement stmt = c.prepareStatement(
+						String.format(QUERY_ADD_SCRAPE, Boot.getScrapeTablename()));
+				
 				try {
-					stmt.setString(1, session.name()); // 1 session_name VARCHAR(128)
+					stmt.setInt(1, Boot.getSessionOfThisRun().getID()); // 1 session_id 
 					stmt.setInt(2, currentTime); // 2 scrape_date INT(10)
 					stmt.setString(3, url); // 3 url VARCHAR(255)
 					stmt.setString(4, content); // 4 content MEDIUMTEXT
@@ -100,11 +173,14 @@ public class StoredProcedures {
 			}
 		});
 	}
+	
+	
 
 	/**
 	 * Batch inserts the result of the processing of list scrapes.
 	 * @throws InterruptedException
 	 */
+	
 	public static void processListScrapeToStory(
 			int scrapeId,
 			Session convertSession,
@@ -140,7 +216,7 @@ public class StoredProcedures {
 						storyStmt.setInt(16, bre.processedMetadata.dateUpdated);// 16 date_updated INT(10),
 						storyStmt.setBoolean(17, bre.processedMetadata.isComplete); // 17 is_complete TINYINT,
 						storyStmt.setInt(18, scrapeId); // 18 scrape_id INT,
-						storyStmt.setString(19, convertSession.name()); // 19 session_name VARCHAR(128),
+						storyStmt.setString(19, convertSession.getName()); // 19 session_name VARCHAR(128),
 						storyStmt.setInt(20, dateProcessed); // 20 process_date INT(10),
 						storyStmt.setBoolean(21, bre.processedMetadata.didSuccessfullyParse); // 21 meta_did_successfully_parse TINYINT,
 						storyStmt.setBoolean(22, bre.didSuccessfullyParse); // 22 story_did_successfully_parse TINYINT,

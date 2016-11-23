@@ -113,14 +113,14 @@ public class FandomPageUrlProducer extends ConcurrentProducer<String> {
 						if (fp.getMaxPages() < 1) {
 							// Send a message that we didn't, and try the next fandom
 							Boot.getLogger().log("No pages found for fandom '" + currentFandom.name
-									+ "' at '" + getFandomUrl(currentFandom, 1) + "'");
+									+ "' at '" + getFandomUrl(currentFandom, 1) + "'", true);
 							nextFandom();
 						} else {
 							// Otherwise, we're good to go
 							maxPages = fp.getMaxPages();
 							currentPage = 1;
 							Boot.getLogger().log("Found " + maxPages + " pages for "
-									+ currentFandom.toString());
+									+ currentFandom.toString(), true);
 							isWaitingForFirstPage = false;
 						}
 					}

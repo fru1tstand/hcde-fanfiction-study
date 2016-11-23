@@ -1,4 +1,4 @@
-CREATE TABLE `country` (
+CREATE TABLE `country_d` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(128) NOT NULL,
   PRIMARY KEY (`id`),
