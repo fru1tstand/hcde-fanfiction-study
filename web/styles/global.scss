@@ -4,8 +4,122 @@ $content-spacing-small: 25px;
 $color-title: #333;
 $color-content: #2f5f5d;
 $color-background-off: #f3f3f3;
+$color-disabled: #AAA;
 
-@import 'page';
-@import 'shared';
-@import 'our-submission';
-@import 'using-the-data';
+// Global
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+a, label {
+  &, &:link, &:visited {
+    text-decoration: none;
+    color: #ffa146;
+    cursor: pointer;
+  }
+  &:hover, &:active {
+    color: #bc7137;
+  }
+}
+html, body {
+  font-family: Raleway, serif;
+  background-color: #f9f9f9;
+  color: $color-content;
+  min-width: 1000px;
+}
+p {
+  max-width: 600px;
+}
+
+// Header
+.page-title {
+  font-size: 34px;
+  font-weight: bold;
+  color: $color-title;
+}
+
+// Layouts
+%restricted {
+  padding: 0 $content-spacing;
+  max-width: 1600px;
+}
+.container {
+  @extend %restricted;
+  margin: 0 auto;
+}
+
+// Spacing
+.content-push {
+  height: $content-push;
+}
+.content-push-small {
+  height: $content-spacing-small;
+}
+
+// Sectional
+.section-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: $color-title;
+}
+.section-subtitle {
+  margin-top: $content-spacing-small;
+  font-weight: bold;
+}
+
+.download-button {
+  display: inline-block;
+  margin: 0 $content-spacing-small;
+  padding: $content-spacing-small 0;
+  width: 250px;
+  text-align: center;
+  background-color: #EEE;
+
+  &.disabled {
+    color: $color-disabled;
+    cursor: not-allowed;
+  }
+
+  i {
+    font-size: 32px;
+    padding-bottom: 8px;
+  }
+}
+
+.picture-grid {
+  font-size: 0;
+  text-align: center;
+  background-color: #EEE;
+  padding: $content-spacing-small $content-spacing;
+
+  a {
+    background-color: #000;
+    display: inline-block;
+    width: 33.3333%
+  }
+  img {
+    width: 100%;
+    display: block;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+
+.column-list {
+  font-size: 0;
+
+  li {
+    display: inline-block;
+    width: 400px;
+    padding: 0 $content-spacing-small/2 $content-spacing-small/2 0;
+    vertical-align: top;
+    font-size: 14px;
+
+    .name {
+      font-weight: bold;
+    }
+  }
+}
