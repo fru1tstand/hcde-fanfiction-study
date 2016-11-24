@@ -47,7 +47,7 @@ foreach ($pics as $pic) {
 $body = <<<HTML
 <div class="content-push"></div>
 <div class="container">
-  <div class="page-title">Chi Note 2017 - FanFiction Metadata</div>
+  <div class="page-title">Chi Note 2017 - Fanfiction Metadata</div>
 </div>
 
 <!-- Pictures -->
@@ -63,7 +63,7 @@ $body = <<<HTML
   <p>With its roots dating to popular television shows of the 1960s such as Star Trek, fanfiction
     has blossomed into an extremely popular form of creative expression. The transition from
     printed zines to online fanfiction repositories has facilitated this growth in popularity, with
-    millions of fans writing stories and adding to sites such as Fanfiction.net, Archive Of Our Own,
+    millions of fans writing stories and adding to sites such as FanFiction.net, Archive Of Our Own,
     and many others each day. Enthusiasts are sharing their writing, reading stories written by
     others, and helping each other to grow as writers. Yet, this domain is often undervalued by
     society and understudied by researchers. Fanfiction repositories in particular have rarely been
@@ -94,6 +94,6 @@ $body = <<<HTML
 HTML;
 
 EmptyPage::start()
-    ->with(EmptyPage::FIELD_HTML_TITLE, "Chi Note 2017 - FanFiction Metadata")
+    ->with(EmptyPage::FIELD_HTML_TITLE, "Chi Note 2017 - Fanfiction Metadata")
     ->with(EmptyPage::FIELD_BODY, $body)
     ->render();
