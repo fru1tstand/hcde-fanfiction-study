@@ -6,10 +6,9 @@ use me\fru1t\common\template\TemplateField;
 /**
  *
  */
-class AboutTable extends Template {
+class ColumnListEntry extends Template {
   const FIELD_NAME = "name";
   const FIELD_DESCR = "descr";
-  const FIELD_COLUMNS = "columns";
 
   /**
    * Produces the content this template defines in the form of an HTML string. This method is passed
@@ -20,13 +19,7 @@ class AboutTable extends Template {
    */
   public static function getTemplateRenderContents_internal(array $fields): string {
     return <<<HTML
-<div class="table">
-  <div class="title">{$fields[self::FIELD_NAME]}</div>
-  <div class="descr">{$fields[self::FIELD_DESCR]}</div>
-  <div class="column-container">
-    {$fields[self::FIELD_COLUMNS]}
-  </div>
-</div>
+<li><span class="name">{$fields[self::FIELD_NAME]}</span> - {$fields[self::FIELD_DESCR]}</li>
 HTML;
 
   }
@@ -37,6 +30,6 @@ HTML;
    * @return TemplateField[]
    */
   static function getTemplateFields_internal(): array {
-    return TemplateField::createFrom(self::FIELD_NAME, self::FIELD_COLUMNS, self::FIELD_DESCR);
+    return TemplateField::createFrom(self::FIELD_NAME, self::FIELD_DESCR);
   }
 }
