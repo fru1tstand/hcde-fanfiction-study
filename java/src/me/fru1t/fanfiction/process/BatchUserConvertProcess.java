@@ -21,27 +21,28 @@ import me.fru1t.util.concurrent.DatabaseProducer;
  */
 public class BatchUserConvertProcess<T extends DatabaseProducer.Row<?>> implements Runnable {
 
-	private static int batchSize = 2000;
+	private static int BUFFER_SIZE = 1 * 1024 * 1024;
 	private ScrapeProducer producer;
+	private int scrapedLen;
 
 	// Matches profile URLs with or without filters.
-	private static final Pattern USER_URL_PATTERN =
-			Pattern.compile("^https://www.fanfiction.net/u/(?<ffId>[0-9]+)$");
+	private static final Pattern USER_URL_PATTERN = Pattern.compile("^https://www.fanfiction.net/u/(?<ffId>[0-9]+)$");
 
 	ArrayList<ProfileElement> profileElements;
 
 	public BatchUserConvertProcess(ScrapeProducer producer) throws InterruptedException {
 		this.producer = producer;
 		this.profileElements = new ArrayList<>(); 
-		
+		this.scrapedLen = 0;
 	}
 
 	private void batchInsert() throws InterruptedException{
 		long startTime = (new Date()).getTime();
-		UserToProfileProcedures.addUserProfileBatch(profileElements);
-		Boot.getLogger().log("Processed processUserScrapeToProfileBatch for /" + profileElements.size()
+		UserToProfileProcedures.addUserProfile(profileElements);
+		Boot.getLogger().log("Processed addUserProfile for /" + profileElements.size()
 								+ "; Took: " + ((new Date()).getTime() - startTime) + "ms", true);
 		profileElements.clear();
+		scrapedLen = 0;
 	}
 	
 	@Override
@@ -56,31 +57,35 @@ public class BatchUserConvertProcess<T extends DatabaseProducer.Row<?>> implemen
 		@Nullable Scrape scrape = producer.take();
 		try {
 			while (scrape != null) {
-				try {
-					ProfileElement pe = scrapeToProfileElement(scrape);
-					if (pe != null) pe.setScrapeId(scrape.id);
+				if (scrapedLen > BUFFER_SIZE) {
+					batchInsert();
+				}
+
+				ProfileElement pe = scrapeToProfileElement(scrape);
+				if (pe != null) {
+					pe.setScrapeId(scrape.id);
 					profileElements.add(pe);
-				} catch (Exception e) {
-					Boot.getLogger().log("Trouble with scrape2profileElement. " 
-										  + "Skipped scrape id " + scrape.id + ", URL " + scrape.url, true);
+					scrapedLen += pe.getContentLen();
 				}
 				
-				if (profileElements.size() > batchSize) batchInsert();
 				scrape = producer.take();
 			}
 
 			// flush
 			if (profileElements.size() > 0) batchInsert();
 		} catch (InterruptedException e) {
-			Boot.getLogger().log("InterruptedException. Skipped scrape id " + scrape.id 
-								  + ", URL " + scrape.url, true);
+			Boot.getLogger().log("InterruptedException. Skipped scrape id " + scrape.id + "; URL " + scrape.url, true);
+			System.exit(42);
+		} catch (Exception e) {
+			Boot.getLogger().log("Some Other Exception. Skipped scrape id " + scrape.id + "; URL " + scrape.url, true);
+			System.exit(42);
 		}
 		
 		Boot.getLogger().log("Finished batchConvertProcess with session name: " + Boot.getSessionOfThisRun().getName(), true);
 	}
 
 	private ProfileElement scrapeToProfileElement(Scrape scrape) throws Exception {
-		//Boot.getLogger().log("Covert scrape id " + scrape.id +  ", URL " + scrape.url, false);
+		Boot.getLogger().log("Covert scrape id " + scrape.id +  "; URL " + scrape.url, false);
 		
 		// Check for scrape URL validity.
 		Matcher m = USER_URL_PATTERN.matcher(scrape.url);
@@ -91,7 +96,7 @@ public class BatchUserConvertProcess<T extends DatabaseProducer.Row<?>> implemen
 			return profileElement;
 		}
 		
-		throw new Exception("Scrape id " + scrape.id + ", URL " + scrape.url + " did not match USER_URL_PATTERN");
+		throw new Exception("Scrape id " + scrape.id + "; URL " + scrape.url + " did not match USER_URL_PATTERN");
 	}
 
 }

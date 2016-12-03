@@ -16,30 +16,30 @@ CREATE TABLE `scrape_[SUFFIX]` (
 		ON UPDATE CASCADE
  ) ENGINE=InnoDB;
  
-CREATE TABLE `scrape_user` (
+CREATE TABLE `scrape_user_15` (
    `id` int(11) NOT NULL AUTO_INCREMENT,
    `session_id` int(11) NOT NULL,
    `date` int(10) NOT NULL,
    `url` varchar(2000) NOT NULL,
    `content` mediumtext,
    PRIMARY KEY (`id`),
-   KEY `fk_scrape_user_session_idx` (`session_id`),
-   CONSTRAINT `fk_scrape_user_session` 
+   KEY `fk_scrape_user_15_session_idx` (`session_id`),
+   CONSTRAINT `fk_scrape_15_user_session` 
    FOREIGN KEY (`session_id`) 
    REFERENCES `session` (`id`) 
 		ON DELETE CASCADE
 		ON UPDATE CASCADE
  ) ENGINE=InnoDB;
  
- CREATE TABLE `scrape_review` (
+ CREATE TABLE `scrape_review_65` (
    `id` int(11) NOT NULL AUTO_INCREMENT,
    `session_id` int(11) NOT NULL,
    `date` int(10) NOT NULL,
    `url` varchar(2000) NOT NULL,
    `content` mediumtext,
    PRIMARY KEY (`id`),
-   KEY `fk_scrape_review_session_idx` (`session_id`),
-   CONSTRAINT `fk_scrape_review_session` 
+   KEY `fk_scrape_review_65_session_idx` (`session_id`),
+   CONSTRAINT `fk_scrape_review_65_session` 
    FOREIGN KEY (`session_id`) 
    REFERENCES `session` (`id`) 
 		ON DELETE CASCADE

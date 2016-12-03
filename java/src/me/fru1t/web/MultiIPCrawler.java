@@ -329,6 +329,8 @@ public class MultiIPCrawler {
 					try { if (response != null) response.close(); }
 					catch (IOException e) {
 						logger.log(e, "MultiIpCrawler couldn't close response"); }
+				
+					responseString = null;
 				}
 			}
 		})).start();

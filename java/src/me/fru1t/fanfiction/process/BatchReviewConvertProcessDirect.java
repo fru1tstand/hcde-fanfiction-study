@@ -20,9 +20,9 @@ import me.fru1t.util.concurrent.DatabaseProducer;
 /**
  * Converts rows from a table in the database into something else.
  */
-public class BatchReviewConvertProcess<T extends DatabaseProducer.Row<?>> implements Runnable {
+public class BatchReviewConvertProcessDirect<T extends DatabaseProducer.Row<?>> implements Runnable {
 
-	private static int BUFFER_SIZE = 1 * 1024 * 1024;
+	private static int BUFFER_SIZE = 50 * 1024 * 1024;
 	private ScrapeProducer producer;
 	private int scrapedLen;
 
@@ -32,7 +32,7 @@ public class BatchReviewConvertProcess<T extends DatabaseProducer.Row<?>> implem
 
 	ArrayList<ReviewElement> reviewElements;
 
-	public BatchReviewConvertProcess(ScrapeProducer producer) throws InterruptedException {
+	public BatchReviewConvertProcessDirect(ScrapeProducer producer) throws InterruptedException {
 		this.producer = producer;
 		this.reviewElements = new ArrayList<>(); 
 		this.scrapedLen = 0;
@@ -40,7 +40,7 @@ public class BatchReviewConvertProcess<T extends DatabaseProducer.Row<?>> implem
 
 	private void batchInsert() throws InterruptedException {
 		long startTime = (new Date()).getTime();
-		ReviewProcedures.addReviewReviewer(reviewElements);
+		ReviewProcedures.addReviewDirect(reviewElements);
 		Boot.getLogger().log("Processed addReviewAndReviewer for /" + reviewElements.size()
 								+ "; Took: " + ((new Date()).getTime() - startTime) + "ms", true);
 		reviewElements.clear();
@@ -96,7 +96,9 @@ public class BatchReviewConvertProcess<T extends DatabaseProducer.Row<?>> implem
 			return new ReviewListPage(ffStoryId, chapter, reviewListPageDoc, scrape.id);
 		}
 		
-		throw new Exception("Scrape id " + scrape.id + "; URL " + scrape.url + " did not match REVIEW_LIST_URL_PATTERN");
+		throw new Exception("Scrape id " + scrape.id + "; URL " + scrape.url 
+								+ " did not match REVIEW_LIST_URL_PATTERN");
+		
 	}
 
 }

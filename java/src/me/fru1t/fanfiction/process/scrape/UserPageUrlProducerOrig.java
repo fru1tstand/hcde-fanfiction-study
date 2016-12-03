@@ -2,9 +2,11 @@ package me.fru1t.fanfiction.process.scrape;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import me.fru1t.fanfiction.database.producers.ProfileProducer.Profile;
+import me.fru1t.util.Producer;
 import me.fru1t.util.concurrent.ConcurrentProducer;
 
-public class UserPageUrlProducer extends ConcurrentProducer<String> {
+public class UserPageUrlProducerOrig extends ConcurrentProducer<String> {
 
 	/**
 	 * example url: 
@@ -16,19 +18,12 @@ public class UserPageUrlProducer extends ConcurrentProducer<String> {
 	 */
 	private static final String USER_BASE_URL = "https://www.fanfiction.net/u/%d";
 	private static boolean isComplete;
-	// private static final int MAX_FFID = 8520203;
+	private Producer<Profile> profileProducer;
+	private Profile currentProfile;
 	
-	private int currentFFId;
-	private int upperBoundFFId;
-	
-	public UserPageUrlProducer(int MAX_FFID) {
-		this(1, MAX_FFID, MAX_FFID);
-	}
-	
-	public UserPageUrlProducer(int startId, int endId, int MAX_FFID) {
-		this.currentFFId = startId;
-		this.upperBoundFFId = Integer.min(MAX_FFID, endId);
-		
+	public UserPageUrlProducerOrig(Producer<Profile> profileProducer) {
+		this.profileProducer = profileProducer;
+		this.currentProfile = null;
 		isComplete = false;
 	}
 
@@ -39,8 +34,11 @@ public class UserPageUrlProducer extends ConcurrentProducer<String> {
 			return null;
 		}
 		
-		if (currentFFId <= upperBoundFFId) {
-			return getProfileUrl(currentFFId++);
+		// Check if we still have profiles to scrape
+		currentProfile = profileProducer.take();
+		
+		if (currentProfile != null) {
+			return getProfileUrl(currentProfile);
 		}
 		
 		// else we are finished with scraping profiles
@@ -55,7 +53,7 @@ public class UserPageUrlProducer extends ConcurrentProducer<String> {
 	}
 	
 	
-	private String getProfileUrl(int ffId) {
-		return String.format(USER_BASE_URL, ffId);
+	private String getProfileUrl(Profile profile) {
+		return String.format(USER_BASE_URL, profile.ff_id);
 	}
 }

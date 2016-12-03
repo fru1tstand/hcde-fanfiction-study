@@ -41,7 +41,7 @@ public class ScrapeProducer extends DatabaseProducer<ScrapeProducer.Scrape, Inte
 		public String content;
 	}
 
-	private static final int BUFFER_SIZE = 100;
+	private static final int BUFFER_SIZE = 1000;
 	private static final String ID_NAME = "`%s`.`id`";
 	private static final String QUERY_BASE =
 			"SELECT"

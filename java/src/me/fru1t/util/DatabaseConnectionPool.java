@@ -1,6 +1,5 @@
 package me.fru1t.util;
 
-import java.io.Console;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -140,9 +139,10 @@ public class DatabaseConnectionPool {
 		sshHost = "hdslab.hcde.washington.edu";
 		sshUser = "jihyunl";
 		// But let's ask for password at least...
-		Console console = System.console();
-		System.out.print("SSH Password: ");
-		sshPass = String.valueOf(console.readPassword());
+		//Console console = System.console();
+		//System.out.print("SSH Password: ");
+		//sshPass = String.valueOf(console.readPassword());
+		
 		connectSSH();
 	}
 

@@ -44,7 +44,7 @@ public class ReviewListPage {
 				name = cell.text();
 			}
 			
-			if (name.length() > 64) { // too long to fit into the DB; define this user as Guest
+			if (name.length() > 512) { // too long to fit into the DB; define this user as Guest
 				name = "Guest";
 			}
 			

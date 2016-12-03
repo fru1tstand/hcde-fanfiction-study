@@ -6,7 +6,7 @@ CREATE PROCEDURE `usp_add_story_values`(
 	-- story data (foreign keys)
     in_fandom_url VARCHAR(2000),
     in_user_ff_id INT,
-    in_user_name VARCHAR(128),
+    in_user_name VARCHAR(512),
     in_rating_name VARCHAR(45),
     in_language_name VARCHAR(128),
     

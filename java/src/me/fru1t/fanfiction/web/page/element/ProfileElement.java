@@ -32,7 +32,7 @@ public class ProfileElement extends FFElement {
 	
 	public int my_ff_id; // NOT NULL
 	public String user_name;
-	public String country_name;
+	public String location_name;
 	public int join_date;
 	public int update_date;
 	public String bio;
@@ -65,7 +65,7 @@ public class ProfileElement extends FFElement {
 	
 	public ProfileElement(Document profilePageDoc, int my_ff_id) {
 		this.my_ff_id = my_ff_id;
-		this.country_name = null;
+		this.location_name = null;
 		this.join_date = -1;
 		this.update_date = -1;
 		this.bio = null;
@@ -77,8 +77,8 @@ public class ProfileElement extends FFElement {
 		if (this.checkErrorPage(profilePageDoc)) return;
 		
 		// may not be public, in this case empty string returned
-		//this.country_name = profilePageDoc.select("div#content_wrapper_inner table table td").eq(1).select("img").attr("title");
-		this.country_name = profilePageDoc.select("div#content_wrapper_inner table table td[colspan=2]")
+		//this.location_name = profilePageDoc.select("div#content_wrapper_inner table table td").eq(1).select("img").attr("title");
+		this.location_name = profilePageDoc.select("div#content_wrapper_inner table table td[colspan=2]")
 										  .select("img").attr("title");
 		this.getJoinDateAndUpdateDate(profilePageDoc);
 		this.bio = profilePageDoc.select("div#bio").html();
@@ -192,6 +192,10 @@ public class ProfileElement extends FFElement {
 			int fav_story_id = Integer.parseInt(elem.attr("data-storyid"));
 			this.myFavStories.add(fav_story_id);
 		}
+	}
+
+	public int getContentLen() {
+		return this.bio == null ? 0 : bio.length();
 	}
 	
 	/**

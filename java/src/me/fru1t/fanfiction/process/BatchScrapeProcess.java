@@ -15,7 +15,7 @@ import me.fru1t.web.Request;
  */
 public class BatchScrapeProcess implements Runnable {
     private static final int WATCHDOG_SLEEP_TIME_MS = 500;
-    private static final int BUFFER_SIZE = 1024 * 1024 * 10;
+    private static final int BUFFER_SIZE = 1024 * 1024 * 100;
 
     private ConcurrentProducer<String> urlProducer;
     private String[] queuedCrawlUrl;

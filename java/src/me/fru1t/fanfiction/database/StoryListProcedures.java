@@ -61,6 +61,7 @@ public class StoryListProcedures {
 				c.setAutoCommit(false); 
 				
 				ArrayList<String> ffBookIds = new ArrayList<>();
+				ArrayList<Integer> skipped_ffStoryIds = new ArrayList<>();
 				CallableStatement storyStmt = c.prepareCall(USP_ADD_STORY_VALUES);
 				CallableStatement charStmt = c.prepareCall(USP_ADD_CHARACTER_TO_STORY);
 				CallableStatement genreStmt = c.prepareCall(USP_ADD_GENRE_TO_STORY);
@@ -69,29 +70,34 @@ public class StoryListProcedures {
 					for (StoryListElement sElem : storyListElements) {
 						// Sanity Check
 						if (sElem.ffBookId < 0 || sElem.bookTitle == null) {
+							skipped_ffStoryIds.add(sElem.ffBookId);
 							Boot.getLogger().log("[Invalid story] Skipping a story on url : " + scrape_url, true);
 							continue;
 						}
 						
 						if (sElem.ffUserId < 0 || sElem.user_name == null) {
+							skipped_ffStoryIds.add(sElem.ffBookId);
 							Boot.getLogger().log("[Invalid user] Skipping a story with ff_story_id " 
 									+ sElem.ffBookId + " on url : " + scrape_url, true);
 							continue;
 						}
 						
 						if (sElem.processedMetadata == null) {
+							skipped_ffStoryIds.add(sElem.ffBookId);
 							Boot.getLogger().log("[Invalid meta] Skipping a story with ff_story_id " 
 									+ sElem.ffBookId + " on url : " + scrape_url, true);
 							continue;
 						}
 						
 						if (sElem.processedMetadata.rating == null) {
+							skipped_ffStoryIds.add(sElem.ffBookId);
 							Boot.getLogger().log("[Invalid rating] Skipping a story with ff_story_id " 
 									+ sElem.ffBookId + " on url : " + scrape_url, true);
 							continue;
 						}
 						
 						if (sElem.processedMetadata.language == null) {
+							skipped_ffStoryIds.add(sElem.ffBookId);
 							Boot.getLogger().log("[Invalid lanugage] Skipping a story with ff_story_id " 
 									+ sElem.ffBookId + " on url : " + scrape_url, true);
 							continue;
@@ -130,36 +136,40 @@ public class StoryListProcedures {
 					
 					storyStmt.executeBatch();
 					
-					String selectQuery = String.format(
-							"SELECT ff_story_id AS ffStoryId, id AS storyId FROM `story` WHERE ff_story_id in (%s)", 
-							String.join(",", ffBookIds));
-					
-					ResultSet rs = storyStmt.executeQuery(selectQuery);
-					HashMap<Integer, Integer> ffStoryId_to_storyId = new HashMap<>();
-				    while (rs.next()) {
-				    	ffStoryId_to_storyId.put(rs.getInt("ffStoryId"), rs.getInt("storyId"));
-				    }
-					
-					for (StoryListElement sElem : storyListElements) {
-					    // Characters
-					    for (String character : sElem.processedMetadata.characters) {
-					    	charStmt.setInt(1, ffStoryId_to_storyId.get(sElem.ffBookId)); 
-					    	// bre.ffBookId); // 1 IN ff_book_id INT(11)
-					    	charStmt.setString(2, character); // 2 character_name
-					    	charStmt.addBatch();
-					    }
+					if (ffBookIds.size() > 0) {
+						String selectQuery = String.format(
+								"SELECT ff_story_id AS ffStoryId, id AS storyId FROM `story` "
+								+ "WHERE ff_story_id in (%s)", String.join(",", ffBookIds));
+						
+						ResultSet rs = storyStmt.executeQuery(selectQuery);
+						
+						HashMap<Integer, Integer> ffStoryId_to_storyId = new HashMap<>();
+					    while (rs.next()) ffStoryId_to_storyId.put(rs.getInt("ffStoryId"), rs.getInt("storyId"));
 					    
-					    // Genres
-					    for (String genre : sElem.processedMetadata.genres) {
-					    	genreStmt.setInt(1, ffStoryId_to_storyId.get(sElem.ffBookId)); 
-					    	// bre.ffBookId); // 1 IN ff_book_id INT(11)
-					    	genreStmt.setString(2, genre); // 2 genre_name VARCHAR(128)
-					    	genreStmt.addBatch();
-					    }
+					    for (StoryListElement sElem : storyListElements) {
+							if (skipped_ffStoryIds.contains(sElem.ffBookId))
+								continue;
+							
+						    // Characters
+						    for (String character : sElem.processedMetadata.characters) {
+						    	charStmt.setInt(1, ffStoryId_to_storyId.get(sElem.ffBookId)); 
+						    	// bre.ffBookId); // 1 IN ff_book_id INT(11)
+						    	charStmt.setString(2, character); // 2 character_name
+						    	charStmt.addBatch();
+						    }
+						    
+						    // Genres
+						    for (String genre : sElem.processedMetadata.genres) {
+						    	genreStmt.setInt(1, ffStoryId_to_storyId.get(sElem.ffBookId)); 
+						    	// bre.ffBookId); // 1 IN ff_book_id INT(11)
+						    	genreStmt.setString(2, genre); // 2 genre_name VARCHAR(128)
+						    	genreStmt.addBatch();
+						    }
+						}
+						
+						charStmt.executeBatch();
+						genreStmt.executeBatch();
 					}
-					
-					charStmt.executeBatch();
-					genreStmt.executeBatch();
 					
 					c.commit();
 				} finally {

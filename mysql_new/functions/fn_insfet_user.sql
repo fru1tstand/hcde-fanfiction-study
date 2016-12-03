@@ -3,7 +3,7 @@
 DELIMITER $$
 CREATE FUNCTION `fn_insfet_user`(
 	in_ff_id INT,
-    in_user_name VARCHAR(128)
+    in_user_name VARCHAR(512)
 ) RETURNS int(11)
 BEGIN
 	DECLARE v_user_id INT DEFAULT (SELECT `id` FROM `user` WHERE `ff_id` = in_ff_id);

@@ -133,10 +133,16 @@ public class StoryListElement {
 					// Both, but characters is always 2nd element
 					this.isComplete = true;
 					processCharacters(afterDateComponents[1]);
-				} else {
+				} else if (afterDateComponents.length > 3) {
+					this.isComplete = true;
+					processCharacters(afterDateComponents[1]);
+					System.out.println("[Warning] Found " + afterDateComponents.length 
+							+ " elements with text: " + afterDateText.toString() + ". "
+							+ "Processing `" + afterDateComponents[1] + "` as the character component." );
+				}/* else {
 					throw new Exception(afterDateComponents.length
-							+ " after date components were found when only expecting 2 or 3.");
-				}
+							+ " after date components were found when only expecting 2 or 3 or 4.");
+				} */
 			}
 		}
 

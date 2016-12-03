@@ -10,11 +10,11 @@ import java.util.ArrayList;
 import java.util.stream.Stream;
 
 import me.fru1t.fanfiction.database.producers.FandomProducer;
-import me.fru1t.fanfiction.database.producers.ProfileProducer;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
 import me.fru1t.fanfiction.database.producers.StoryProducer;
 import me.fru1t.fanfiction.process.BatchReviewConvertProcess;
+import me.fru1t.fanfiction.process.BatchReviewConvertProcessDirect;
 import me.fru1t.fanfiction.process.BatchScrapeProcess;
 import me.fru1t.fanfiction.process.BatchUserConvertProcess;
 import me.fru1t.fanfiction.process.ConvertProcess;
@@ -43,7 +43,7 @@ public class Boot {
 			new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
 
 	// Crawler params
-	private static final int AVG_SLEEP_TIME_PER_IP = 2000;
+	private static final int AVG_SLEEP_TIME_PER_IP = 1000;
 	private static final int MIN_CONTENT_LENGTH = 1000;
 	private static String[] REMOTE_IPS = null;
 	
@@ -120,7 +120,12 @@ public class Boot {
 		}
 
 		String[] parts = command.split("_");
-		if (parts[0].equals("SCRAPE")) {
+		if (parts.length != 2) {
+			System.out.println("Invalid Command: " + command);
+			return;
+		}
+		
+		if (parts[0].equals("SCRAPE") && args.length == 5) {
 			int start_id = Integer.parseInt(args[3]);
 			int end_id = Integer.parseInt(args[4]);
 			
@@ -139,8 +144,8 @@ public class Boot {
 				(new BatchScrapeProcess(new FandomPageUrlProducer(fandomProducer))).run();
 			} else if (parts[1].equals("USER")) {
 				// e.g. https://www.fanfiction.net/u/12345
-				ProfileProducer profileProducer = new ProfileProducer(start_id, end_id);
-				(new BatchScrapeProcess(new UserPageUrlProducer(profileProducer))).run();
+				// ProfileProducer profileProducer = new ProfileProducer(start_id, end_id);
+				(new BatchScrapeProcess(new UserPageUrlProducer(start_id, end_id, 8520203))).run();
 			} else if (parts[1].equals("REVIEW")) {
 				// e.g. https://www.fanfiction.net/r/1425634/1/1/
 				StoryProducer storyProducer = new StoryProducer(start_id, end_id);
@@ -157,7 +162,12 @@ public class Boot {
 		
 		if (parts[0].equals("CONVERT")) {
 			ScrapeProducer scrapeProducer = null;
-			if (args[4] != null) { 
+			if (args.length == 4) {
+				// get the scrapes with a session_id that matches scrape_session_name in `session` table
+				String scrape_session_name = args[3];
+				session_of_this_run = new Session(String.format("%s_ON_%s", command, scrape_session_name));
+				scrapeProducer = new ScrapeProducer(scrape_session_name);
+			} else if (args.length == 5) { 
 				// we are given start_id and end_id of scrape_table,
 				// get the scrapes withing this id range.
 				int start_id = Integer.parseInt(args[3]);
@@ -169,10 +179,7 @@ public class Boot {
 				
 				scrapeProducer = new ScrapeProducer(start_id, end_id);
 			} else {
-				// get the scrapes with a session_id that matches scrape_session_name in `session` table
-				String scrape_session_name = args[3];
-				session_of_this_run = new Session(String.format("%s_ON_%s", command, scrape_session_name));
-				scrapeProducer = new ScrapeProducer(scrape_session_name);
+				return;
 			}
 			
 			if (parts[1].equals("CATEGORY")) { // EXTRACT fandom from category
@@ -182,11 +189,13 @@ public class Boot {
 				// process the scraped story lists, and insert the story meta-data
 				System.out.println("\n\t\t[ [ [ [ [ WARNING: make sure all urls in `fandom` table are unique. ] ] ] ] ]\n");
 				(new ConvertProcess<Scrape>(scrapeProducer, new FandomToStories())).run();
-			} else if (parts[1].equals("USER")) 
+			} else if (parts[1].equals("USER")) {
 				(new BatchUserConvertProcess<Scrape>(scrapeProducer)).run();
-			else if (parts[1].equals("REVIEW")) {
-				// as I process review page, I will simultaneously update `reviewers` on `user` table 
+			} else if (parts[1].equals("REVIEW")) {
+				// as I process review page, I will simultaneously update reviewers to the `user` table 
 				(new BatchReviewConvertProcess<Scrape>(scrapeProducer)).run();
+			} else if (parts[1].equals("REVIEWDIRECT")) {
+				(new BatchReviewConvertProcessDirect<Scrape>(scrapeProducer)).run();
 			} else if (parts[1].equals("STORY"))
 				System.out.println("Yet to be coded...");
 			
