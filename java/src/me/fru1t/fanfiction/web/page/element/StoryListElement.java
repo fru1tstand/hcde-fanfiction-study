@@ -10,9 +10,10 @@ import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 import me.fru1t.fanfiction.Boot;
+import me.fru1t.util.FFElement;
 import me.fru1t.util.Preconditions;
 
-public class StoryListElement {
+public class StoryListElement extends FFElement {
 	public static class Metadata {
 		private static final boolean LOG_COMPONENT_IGNORES = true;
 		
@@ -294,10 +295,5 @@ public class StoryListElement {
 			this.processedMetadata = new Metadata(metadata);
 		}
 
-		/* } catch (IndexOutOfBoundsException e) {
-			Boot.getLogger().log(e, "A required element wasn't found on the page.");
-		} catch (Exception e) {
-			Boot.getLogger().log(e, "An unknown exception occured");
-		}*/
 	}
 }

@@ -143,7 +143,7 @@ public class DatabaseConnectionPool {
 		//System.out.print("SSH Password: ");
 		//sshPass = String.valueOf(console.readPassword());
 		
-		connectSSH();
+;		connectSSH();
 	}
 
 	private void promptSSH() {

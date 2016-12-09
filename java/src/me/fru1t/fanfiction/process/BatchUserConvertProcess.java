@@ -10,7 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import me.fru1t.fanfiction.Boot;
-import me.fru1t.fanfiction.database.UserToProfileProcedures;
+import me.fru1t.fanfiction.database.UserProcedures;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
 import me.fru1t.fanfiction.web.page.element.ProfileElement;
@@ -24,21 +24,27 @@ public class BatchUserConvertProcess<T extends DatabaseProducer.Row<?>> implemen
 	private static int BUFFER_SIZE = 1 * 1024 * 1024;
 	private ScrapeProducer producer;
 	private int scrapedLen;
+	private boolean doProfile;
 
 	// Matches profile URLs with or without filters.
 	private static final Pattern USER_URL_PATTERN = Pattern.compile("^https://www.fanfiction.net/u/(?<ffId>[0-9]+)$");
 
 	ArrayList<ProfileElement> profileElements;
+	
 
-	public BatchUserConvertProcess(ScrapeProducer producer) throws InterruptedException {
+	public BatchUserConvertProcess(ScrapeProducer producer, boolean doProfile) throws InterruptedException {
 		this.producer = producer;
 		this.profileElements = new ArrayList<>(); 
 		this.scrapedLen = 0;
+		this.doProfile = doProfile;
 	}
 
-	private void batchInsert() throws InterruptedException{
+	private void batchInsert() throws InterruptedException {
 		long startTime = (new Date()).getTime();
-		UserToProfileProcedures.addUserProfile(profileElements);
+		
+		if (doProfile) UserProcedures.addUserProfile(profileElements);
+		else UserProcedures.addUserFavorites(profileElements);
+		
 		Boot.getLogger().log("Processed addUserProfile for /" + profileElements.size()
 								+ "; Took: " + ((new Date()).getTime() - startTime) + "ms", true);
 		profileElements.clear();
@@ -62,7 +68,7 @@ public class BatchUserConvertProcess<T extends DatabaseProducer.Row<?>> implemen
 				}
 
 				ProfileElement pe = scrapeToProfileElement(scrape);
-				if (pe != null) {
+				if (pe != null && (!pe.isErrorPage)) {
 					pe.setScrapeId(scrape.id);
 					profileElements.add(pe);
 					scrapedLen += pe.getContentLen();

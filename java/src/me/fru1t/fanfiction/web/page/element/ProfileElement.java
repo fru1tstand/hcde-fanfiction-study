@@ -13,6 +13,7 @@ import org.jsoup.select.Elements;
 import me.fru1t.util.FFElement;
 
 public class ProfileElement extends FFElement {
+	
 	private static String age_arabic = "([0-9]{1,2})";
 	private static String age_words = "(ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|"
 									+ "twenty one|twenty two|twenty three|twenty four|twenty five|twenty six|twenty seven|twenty eight|twenty nine|twenty|"
@@ -29,7 +30,7 @@ public class ProfileElement extends FFElement {
 	private static String gender_words = "(female|male|boy|girl|woman|man)";
 	private static String GENDER_PATTERN_GROUP = "(?<userGender>" + gender_words + ")";
 	
-	
+	public boolean isErrorPage;
 	public int my_ff_id; // NOT NULL
 	public String user_name;
 	public String location_name;
@@ -74,10 +75,13 @@ public class ProfileElement extends FFElement {
 		this.myFavAuthors = new HashSet<>();
 		this.myFavStories = new HashSet<>();
 		
-		if (this.checkErrorPage(profilePageDoc)) return;
+		if (this.checkErrorPage(profilePageDoc)) {
+			this.isErrorPage = true;
+			return;
+		}
+		this.isErrorPage = false;
 		
 		// may not be public, in this case empty string returned
-		//this.location_name = profilePageDoc.select("div#content_wrapper_inner table table td").eq(1).select("img").attr("title");
 		this.location_name = profilePageDoc.select("div#content_wrapper_inner table table td[colspan=2]")
 										  .select("img").attr("title");
 		this.getJoinDateAndUpdateDate(profilePageDoc);

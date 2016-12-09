@@ -14,7 +14,6 @@ import me.fru1t.fanfiction.database.producers.ScrapeProducer;
 import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
 import me.fru1t.fanfiction.database.producers.StoryProducer;
 import me.fru1t.fanfiction.process.BatchReviewConvertProcess;
-import me.fru1t.fanfiction.process.BatchReviewConvertProcessDirect;
 import me.fru1t.fanfiction.process.BatchScrapeProcess;
 import me.fru1t.fanfiction.process.BatchUserConvertProcess;
 import me.fru1t.fanfiction.process.ConvertProcess;
@@ -93,19 +92,7 @@ public class Boot {
 		if (DEBUG) System.out.println("File logging disabled due to debug mode. "
 					+ "To change this setting, edit Boot.java");
 		else logger.logToFile(LOG_FILE_PREFIX, LOG_FILE_SUFFIX);
-
-//		(new ScrapeProcess(new CategoryPageUrlProducer(), Session.SCRAPE_CATEGORY_PAGES_16_10_10)).run();
-//		(new ConvertProcess<ScrapeProducer.Scrape>(
-//				new ScrapeProducer(Session.SCRAPE_CATEGORY_PAGES_16_10_10),
-//				new CategoryToFandoms(),
-//				Session.SCRAPE_CATEGORY_PAGES_16_10_10)).run();
-//		(new ScrapeProcess(
-//				new FandomPageUrlProducer(new FandomProducer()),
-//				Session.SCRAPE_ALL_FANDOM_PAGES_16_10_10)).run();
-//		(new ConvertProcess<Scrape>(
-//			new ScrapeProducer(Session.SCRAPE_ALL_FANDOM_PAGES_16_10_10),
-//			new FandomToStories(Session.CONVERT_ALL_FANDOM_PAGES_16_10_10),
-//			Session.CONVERT_ALL_FANDOM_PAGES_16_10_10)).run();
+		
 		
 		// these params must be specified for all incidents
 		server_name = args[0]; REMOTE_IPS = IPs.getIPsetByName(server_name);
@@ -133,8 +120,11 @@ public class Boot {
 				   String.format("%s_%s_%s", command, 
 											(start_id < 1000 ? start_id : start_id/1000 + "K"), 
 											(end_id < 1000 ? end_id : end_id/1000 + "K")));
-			
-			if (parts[1].equals("CATEGORY")) {
+			if (parts[1].equals("USER")) {
+				// e.g. https://www.fanfiction.net/u/12345
+				// ProfileProducer profileProducer = new ProfileProducer(start_id, end_id);
+				(new BatchScrapeProcess(new UserPageUrlProducer(start_id, end_id, 8520203))).run();
+			} else if (parts[1].equals("CATEGORY")) {
 				// start_id and end_id are meaningless b/c categories are hard-coded.
 				(new ScrapeProcess(new CategoryPageUrlProducer())).run();
 			} else if (parts[1].equals("FANDOM")) {
@@ -142,11 +132,7 @@ public class Boot {
 				// e.g. https://www.fanfiction.net/book/Harry-Potter/?&srt=1&r=103&p=2
 				FandomProducer fandomProducer = new FandomProducer(start_id, end_id);
 				(new BatchScrapeProcess(new FandomPageUrlProducer(fandomProducer))).run();
-			} else if (parts[1].equals("USER")) {
-				// e.g. https://www.fanfiction.net/u/12345
-				// ProfileProducer profileProducer = new ProfileProducer(start_id, end_id);
-				(new BatchScrapeProcess(new UserPageUrlProducer(start_id, end_id, 8520203))).run();
-			} else if (parts[1].equals("REVIEW")) {
+			} else  if (parts[1].equals("REVIEW")) {
 				// e.g. https://www.fanfiction.net/r/1425634/1/1/
 				StoryProducer storyProducer = new StoryProducer(start_id, end_id);
 				storyProducer.setOtherWhereClause("`story`.`reviews` > 0");
@@ -181,21 +167,24 @@ public class Boot {
 			} else {
 				return;
 			}
-			
-			if (parts[1].equals("CATEGORY")) { // EXTRACT fandom from category
+			 
+			if (parts[1].equals("USERPROFILE")) {
+				(new BatchUserConvertProcess<Scrape>(scrapeProducer, true)).run();
+			} else if (parts[1].equals("USERFAVORITE")) {
+				(new BatchUserConvertProcess<Scrape>(scrapeProducer, false)).run();
+			} else if (parts[1].equals("CATEGORY")) { // EXTRACT fandom from category
 				// get all fandoms for each category
 				(new ConvertProcess<Scrape>(scrapeProducer, new CategoryToFandoms())).run();
+				
 			} else if (parts[1].equals("FANDOM")) { // EXTRACT story list from each fandom page
 				// process the scraped story lists, and insert the story meta-data
 				System.out.println("\n\t\t[ [ [ [ [ WARNING: make sure all urls in `fandom` table are unique. ] ] ] ] ]\n");
 				(new ConvertProcess<Scrape>(scrapeProducer, new FandomToStories())).run();
-			} else if (parts[1].equals("USER")) {
-				(new BatchUserConvertProcess<Scrape>(scrapeProducer)).run();
+				
 			} else if (parts[1].equals("REVIEW")) {
 				// as I process review page, I will simultaneously update reviewers to the `user` table 
 				(new BatchReviewConvertProcess<Scrape>(scrapeProducer)).run();
-			} else if (parts[1].equals("REVIEWDIRECT")) {
-				(new BatchReviewConvertProcessDirect<Scrape>(scrapeProducer)).run();
+				
 			} else if (parts[1].equals("STORY"))
 				System.out.println("Yet to be coded...");
 			

@@ -8,4 +8,5 @@ public abstract class FFElement {
 	public void setScrapeId(int sid) {
 		this.scrapeid = sid;
 	}
+	
 }

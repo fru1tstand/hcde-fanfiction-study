@@ -23,7 +23,8 @@ public class UserToProfileProcedures {
 	
 	
 	/**
-	 *   1 `user_id` INT NOT NULL,
+	 *   1 in_ff_id INT,
+     * 	 2 in_user_name VARCHAR(512),
 	 *   2 `location_id` INT NULL,
 	 *   3 `join_date` INT(10) DEFAULT -1,
 	 *   4 `update_date` INT(10) DEFAULT -1,
@@ -31,7 +32,7 @@ public class UserToProfileProcedures {
 	 *   6 `age` TINYINT NULL,
 	 *   7 `gender` CHAR(6) NULL,
 	 */
-	private static final String USP_ADD_USER_PROFILE = "{CALL usp_add_user_profile (?,?,?,?, ?,?,?)}";
+	private static final String USP_ADD_USER_PROFILE = "{CALL usp_add_user_profile (?,?,?,?,?, ?,?,?)}";
 	
 	/**
 	 *  1 `user_id` INT(11) NOT NULL,
@@ -40,14 +41,6 @@ public class UserToProfileProcedures {
 	private static final String INSERT_QUERY_USER_FAV_AUTHOR = 
 			"INSERT INTO `user_favorite_author` (`user_id`, `favorite_user_id`) VALUES (?, ?)";
 
-	/**
-	 *  1 `user_id` INT(11) NOT NULL,
-	 *  2 `favorite_ff_id` INT(11) NOT NULL,
-	 *  3 `favorite_name` varchar(128) NOT NULL,
-	 */
-	private static final String INSERT_QUERY_USER_FAV_AUTHOR_DUMMY = 
-			"INSERT INTO `user_favorite_author_dummy` (`user_id`, `favorite_ff_id`, `favorite_name`) VALUES (?, ?, ?)";
-	
 	/**
 	 *  1 `user_id` INT(11) NOT NULL,
 	 *  2 `story_id` INT NOT NULL,
@@ -64,8 +57,6 @@ public class UserToProfileProcedures {
 				CallableStatement profileStmt = c.prepareCall(USP_ADD_USER_PROFILE);
 				PreparedStatement favAuthorStmt = c.prepareStatement(INSERT_QUERY_USER_FAV_AUTHOR);
 				PreparedStatement favStoryStmt = c.prepareStatement(INSERT_QUERY_USER_FAV_STORY);
-				PreparedStatement favAuthorDummyStmt = c.prepareStatement(INSERT_QUERY_USER_FAV_AUTHOR_DUMMY);
-				
 
 				try {
 					c.setAutoCommit(false);
@@ -140,11 +131,6 @@ public class UserToProfileProcedures {
 								favAuthorStmt.setInt(1, my_user_id);
 								favAuthorStmt.setInt(2, fav_user_id);  
 								favAuthorStmt.addBatch();
-							} else {
-								favAuthorDummyStmt.setInt(1, my_user_id);
-								favAuthorDummyStmt.setInt(2, fav.ff_id); // favorite_user_id
-								favAuthorDummyStmt.setString(3, fav.name); 
-								favAuthorDummyStmt.addBatch();
 							}
 						}
 
@@ -163,7 +149,6 @@ public class UserToProfileProcedures {
 
 					profileStmt.executeBatch();
 					favAuthorStmt.executeBatch();
-					favAuthorDummyStmt.executeBatch();
 					favStoryStmt.executeBatch();
 					
 					c.commit();
@@ -188,6 +173,7 @@ public class UserToProfileProcedures {
 						Boot.getLogger().log(e1, "Couldn't write to file \"" + filename);
 					}
 				} finally {
+					selectStmt.close();
 					profileStmt.close();
 					favAuthorStmt.close();
 					favStoryStmt.close();

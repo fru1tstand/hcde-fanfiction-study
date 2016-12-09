@@ -2,7 +2,7 @@ package me.fru1t.fanfiction.web.page.element;
 
 import me.fru1t.util.FFElement;
 
-public class ReviewElement extends FFElement{
+public class ReviewElement extends FFElement {
 	public int ff_story_id;
 	public int chapter;
 	public int reviewer_ff_id;
