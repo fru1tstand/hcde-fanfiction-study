@@ -6,9 +6,11 @@
 a, a:link, a:visited, label, label:link, label:visited {
   text-decoration: none;
   color: #ffa146;
-  cursor: pointer; }
+  cursor: pointer;
+  border-color: #ffa146; }
 a:hover, a:active, label:hover, label:active {
-  color: #bc7137; }
+  color: #bc7137;
+  border-color: #bc7137; }
 
 html, body {
   font-family: Raleway, serif;
@@ -85,5 +87,23 @@ p {
     font-size: 14px; }
     .column-list li .name {
       font-weight: bold; }
+
+.download-container a {
+  padding: 15px 60px;
+  border: 1px solid;
+  border-radius: 3px;
+  margin: 0 5px 0 0;
+  display: inline-block;
+  text-align: center; }
+.download-container i {
+  display: block;
+  font-size: 32px; }
+.download-container span {
+  display: inline-block;
+  padding-top: 5px;
+  font-size: 16px;
+  color: #AAA; }
+  .download-container span span {
+    font-size: 12px; }
 
 /*# sourceMappingURL=global.css.map */
