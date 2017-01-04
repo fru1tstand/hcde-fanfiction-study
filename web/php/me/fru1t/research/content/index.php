@@ -61,18 +61,18 @@ $body = <<<HTML
 <div class="container">
   <div class="section-subtitle">Abstract:</div>
   <p>With its roots dating to popular television shows of the 1960s such as Star Trek, fanfiction
-    has blossomed into an extremely popular form of creative expression. The transition from
-    printed zines to online fanfiction repositories has facilitated this growth in popularity, with
-    millions of fans writing stories and adding to sites such as FanFiction.net, Archive Of Our Own,
-    and many others each day. Enthusiasts are sharing their writing, reading stories written by
-    others, and helping each other to grow as writers. Yet, this domain is often undervalued by
-    society and understudied by researchers. Fanfiction repositories in particular have rarely been
-    quantitatively analyzed in their entirety. The corpora are large and growing. In this paper,
-    we present the first full, anonymous release of the metadata from a large fanfiction repository.
-    We use visual analytics techniques to draw several intriguing insights from the data and show
-    the potential for future research. We have also made the open source database of metadata
-    available, anonymized via algorithms that satisfy differential privacy, so that other
-    researchers can explore further questions related to online fanfiction communities.</p>
+  has blossomed into an extremely widespread form of creative expression. The transition from
+  printed zines to online fanfiction repositories has facilitated this growth in popularity,
+  with millions of fans writing stories and adding daily to sites such as Archive Of Our Own,
+  Fanfiction.net, FIMfiction.net, and many others. Enthusiasts are sharing their writing,
+  reading stories written by others, and helping each other to grow as writers. Yet, this
+  domain is often undervalued by society and understudied by researchers. To facilitate the
+  study of this large but often marginalized community, we present a fully anonymized data
+  release (via differential privacy) of the metadata from a large fanfiction site (to protect
+  author privacy, story, profile, and review text is excluded, and only metadata is
+  provided). We use visual analytics techniques to draw several intriguing insights from the data
+  and show the potential for future research. We hope other researchers can use this data to
+  explore further questions related to online fanfiction communities.</p>
 </div>
 
 <!-- What we offer -->
