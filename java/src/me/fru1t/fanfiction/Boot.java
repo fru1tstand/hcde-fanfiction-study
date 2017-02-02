@@ -15,6 +15,7 @@ import me.fru1t.fanfiction.database.producers.ScrapeProducer.Scrape;
 import me.fru1t.fanfiction.database.producers.StoryProducer;
 import me.fru1t.fanfiction.process.BatchReviewConvertProcess;
 import me.fru1t.fanfiction.process.BatchScrapeProcess;
+import me.fru1t.fanfiction.process.BatchStoryConvertProcess;
 import me.fru1t.fanfiction.process.BatchUserConvertProcess;
 import me.fru1t.fanfiction.process.ConvertProcess;
 import me.fru1t.fanfiction.process.ScrapeProcess;
@@ -185,9 +186,9 @@ public class Boot {
 				// as I process review page, I will simultaneously update reviewers to the `user` table 
 				(new BatchReviewConvertProcess<Scrape>(scrapeProducer)).run();
 				
-			} else if (parts[1].equals("STORY"))
-				System.out.println("Yet to be coded...");
-			
+			} else if (parts[1].equals("STORY")) {
+				(new BatchStoryConvertProcess<Scrape>(scrapeProducer)).run();
+			}
 			return;
 		}
 	}

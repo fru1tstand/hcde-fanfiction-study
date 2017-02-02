@@ -1,0 +1,39 @@
+select * from user_profile where age is not null into outfile '/tmp/user_profile_age.csv' FIELDS TERMINATED BY ',' ESCAPED BY '\\' ENCLOSED BY '"' LINES TERMINATED BY '\r\n';
+
+select user_id, location_id, join_date, update_date, age, gender from user_profile where age is not null into outfile '/tmp/user_profile_age_without_bio.csv' FIELDS TERMINATED BY ',' ESCAPED BY '\\' ENCLOSED BY '"' LINES TERMINATED BY '\r\n';
+
+select * from story_genre into outfile '/tmp/story_genre.csv' FIELDS TERMINATED BY ',' ESCAPED BY '\\' ENCLOSED BY '"' LINES TERMINATED BY '\r\n';
+
+select * from genre into outfile '/tmp/genre.csv' FIELDS TERMINATED BY ',' ESCAPED BY '\\' ENCLOSED BY '"' LINES TERMINATED BY '\r\n';
+
+select * from story_age into outfile '/tmp/story_age.csv' FIELDS TERMINATED BY ',' ESCAPED BY '\\' ENCLOSED BY '"' LINES TERMINATED BY '\r\n';
+
+select * from fandom into outfile '/tmp/fandom.csv' FIELDS TERMINATED BY ',' ESCAPED BY '\\' ENCLOSED BY '"' LINES TERMINATED BY '\r\n';
+
+mysql> select * from (select fandom_id, count(*), sum(chapters) from story group by fandom_id order by count(*) desc limit 20) A join fandom B on A.fandom_id = B.id;
+
++-----------+----------+---------------+------+-------------+---------------------------------+----------------------------------------+
+| fandom_id | count(*) | sum(chapters) | id   | category_id | name                            | url                                    |
++-----------+----------+---------------+------+-------------+---------------------------------+----------------------------------------+
+|      1809 |   715316 |       2915511 | 1809 |           2 | Harry Potter                    | /book/Harry-Potter/                    |
+|         1 |   388246 |       1450158 |    1 |           1 | Naruto                          | /anime/Naruto/                         |
+|      1810 |   213197 |       1329207 | 1810 |           2 | Twilight                        | /book/Twilight/                        |
+|         2 |   117133 |        370754 |    2 |           1 | Hetalia - Axis Powers           | /anime/Hetalia-Axis-Powers/            |
+|      8414 |   111320 |        384416 | 8414 |           9 | Supernatural                    | /tv/Supernatural/                      |
+|         3 |   108785 |        531911 |    3 |           1 | Inuyasha                        | /anime/Inuyasha/                       |
+|      8415 |   107263 |        466971 | 8415 |           9 | Glee                            | /tv/Glee/                              |
+|      4940 |    83186 |        361313 | 4940 |           5 | Pokémon                         | /game/Pok%C3%A9mon/                    |
+|         4 |    80817 |        318549 |    4 |           1 | Bleach                          | /anime/Bleach/                         |
+|      4941 |    71133 |        262804 | 4941 |           5 | Kingdom Hearts                  | /game/Kingdom-Hearts/                  |
+|      1811 |    65865 |        281330 | 1811 |           2 | Percy Jackson and the Olympians | /book/Percy-Jackson-and-the-Olympians/ |
+|         5 |    64982 |        268231 |    5 |           1 | Yu-Gi-Oh                        | /anime/Yu-Gi-Oh/                       |
+|      8416 |    61163 |        205668 | 8416 |           9 | Doctor Who                      | /tv/Doctor-Who/                        |
+|         6 |    58160 |        248442 |    6 |           1 | Fairy Tail                      | /anime/Fairy-Tail/                     |
+|      8417 |    55840 |        190653 | 8417 |           9 | Sherlock                        | /tv/Sherlock/                          |
+|      1812 |    53662 |        241903 | 1812 |           2 | Lord of the Rings               | /book/Lord-of-the-Rings/               |
+|         8 |    46460 |        162492 |    8 |           1 | Fullmetal Alchemist             | /anime/Fullmetal-Alchemist/            |
+|         7 |    45659 |        220686 |    7 |           1 | Dragon Ball Z                   | /anime/Dragon-Ball-Z/                  |
+|      8419 |    45324 |        203629 | 8419 |           9 | Once Upon a Time                | /tv/Once-Upon-a-Time/                  |
+|      1813 |    43916 |        227743 | 1813 |           2 | Hunger Games                    | /book/Hunger-Games/                    |
++-----------+----------+---------------+------+-------------+---------------------------------+----------------------------------------+
+20 rows in set (21.00 sec)
