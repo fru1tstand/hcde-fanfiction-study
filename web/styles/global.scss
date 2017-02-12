@@ -17,9 +17,11 @@ a, label {
     text-decoration: none;
     color: #ffa146;
     cursor: pointer;
+    border-color: #ffa146;
   }
   &:hover, &:active {
     color: #bc7137;
+    border-color: #bc7137;
   }
 }
 html, body {
@@ -120,6 +122,30 @@ p {
 
     .name {
       font-weight: bold;
+    }
+  }
+}
+
+.download-container {
+  a {
+    padding: 15px 60px;
+    border: 1px solid;
+    border-radius: 3px;
+    margin: 0 5px 0 0;
+    display: inline-block;
+    text-align: center;
+  }
+  i {
+    display: block;
+    font-size: 32px;
+  }
+  span {
+    display: inline-block;
+    padding-top: 5px;
+    font-size: 16px;
+    color: #AAA;
+    span {
+      font-size: 12px;
     }
   }
 }
