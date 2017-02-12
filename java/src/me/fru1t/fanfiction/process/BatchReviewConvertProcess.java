@@ -28,7 +28,7 @@ public class BatchReviewConvertProcess<T extends DatabaseProducer.Row<?>> implem
 
 	// Matches profile URLs with or without filters.
 	private static final Pattern REVIEW_LIST_URL_PATTERN =
-			Pattern.compile("^https://www.fanfiction.net/r/(?<ffStoryId>[0-9]+)/(?<chapter>[0-9]+)/([0-9]+)/$");
+			Pattern.compile("^https://www.fanfiction.net/r/(?<ffStoryId>[0-9]+)/([0-9]+)/([0-9]+)/$");
 
 	ArrayList<ReviewElement> reviewElements;
 
@@ -91,9 +91,8 @@ public class BatchReviewConvertProcess<T extends DatabaseProducer.Row<?>> implem
 		if (m.matches()) {
 			Document reviewListPageDoc = Jsoup.parse(scrape.content);
 			int ffStoryId = Integer.parseInt(m.group("ffStoryId"));
-			int chapter = Integer.parseInt(m.group("chapter"));
 
-			return new ReviewListPage(ffStoryId, chapter, reviewListPageDoc, scrape.id);
+			return new ReviewListPage(ffStoryId, reviewListPageDoc, scrape.id);
 		}
 		
 		throw new Exception("Scrape id " + scrape.id + "; URL " + scrape.url + " did not match REVIEW_LIST_URL_PATTERN");

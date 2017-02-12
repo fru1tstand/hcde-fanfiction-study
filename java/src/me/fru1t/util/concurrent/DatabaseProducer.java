@@ -65,7 +65,6 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 	private int rowsProcessedSinceLastFetch;
 	private int totalRowsProcessed;
 	private SelectRowIDRange rowIDRange;
-	private String otherWhereClause;
 	
 	public DatabaseProducer(
 			String idName,
@@ -90,7 +89,6 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 		this.rowsProcessedSinceLastFetch = 0;
 		this.totalRowsProcessed = 0;
 		this.rowIDRange = null;
-		this.otherWhereClause = null;
 	}
 
 	/**
@@ -109,10 +107,6 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 	 */
 	public void setRowIDRange(int start, int end) {
 		rowIDRange = new SelectRowIDRange(start, end);
-	}
-	
-	public void setOtherWhereClause(String str) {
-		otherWhereClause = str;
 	}
 
 	/**
@@ -250,10 +244,6 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 		if (currentId != null) {
 			query.append(String.format(QUERY_CURRENT_ID, idName, currentId));
 		}
-		
-		if (otherWhereClause != null && !otherWhereClause.equals("")) {
-			query.append(" AND " + otherWhereClause);
-		}
 
 		// ...ORDER BY...
 		query.append(String.format(QUERY_ORDERBY, idName));
@@ -276,7 +266,6 @@ public abstract class DatabaseProducer<T extends DatabaseProducer.Row<I>, I> ext
 	abstract protected String getUnboundedQuery();
 
 	public boolean isComplete() {
-		// TODO Auto-generated method stub
 		return isComplete;
 	}
 }

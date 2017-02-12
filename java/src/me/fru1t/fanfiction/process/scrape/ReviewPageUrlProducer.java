@@ -20,14 +20,14 @@ public class ReviewPageUrlProducer extends ConcurrentProducer<String> {
 	
 	private Producer<Story> storyProducer;
 	private @Nullable Story currentStory;
-	private int currentChapter;
-	private int maxChapters;
+	private int currentPage;
+	private int maxPages;
 	
 	public ReviewPageUrlProducer(Producer<Story> storyProducer) {
 		this.storyProducer = storyProducer;
 		this.currentStory = null;
-		this.currentChapter = Integer.MAX_VALUE;
-		this.maxChapters = Integer.MIN_VALUE;
+		this.currentPage = Integer.MAX_VALUE;
+		this.maxPages = Integer.MIN_VALUE;
 		isComplete = false;
 	}
 
@@ -39,8 +39,8 @@ public class ReviewPageUrlProducer extends ConcurrentProducer<String> {
 		}
 		
 		// Check if we still have pages ready to serve
-		if (currentChapter <= maxChapters) {
-			return getReviewUrl(currentStory.ff_story_id, currentChapter++, 1);
+		if (currentPage <= maxPages) {
+			return getReviewUrl(currentStory.ff_story_id, 0, currentPage++);
 		}
 		
 		// Check if we still have stories to get reviews from:
@@ -54,10 +54,10 @@ public class ReviewPageUrlProducer extends ConcurrentProducer<String> {
 			}
 		} while (currentStory.reviews < 1);
 		
-		maxChapters =  currentStory.chapters;
-		currentChapter = maxChapters == 0 ? 0 : 1;
+		maxPages =  (currentStory.reviews / 15) + 1;
+		currentPage = maxPages == 0 ? 0 : 1;
 		
-		return getReviewUrl(currentStory.ff_story_id, currentChapter++, 1);
+		return getReviewUrl(currentStory.ff_story_id, 0, currentPage++);
 	}
 
 	private @Nullable String getReviewUrl(int ff_story_id, int chapter, int page_number) {

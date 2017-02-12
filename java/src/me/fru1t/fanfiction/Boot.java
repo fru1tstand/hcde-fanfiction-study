@@ -26,7 +26,7 @@ import me.fru1t.fanfiction.process.scrape.FandomPageUrlProducer;
 import me.fru1t.fanfiction.process.scrape.ReviewPageUrlProducer;
 import me.fru1t.fanfiction.process.scrape.StoryPageUrlProducer;
 import me.fru1t.fanfiction.process.scrape.TxtFileBasedUrlProducer;
-import me.fru1t.fanfiction.process.scrape.UserPageUrlProducer;
+import me.fru1t.fanfiction.process.scrape.UserPageToMaxUrlProducer;
 import me.fru1t.util.DatabaseConnectionPool;
 import me.fru1t.util.Logger;
 import me.fru1t.web.MultiIPCrawler;
@@ -124,7 +124,7 @@ public class Boot {
 			if (parts[1].equals("USER")) {
 				// e.g. https://www.fanfiction.net/u/12345
 				// ProfileProducer profileProducer = new ProfileProducer(start_id, end_id);
-				(new BatchScrapeProcess(new UserPageUrlProducer(start_id, end_id, 8520203))).run();
+				(new BatchScrapeProcess(new UserPageToMaxUrlProducer(start_id, end_id, 8520203))).run();
 			} else if (parts[1].equals("CATEGORY")) {
 				// start_id and end_id are meaningless b/c categories are hard-coded.
 				(new ScrapeProcess(new CategoryPageUrlProducer())).run();
@@ -136,7 +136,6 @@ public class Boot {
 			} else  if (parts[1].equals("REVIEW")) {
 				// e.g. https://www.fanfiction.net/r/1425634/1/1/
 				StoryProducer storyProducer = new StoryProducer(start_id, end_id);
-				storyProducer.setOtherWhereClause("`story`.`reviews` > 0");
 				(new BatchScrapeProcess(new ReviewPageUrlProducer(storyProducer))).run();
 			} else if (parts[1].equals("STORY")) {
 				// e.g. https://www.fanficiton.net/s/1425634
@@ -176,16 +175,13 @@ public class Boot {
 			} else if (parts[1].equals("CATEGORY")) { // EXTRACT fandom from category
 				// get all fandoms for each category
 				(new ConvertProcess<Scrape>(scrapeProducer, new CategoryToFandoms())).run();
-				
 			} else if (parts[1].equals("FANDOM")) { // EXTRACT story list from each fandom page
 				// process the scraped story lists, and insert the story meta-data
 				System.out.println("\n\t\t[ [ [ [ [ WARNING: make sure all urls in `fandom` table are unique. ] ] ] ] ]\n");
 				(new ConvertProcess<Scrape>(scrapeProducer, new FandomToStories())).run();
-				
 			} else if (parts[1].equals("REVIEW")) {
 				// as I process review page, I will simultaneously update reviewers to the `user` table 
 				(new BatchReviewConvertProcess<Scrape>(scrapeProducer)).run();
-				
 			} else if (parts[1].equals("STORY")) {
 				(new BatchStoryConvertProcess<Scrape>(scrapeProducer)).run();
 			}

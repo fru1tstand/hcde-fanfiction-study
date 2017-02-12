@@ -1,5 +1,6 @@
 package me.fru1t.util;
 
+import java.io.Console;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -25,6 +26,7 @@ public class DatabaseConnectionPool {
 		 */
 		public abstract void execute(Connection c) throws SQLException;
 	}
+	
 	private static final int ERROR_UNKNOWN = 0;
 	private static final int ERROR_BAD_HOST = 1042;
 	private static final int ERROR_HANDSHAKE = 1043;
@@ -59,7 +61,6 @@ public class DatabaseConnectionPool {
 		this.sshPass = null;
 		this.useSSH = false;
 		this.sshSession = null;
-		//justGetOnWithSSH();
 		promptSSH();
 	}
 
@@ -135,16 +136,6 @@ public class DatabaseConnectionPool {
 		}
 	}
 
-	private void justGetOnWithSSH() {
-		sshHost = "hdslab.hcde.washington.edu";
-		sshUser = "jihyunl";
-		// But let's ask for password at least...
-		//Console console = System.console();
-		//System.out.print("SSH Password: ");
-		//sshPass = String.valueOf(console.readPassword());
-		sshPass = "Anjald-486";
-;		connectSSH();
-	}
 
 	private void promptSSH() {
 		// Ask if using SSH
@@ -153,7 +144,7 @@ public class DatabaseConnectionPool {
 
 		try {
 			if (consoleScanner.nextLine().toLowerCase().equals("y")) {
-				/*useSSH = true;
+				useSSH = true;
 				System.out.println();
 
 				// The console object helps hide the password.
@@ -179,8 +170,7 @@ public class DatabaseConnectionPool {
 					System.out.print("SSH Password: ");
 					sshPass = String.valueOf(console.readPassword());
 				}
-				connectSSH();*/
-				justGetOnWithSSH();
+				connectSSH();
 			}
 		} finally {
 			consoleScanner.close();

@@ -4,7 +4,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import me.fru1t.util.concurrent.ConcurrentProducer;
 
-public class UserPageUrlProducer extends ConcurrentProducer<String> {
+public class UserPageToMaxUrlProducer extends ConcurrentProducer<String> {
 
 	/**
 	 * example url: 
@@ -21,11 +21,11 @@ public class UserPageUrlProducer extends ConcurrentProducer<String> {
 	private int currentFFId;
 	private int upperBoundFFId;
 	
-	public UserPageUrlProducer(int MAX_FFID) {
+	public UserPageToMaxUrlProducer(int MAX_FFID) {
 		this(1, MAX_FFID, MAX_FFID);
 	}
 	
-	public UserPageUrlProducer(int startId, int endId, int MAX_FFID) {
+	public UserPageToMaxUrlProducer(int startId, int endId, int MAX_FFID) {
 		this.currentFFId = startId;
 		this.upperBoundFFId = Integer.min(MAX_FFID, endId);
 		
