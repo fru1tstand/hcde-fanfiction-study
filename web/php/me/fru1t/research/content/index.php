@@ -59,7 +59,7 @@ $body = <<<HTML
 <!-- Submission -->
 <div class="content-push"></div>
 <div class="container">
-  <div class="section-subtitle">Abstract:</div>
+  <div class="section-title">Abstract:</div>
   <p>With its roots dating to popular television shows of the 1960s such as Star Trek, fanfiction
   has blossomed into an extremely widespread form of creative expression. The transition from
   printed zines to online fanfiction repositories has facilitated this growth in popularity,
@@ -73,9 +73,12 @@ $body = <<<HTML
   provided). We use visual analytics techniques to draw several intriguing insights from the data
   and show the potential for future research. We hope other researchers can use this data to
   explore further questions related to online fanfiction communities.</p>
-  
-  <div class="section-subtitle">Cite Our Work:</div>
-  <p>Please cite us if you use our <a target="_blank" href="http://faculty.washington.edu/aragon/pubs/Yin-FFData-CHI2017.pdf">CHI 2017 Note</a> or our database in your work.</p><br />
+</div>
+
+<div class="content-push"></div>
+<div class="container">
+  <div class="section-title">Cite Our Work:</div>
+  <p>Please cite our <a target="_blank" href="http://faculty.washington.edu/aragon/pubs/Yin-FFData-CHI2017.pdf">CHI 2017 Note</a> if you use our database in your work.</p><br />
   <div style="font-style: italic">"<a target="_blank" href="http://faculty.washington.edu/aragon/pubs/Yin-FFData-CHI2017.pdf">Where No One Has Gone Before: A Meta-Dataset of the World's Largest Fanfiction Repository,</a>" Kodlee Yin, Cecilia Aragon, Sarah Evans, Katie Davis. CHI 2017: ACM Conference on Human Factors in Computing Systems. (2017).</div>
 </div>
 
