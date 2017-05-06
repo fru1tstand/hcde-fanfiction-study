@@ -73,6 +73,10 @@ $body = <<<HTML
   provided). We use visual analytics techniques to draw several intriguing insights from the data
   and show the potential for future research. We hope other researchers can use this data to
   explore further questions related to online fanfiction communities.</p>
+  
+  <div class="section-subtitle">Cite Our Work:</div>
+  <p>Please cite us if you use our <a target="_blank" href="http://faculty.washington.edu/aragon/pubs/Yin-FFData-CHI2017.pdf">CHI 2017 Note</a> or our database in your work.</p><br />
+  <div style="font-style: italic">"<a target="_blank" href="http://faculty.washington.edu/aragon/pubs/Yin-FFData-CHI2017.pdf">Where No One Has Gone Before: A Meta-Dataset of the World's Largest Fanfiction Repository,</a>" Kodlee Yin, Cecilia Aragon, Sarah Evans, Katie Davis. CHI 2017: ACM Conference on Human Factors in Computing Systems. (2017).</div>
 </div>
 
 <!-- What we offer -->
