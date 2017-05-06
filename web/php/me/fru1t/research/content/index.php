@@ -47,7 +47,7 @@ foreach ($pics as $pic) {
 $body = <<<HTML
 <div class="content-push"></div>
 <div class="container">
-  <div class="page-title">Chi Note 2017 - Fanfiction Metadata</div>
+  <div class="page-title">CHI Note 2017 - Fanfiction Metadata Download</div>
 </div>
 
 <!-- Pictures -->
@@ -59,7 +59,7 @@ $body = <<<HTML
 <!-- Submission -->
 <div class="content-push"></div>
 <div class="container">
-  <div class="section-title">Abstract:</div>
+  <div class="section-title">Abstract</div>
   <p>With its roots dating to popular television shows of the 1960s such as Star Trek, fanfiction
   has blossomed into an extremely widespread form of creative expression. The transition from
   printed zines to online fanfiction repositories has facilitated this growth in popularity,
@@ -77,7 +77,7 @@ $body = <<<HTML
 
 <div class="content-push"></div>
 <div class="container">
-  <div class="section-title">Cite Our Work:</div>
+  <div class="section-title">Cite Our Work</div>
   <p>Please cite our <a target="_blank" href="http://faculty.washington.edu/aragon/pubs/Yin-FFData-CHI2017.pdf">CHI 2017 Note</a> if you use our database in your work.</p><br />
   <div style="font-style: italic">"<a target="_blank" href="http://faculty.washington.edu/aragon/pubs/Yin-FFData-CHI2017.pdf">Where No One Has Gone Before: A Meta-Dataset of the World's Largest Fanfiction Repository,</a>" Kodlee Yin, Cecilia Aragon, Sarah Evans, Katie Davis. CHI 2017: ACM Conference on Human Factors in Computing Systems. (2017).</div>
 </div>
@@ -85,7 +85,7 @@ $body = <<<HTML
 <!-- What we offer -->
 <div class="content-push"></div>
 <div class="container">
-  <div class="section-title">What we Provide</div>
+  <div class="section-title">What We Provide</div>
   <p>All data entries are anonymized and will satisfy differential privacy constraints so that
     information cannot be traced back and associated to the individual that produced it. The
     information we're releasing contains only the metadata of the stories published on a large
